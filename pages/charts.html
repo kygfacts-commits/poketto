@@ -19,6 +19,7 @@
       }
     }
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="min-h-screen bg-gray-50">
@@ -44,7 +45,7 @@
         <span>Budget</span>
       </a>
       <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
-        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+        <i data-lucide="line-chart" class="w-5 h-5"></i>
         <span>Charts</span>
       </a>
       <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
@@ -70,13 +71,103 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-        <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-sky-light flex items-center justify-center">
-          <i data-lucide="bar-chart-3" class="w-7 h-7 text-sky"></i>
+    <main class="p-6 md:p-10 max-w-5xl mx-auto">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">Charts</h1>
+
+      <!-- Filter -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
+        <div id="preset-tabs" class="flex gap-2 flex-wrap mb-3"></div>
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Dari</label>
+            <input type="date" id="custom-start"
+              class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Sampai</label>
+            <input type="date" id="custom-end"
+              class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          </div>
+          <button id="clear-custom" class="text-xs text-gray-400 hover:text-gray-600 py-2 px-3 rounded-xl hover:bg-gray-50 transition-colors">
+            Reset
+          </button>
         </div>
-        <h1 class="text-xl font-bold text-gray-800 mb-1">Charts</h1>
-        <p class="text-gray-500">Coming Soon &mdash; fitur ini sedang dikembangkan.</p>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-xs text-gray-400 mb-1">Total Pemasukan</p>
+          <p id="stat-income" class="text-lg font-bold text-emerald-600">Rp0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-xs text-gray-400 mb-1">Total Pengeluaran</p>
+          <p id="stat-expense" class="text-lg font-bold text-red-500">Rp0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-xs text-gray-400 mb-1">Selisih</p>
+          <p id="stat-diff" class="text-lg font-bold text-gray-800">Rp0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-xs text-gray-400 mb-1">Jumlah Transaksi</p>
+          <p id="stat-count" class="text-lg font-bold text-gray-800">0</p>
+        </div>
+      </div>
+
+      <!-- Chart 1: Cashflow line -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+        <h2 class="text-base font-semibold text-gray-700 mb-1">Arus Kas</h2>
+        <div class="flex gap-4 mb-3">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-full" style="background:#86efac"></span>
+            <span class="text-xs text-gray-500">Pemasukan</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-full" style="background:#fdba74"></span>
+            <span class="text-xs text-gray-500">Pengeluaran</span>
+          </div>
+        </div>
+        <div class="relative" style="height:220px;">
+          <canvas id="cashflow-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Charts 2 & 3: doughnut + bar side by side -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+        <!-- Doughnut -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <h2 class="text-base font-semibold text-gray-700 mb-4">Pengeluaran per Kategori</h2>
+          <div id="doughnut-canvas-wrap" class="relative max-w-xs mx-auto" style="height:200px;">
+            <canvas id="category-doughnut"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <p class="text-xs text-gray-400">Total</p>
+              <p id="doughnut-total" class="text-sm font-bold text-gray-800">Rp0</p>
+            </div>
+          </div>
+          <div id="doughnut-empty" class="flex items-center justify-center text-gray-400 text-sm max-w-xs mx-auto" style="display:none;height:200px;">
+            Belum ada pengeluaran
+          </div>
+          <div id="doughnut-legend" class="mt-4 space-y-2"></div>
+        </div>
+
+        <!-- Top 5 bar -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <h2 class="text-base font-semibold text-gray-700 mb-4">Top Kategori Pengeluaran</h2>
+          <div class="relative" style="height:200px;">
+            <canvas id="top-category-bar"></canvas>
+            <div id="bar-empty" class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm" style="display:none;">
+              Belum ada pengeluaran
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction list -->
+      <h2 class="text-base font-semibold text-gray-700 mb-3">Transaksi</h2>
+      <div id="tx-list" class="space-y-4"></div>
+      <div id="tx-empty" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400 text-sm">
+        Tidak ada transaksi dalam rentang ini
       </div>
     </main>
   </div>
@@ -94,9 +185,9 @@
     <a href="add.html" class="flex items-center justify-center w-14 h-14 -mt-6 rounded-full bg-lavender text-white shadow-lg shadow-lavender/40">
       <i data-lucide="plus" class="w-7 h-7"></i>
     </a>
-    <a href="reports.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
-      <i data-lucide="file-text" class="w-5 h-5"></i>
-      <span class="text-xs">Reports</span>
+    <a href="charts.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-lavender-dark">
+      <i data-lucide="line-chart" class="w-5 h-5"></i>
+      <span class="text-xs">Charts</span>
     </a>
     <a href="profile.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
       <i data-lucide="user" class="w-5 h-5"></i>
@@ -107,8 +198,408 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
+    import { formatCurrency, formatDateWithDay } from '../assets/js/utils.js';
+    import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
+    import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
+    import { fetchAccounts } from '../assets/js/accounts.js';
+    import { RANGE_PRESETS, getPresetRange, buildDailySeries, buildCategoryBreakdown } from '../assets/js/charts.js';
 
     document.getElementById('logout-btn').addEventListener('click', logout);
+
+    // ---------- State ----------
+    let currentUser, currency = 'IDR', accounts = [], allTransactions = [], categoriesById = new Map();
+    let activePreset = '7d', customStart = '', customEnd = '';
+    let cashflowChart = null, doughnutChart = null, barChart = null;
+
+    const PRESET_ACTIVE = 'preset-btn px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-lavender text-white';
+    const PRESET_INACTIVE = 'preset-btn px-3.5 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors';
+
+    // ---------- Build preset buttons ----------
+    const presetTabsEl = document.getElementById('preset-tabs');
+    RANGE_PRESETS.forEach(({ value, label }) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = value === '7d' ? PRESET_ACTIVE : PRESET_INACTIVE;
+      btn.dataset.preset = value;
+      btn.textContent = label;
+      presetTabsEl.appendChild(btn);
+    });
+
+    // ---------- Helpers ----------
+    function getAccountById(id) { return accounts.find((a) => a.id === id); }
+
+    function getRange() {
+      if (customStart && customEnd && customStart <= customEnd) return { start: customStart, end: customEnd };
+      return getPresetRange(activePreset);
+    }
+
+    function filterTx() {
+      const { start, end } = getRange();
+      return allTransactions.filter((tx) => tx.date >= start && tx.date <= end);
+    }
+
+    // ---------- Render: stats ----------
+    function renderStats(txs) {
+      const income = txs.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+      const expense = txs.filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+      const diff = income - expense;
+      document.getElementById('stat-income').textContent = formatCurrency(income, currency);
+      document.getElementById('stat-expense').textContent = formatCurrency(expense, currency);
+      const diffEl = document.getElementById('stat-diff');
+      diffEl.textContent = formatCurrency(diff, currency);
+      diffEl.className = `text-lg font-bold ${diff < 0 ? 'text-red-500' : 'text-gray-800'}`;
+      document.getElementById('stat-count').textContent = txs.length;
+    }
+
+    // ---------- Render: cashflow line chart ----------
+    function renderCashflowChart(txs) {
+      const { start, end } = getRange();
+      const { labels, income, expense } = buildDailySeries(txs, start, end);
+      if (cashflowChart) cashflowChart.destroy();
+
+      cashflowChart = new Chart(document.getElementById('cashflow-chart').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Pemasukan',
+              data: income,
+              borderColor: '#86efac',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              backgroundColor(ctx) {
+                const { chart } = ctx;
+                const { ctx: c, chartArea } = chart;
+                if (!chartArea) return 'rgba(134,239,172,0)';
+                const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                g.addColorStop(0, 'rgba(134,239,172,0.35)');
+                g.addColorStop(1, 'rgba(134,239,172,0)');
+                return g;
+              },
+              pointRadius: labels.length <= 14 ? 4 : 2,
+              pointBackgroundColor: '#86efac',
+            },
+            {
+              label: 'Pengeluaran',
+              data: expense,
+              borderColor: '#fdba74',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true,
+              backgroundColor(ctx) {
+                const { chart } = ctx;
+                const { ctx: c, chartArea } = chart;
+                if (!chartArea) return 'rgba(253,186,116,0)';
+                const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                g.addColorStop(0, 'rgba(253,186,116,0.35)');
+                g.addColorStop(1, 'rgba(253,186,116,0)');
+                return g;
+              },
+              pointRadius: labels.length <= 14 ? 4 : 2,
+              pointBackgroundColor: '#fdba74',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(ctx) { return ` ${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y, currency)}`; },
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { maxTicksLimit: 10, font: { size: 10 } },
+            },
+            y: {
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: {
+                font: { size: 10 },
+                callback(v) {
+                  if (v === 0) return '0';
+                  if (v >= 1_000_000) return (v / 1_000_000).toFixed(v % 1_000_000 === 0 ? 0 : 1) + 'jt';
+                  if (v >= 1_000) return (v / 1_000).toFixed(v % 1_000 === 0 ? 0 : 1) + 'rb';
+                  return v;
+                },
+              },
+            },
+          },
+        },
+      });
+    }
+
+    // ---------- Render: doughnut chart ----------
+    function renderDoughnutChart(txs) {
+      const breakdown = buildCategoryBreakdown(txs, categoriesById);
+      const totalExpense = breakdown.reduce((s, c) => s + c.total, 0);
+
+      const canvasWrap = document.getElementById('doughnut-canvas-wrap');
+      const emptyEl = document.getElementById('doughnut-empty');
+      const legendEl = document.getElementById('doughnut-legend');
+      const totalEl = document.getElementById('doughnut-total');
+
+      if (doughnutChart) doughnutChart.destroy();
+
+      if (breakdown.length === 0) {
+        canvasWrap.style.display = 'none';
+        emptyEl.style.display = 'flex';
+        legendEl.innerHTML = '';
+        return;
+      }
+
+      canvasWrap.style.display = '';
+      emptyEl.style.display = 'none';
+      totalEl.textContent = formatCurrency(totalExpense, currency);
+
+      doughnutChart = new Chart(document.getElementById('category-doughnut').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: breakdown.map((c) => c.name),
+          datasets: [{
+            data: breakdown.map((c) => c.total),
+            backgroundColor: breakdown.map((c) => c.hex),
+            borderWidth: 2,
+            borderColor: '#fff',
+            hoverOffset: 6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(ctx) {
+                  const pct = totalExpense > 0 ? ((ctx.parsed / totalExpense) * 100).toFixed(1) : 0;
+                  return ` ${formatCurrency(ctx.parsed, currency)} (${pct}%)`;
+                },
+              },
+            },
+          },
+        },
+      });
+
+      legendEl.innerHTML = breakdown.map((c) => {
+        const pct = totalExpense > 0 ? ((c.total / totalExpense) * 100).toFixed(1) : '0.0';
+        return `<div class="flex items-center justify-between text-sm">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${c.hex}"></span>
+            <span class="text-gray-700 truncate">${c.name}</span>
+          </div>
+          <span class="text-gray-500 flex-shrink-0 ml-3">${pct}%</span>
+        </div>`;
+      }).join('');
+    }
+
+    // ---------- Render: top-5 horizontal bar ----------
+    function renderBarChart(txs) {
+      const breakdown = buildCategoryBreakdown(txs, categoriesById).slice(0, 5);
+      const canvasEl = document.getElementById('top-category-bar');
+      const emptyEl = document.getElementById('bar-empty');
+
+      if (barChart) barChart.destroy();
+
+      if (breakdown.length === 0) {
+        canvasEl.style.display = 'none';
+        emptyEl.style.display = 'flex';
+        return;
+      }
+
+      canvasEl.style.display = '';
+      emptyEl.style.display = 'none';
+
+      const barValuePlugin = {
+        id: 'barValueLabel',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          chart.data.datasets.forEach((ds, i) => {
+            chart.getDatasetMeta(i).data.forEach((bar, idx) => {
+              const label = formatCurrency(ds.data[idx], currency);
+              ctx.save();
+              ctx.fillStyle = '#6b7280';
+              ctx.font = '10px sans-serif';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(label, bar.x + 4, bar.y);
+              ctx.restore();
+            });
+          });
+        },
+      };
+
+      barChart = new Chart(canvasEl.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: breakdown.map((c) => c.name),
+          datasets: [{
+            data: breakdown.map((c) => c.total),
+            backgroundColor: breakdown.map((c) => c.hex + 'cc'),
+            borderColor: breakdown.map((c) => c.hex),
+            borderWidth: 1,
+            borderRadius: 6,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label(ctx) { return ` ${formatCurrency(ctx.parsed.x, currency)}`; },
+              },
+            },
+          },
+          layout: { padding: { right: 110 } },
+          scales: {
+            x: { display: false, grid: { display: false } },
+            y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#374151' } },
+          },
+        },
+        plugins: [barValuePlugin],
+      });
+    }
+
+    // ---------- Render: transaction list ----------
+    function renderTxRow(tx) {
+      let iconName, colorClasses, title;
+      if (tx.type === 'transfer') {
+        iconName = 'arrow-right-left';
+        colorClasses = TRANSFER_COLOR_CLASSES;
+        title = `${getAccountById(tx.account_id)?.name || '?'} &rarr; ${getAccountById(tx.to_account_id)?.name || '?'}`;
+      } else {
+        const cat = categoriesById.get(tx.category_id);
+        iconName = cat?.icon || 'circle';
+        colorClasses = getCategoryColorClasses(cat?.color || 'slate');
+        title = cat?.name || 'Lainnya';
+      }
+      let amountClass = 'text-sky-600', amountPrefix = '';
+      if (tx.type === 'income') { amountClass = 'text-emerald-600'; amountPrefix = '+'; }
+      else if (tx.type === 'expense') { amountClass = 'text-red-500'; amountPrefix = '-'; }
+
+      const acc = getAccountById(tx.account_id);
+      const amountText = formatCurrency(Number(tx.amount), acc?.currency || currency);
+      const desc = tx.description ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
+
+      return `<div class="flex items-center gap-3 p-4">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}">
+          <i data-lucide="${iconName}" class="w-5 h-5 ${colorClasses.icon}"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-gray-800 truncate">${title}</p>
+          ${desc}
+        </div>
+        <p class="font-semibold ${amountClass} flex-shrink-0">${amountPrefix}${amountText}</p>
+      </div>`;
+    }
+
+    function renderTxList(txs) {
+      const listEl = document.getElementById('tx-list');
+      const emptyEl = document.getElementById('tx-empty');
+
+      if (txs.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      const sorted = [...txs].sort((a, b) => b.date.localeCompare(a.date));
+      const groups = [];
+      for (const tx of sorted) {
+        const last = groups[groups.length - 1];
+        if (last && last.date === tx.date) last.items.push(tx);
+        else groups.push({ date: tx.date, items: [tx] });
+      }
+
+      listEl.innerHTML = groups.map((g) => `
+        <div>
+          <p class="text-sm font-semibold text-gray-400 mb-2">${formatDateWithDay(g.date)}</p>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+            ${g.items.map((tx) => renderTxRow(tx)).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // ---------- Render all ----------
+    function renderAll() {
+      const txs = filterTx();
+      renderStats(txs);
+      renderCashflowChart(txs);
+      renderDoughnutChart(txs);
+      renderBarChart(txs);
+      renderTxList(txs);
+    }
+
+    // ---------- Filter event handlers ----------
+    presetTabsEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.preset-btn');
+      if (!btn) return;
+      activePreset = btn.dataset.preset;
+      customStart = '';
+      customEnd = '';
+      document.getElementById('custom-start').value = '';
+      document.getElementById('custom-end').value = '';
+      document.querySelectorAll('.preset-btn').forEach((b) => {
+        b.className = b === btn ? PRESET_ACTIVE : PRESET_INACTIVE;
+      });
+      renderAll();
+    });
+
+    function handleCustomRange() {
+      const s = document.getElementById('custom-start').value;
+      const e = document.getElementById('custom-end').value;
+      if (s && e && s <= e) {
+        customStart = s;
+        customEnd = e;
+        document.querySelectorAll('.preset-btn').forEach((b) => { b.className = PRESET_INACTIVE; });
+        renderAll();
+      }
+    }
+    document.getElementById('custom-start').addEventListener('change', handleCustomRange);
+    document.getElementById('custom-end').addEventListener('change', handleCustomRange);
+
+    document.getElementById('clear-custom').addEventListener('click', () => {
+      customStart = '';
+      customEnd = '';
+      document.getElementById('custom-start').value = '';
+      document.getElementById('custom-end').value = '';
+      document.querySelectorAll('.preset-btn').forEach((b) => {
+        b.className = b.dataset.preset === activePreset ? PRESET_ACTIVE : PRESET_INACTIVE;
+      });
+      renderAll();
+    });
+
+    // ---------- Init ----------
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
+      try {
+        const [inc, exp] = await Promise.all([fetchCategories('income'), fetchCategories('expense')]);
+        categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
+      } catch {}
+      try { accounts = await fetchAccounts(currentUser.id); } catch {}
+      try {
+        allTransactions = await fetchAllTransactions(currentUser.id);
+      } catch (err) {
+        console.log('[charts] Gagal memuat transaksi:', err.message);
+      }
+      renderAll();
+    });
   </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script>lucide.createIcons();</script>
