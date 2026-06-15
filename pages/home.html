@@ -70,7 +70,76 @@
       <h1 class="text-2xl font-bold text-gray-800 mb-1">
         Selamat datang, <span id="user-email" class="text-lavender-dark">...</span>
       </h1>
-      <p class="text-gray-500">Ini halaman utama Poketto. Ringkasan keuangan akan tampil di sini.</p>
+      <p class="text-gray-400 text-sm mb-6">Ringkasan keuanganmu.</p>
+
+      <!-- Empty state: 0 akun -->
+      <div id="empty-accounts" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+        <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-lavender-light/50 flex items-center justify-center">
+          <i data-lucide="wallet" class="w-7 h-7 text-lavender-dark"></i>
+        </div>
+        <h2 class="text-lg font-bold text-gray-800 mb-1">Belum ada akun</h2>
+        <p class="text-gray-500 mb-4">Tambahkan akun untuk mulai mencatat transaksi dan melihat ringkasan keuanganmu.</p>
+        <a href="accounts.html" class="inline-flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-5 py-2.5 transition-colors">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Tambah Akun</span>
+        </a>
+      </div>
+
+      <!-- Dashboard content -->
+      <div id="dashboard-content" class="hidden">
+        <!-- Month navigator -->
+        <div class="flex items-center justify-between mb-4">
+          <button id="prev-month" type="button" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          </button>
+          <h2 id="month-label" class="text-lg font-semibold text-gray-800"></h2>
+          <button id="next-month" type="button" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p class="text-sm text-gray-400 mb-1">Pemasukan</p>
+            <p id="summary-income" class="text-xl font-bold text-emerald-600">Rp0</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p class="text-sm text-gray-400 mb-1">Pengeluaran</p>
+            <p id="summary-expense" class="text-xl font-bold text-red-500">Rp0</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p class="text-sm text-gray-400 mb-1">Selisih</p>
+            <p id="summary-diff" class="text-xl font-bold text-gray-800">Rp0</p>
+          </div>
+        </div>
+
+        <!-- Account balance strip -->
+        <p class="text-sm font-semibold text-gray-500 mb-2">Akun</p>
+        <div id="account-strip" class="flex gap-3 overflow-x-auto pb-2 mb-6"></div>
+
+        <!-- Transaction list -->
+        <p class="text-sm font-semibold text-gray-500 mb-2">Transaksi</p>
+        <div id="transaction-list" class="space-y-6"></div>
+
+        <!-- Empty state: 0 transaksi -->
+        <div id="empty-transactions" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+          <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-peach-light flex items-center justify-center">
+            <i data-lucide="receipt" class="w-7 h-7 text-peach"></i>
+          </div>
+          <h2 class="text-lg font-bold text-gray-800 mb-1">Belum ada transaksi</h2>
+          <p class="text-gray-500 mb-4">Catat transaksi pertamamu untuk mulai melacak keuanganmu.</p>
+          <a href="add.html" class="inline-flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-5 py-2.5 transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Tambah Transaksi</span>
+          </a>
+        </div>
+
+        <!-- Empty state: bulan kosong -->
+        <div id="empty-month" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+          <p class="text-gray-500">Tidak ada transaksi di bulan ini.</p>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -97,15 +166,423 @@
     </a>
   </nav>
 
+  <!-- Modal: Detail Transaksi -->
+  <div id="detail-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-gray-800">Detail Transaksi</h2>
+        <button type="button" id="detail-modal-close" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-4 mb-5">
+        <div id="detail-icon-wrap" class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"></div>
+        <div class="min-w-0">
+          <p id="detail-title" class="font-semibold text-gray-800 truncate"></p>
+          <p id="detail-subtitle" class="hidden text-sm text-gray-400 truncate"></p>
+        </div>
+      </div>
+
+      <div class="space-y-2 text-sm mb-6">
+        <div class="flex justify-between">
+          <span class="text-gray-400">Jumlah</span>
+          <span id="detail-amount" class="font-semibold"></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-400">Tanggal</span>
+          <span id="detail-date" class="font-medium text-gray-700"></span>
+        </div>
+        <div id="detail-account-row" class="flex justify-between">
+          <span class="text-gray-400">Akun</span>
+          <span id="detail-account" class="font-medium text-gray-700"></span>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="button" id="detail-delete" class="flex-1 rounded-xl border border-red-200 text-red-500 font-semibold py-2.5 hover:bg-red-50 transition-colors">
+          Hapus
+        </button>
+        <button type="button" id="detail-edit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white font-semibold py-2.5 transition-colors">
+          Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Konfirmasi Hapus -->
+  <div id="confirm-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6 text-center">
+      <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-100 flex items-center justify-center">
+        <i data-lucide="trash-2" class="w-6 h-6 text-rose-500"></i>
+      </div>
+      <h2 class="text-lg font-bold text-gray-800 mb-1">Hapus Transaksi?</h2>
+      <p class="text-sm text-gray-500 mb-6">Transaksi ini akan dihapus permanen dan saldo akun akan diperbarui.</p>
+      <div class="flex gap-3">
+        <button type="button" id="confirm-cancel" class="flex-1 rounded-xl border border-gray-200 text-gray-600 font-semibold py-2.5 hover:bg-gray-50 transition-colors">
+          Batal
+        </button>
+        <button type="button" id="confirm-delete" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 transition-colors">
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-
-    window.addEventListener('schatz:auth-ready', (e) => {
-      document.getElementById('user-email').textContent = e.detail.user.email;
-    });
+    import { formatCurrency, formatDate, formatDateWithDay, getAccountBalance, getMonthRange } from '../assets/js/utils.js';
+    import { ACCOUNT_COLOR_CLASSES, fetchAccounts } from '../assets/js/accounts.js';
+    import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
+    import { fetchAllTransactions, fetchProfileCurrency, deleteTransaction } from '../assets/js/home.js';
+    import { showToast, flushQueuedToast } from '../assets/js/toast.js';
 
     document.getElementById('logout-btn').addEventListener('click', logout);
+
+    // ---------- Elements ----------
+
+    const emptyAccounts = document.getElementById('empty-accounts');
+    const dashboardContent = document.getElementById('dashboard-content');
+
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    const monthLabel = document.getElementById('month-label');
+
+    const summaryIncome = document.getElementById('summary-income');
+    const summaryExpense = document.getElementById('summary-expense');
+    const summaryDiff = document.getElementById('summary-diff');
+
+    const accountStrip = document.getElementById('account-strip');
+    const transactionList = document.getElementById('transaction-list');
+    const emptyTransactions = document.getElementById('empty-transactions');
+    const emptyMonth = document.getElementById('empty-month');
+
+    const detailModal = document.getElementById('detail-modal');
+    const detailModalClose = document.getElementById('detail-modal-close');
+    const detailIconWrap = document.getElementById('detail-icon-wrap');
+    const detailTitle = document.getElementById('detail-title');
+    const detailSubtitle = document.getElementById('detail-subtitle');
+    const detailAmount = document.getElementById('detail-amount');
+    const detailDate = document.getElementById('detail-date');
+    const detailAccountRow = document.getElementById('detail-account-row');
+    const detailAccount = document.getElementById('detail-account');
+    const detailEditBtn = document.getElementById('detail-edit');
+    const detailDeleteBtn = document.getElementById('detail-delete');
+
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmCancelBtn = document.getElementById('confirm-cancel');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+
+    // ---------- State ----------
+
+    let currentUser = null;
+    let currency = 'IDR';
+    let accounts = [];
+    let allTransactions = [];
+    let categoriesById = new Map();
+    let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let selectedTransactionId = null;
+
+    function getAccountById(id) {
+      return accounts.find((a) => a.id === id);
+    }
+
+    // ---------- Render ----------
+
+    function renderMonthLabel() {
+      monthLabel.textContent = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(currentMonth);
+    }
+
+    function renderSummary() {
+      const { start, end } = getMonthRange(currentMonth);
+      const monthTx = allTransactions.filter((tx) => tx.date >= start && tx.date <= end && tx.type !== 'transfer');
+
+      const income = monthTx.filter((tx) => tx.type === 'income').reduce((sum, tx) => sum + Number(tx.amount), 0);
+      const expense = monthTx.filter((tx) => tx.type === 'expense').reduce((sum, tx) => sum + Number(tx.amount), 0);
+      const diff = income - expense;
+
+      summaryIncome.textContent = formatCurrency(income, currency);
+      summaryExpense.textContent = formatCurrency(expense, currency);
+      summaryDiff.textContent = formatCurrency(diff, currency);
+      summaryDiff.className = `text-xl font-bold ${diff < 0 ? 'text-red-500' : 'text-gray-800'}`;
+    }
+
+    function renderAccountStrip() {
+      accountStrip.innerHTML = accounts.map((acc) => {
+        const balance = getAccountBalance(acc.id, accounts, allTransactions);
+        const colorClasses = ACCOUNT_COLOR_CLASSES[acc.color] || ACCOUNT_COLOR_CLASSES.lavender;
+
+        return `
+          <div class="flex-shrink-0 w-44 rounded-2xl ${colorClasses.bg} p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-white/70 flex items-center justify-center">
+                <i data-lucide="${acc.icon || 'wallet'}" class="w-4 h-4 ${colorClasses.icon}"></i>
+              </div>
+              <p class="text-sm font-medium text-gray-700 truncate">${acc.name}</p>
+            </div>
+            <p class="font-bold text-gray-800">${formatCurrency(balance, acc.currency)}</p>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderTransactionRow(tx) {
+      let iconName;
+      let colorClasses;
+      let title;
+
+      if (tx.type === 'transfer') {
+        iconName = 'arrow-right-left';
+        colorClasses = TRANSFER_COLOR_CLASSES;
+        const fromName = getAccountById(tx.account_id)?.name || '?';
+        const toName = getAccountById(tx.to_account_id)?.name || '?';
+        title = `${fromName} &rarr; ${toName}`;
+      } else {
+        const cat = categoriesById.get(tx.category_id);
+        iconName = cat?.icon || 'circle';
+        colorClasses = getCategoryColorClasses(cat?.color || 'slate');
+        title = cat?.name || 'Lainnya';
+      }
+
+      let amountClass = 'text-sky-600';
+      let amountPrefix = '';
+      if (tx.type === 'income') {
+        amountClass = 'text-emerald-600';
+        amountPrefix = '+';
+      } else if (tx.type === 'expense') {
+        amountClass = 'text-red-500';
+        amountPrefix = '-';
+      }
+
+      const account = getAccountById(tx.account_id);
+      const amountText = formatCurrency(Number(tx.amount), account?.currency || currency);
+      const subtitle = tx.description ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
+
+      return `
+        <div class="tx-row flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50 transition-colors" data-id="${tx.id}">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}">
+            <i data-lucide="${iconName}" class="w-5 h-5 ${colorClasses.icon}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-gray-800 truncate">${title}</p>
+            ${subtitle}
+          </div>
+          <p class="font-semibold ${amountClass} flex-shrink-0">${amountPrefix}${amountText}</p>
+        </div>
+      `;
+    }
+
+    function renderTransactionList() {
+      const { start, end } = getMonthRange(currentMonth);
+      const monthTx = allTransactions.filter((tx) => tx.date >= start && tx.date <= end);
+
+      if (allTransactions.length === 0) {
+        transactionList.innerHTML = '';
+        emptyTransactions.classList.remove('hidden');
+        emptyMonth.classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+      emptyTransactions.classList.add('hidden');
+
+      if (monthTx.length === 0) {
+        transactionList.innerHTML = '';
+        emptyMonth.classList.remove('hidden');
+        return;
+      }
+      emptyMonth.classList.add('hidden');
+
+      const groups = [];
+      for (const tx of monthTx) {
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup && lastGroup.date === tx.date) {
+          lastGroup.items.push(tx);
+        } else {
+          groups.push({ date: tx.date, items: [tx] });
+        }
+      }
+
+      transactionList.innerHTML = groups.map((group) => `
+        <div>
+          <p class="text-sm font-semibold text-gray-400 mb-2">${formatDateWithDay(group.date)}</p>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+            ${group.items.map((tx) => renderTransactionRow(tx)).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+
+      transactionList.querySelectorAll('.tx-row').forEach((row) => {
+        row.addEventListener('click', () => openDetailModal(row.dataset.id));
+      });
+    }
+
+    function render() {
+      if (accounts.length === 0) {
+        emptyAccounts.classList.remove('hidden');
+        dashboardContent.classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      emptyAccounts.classList.add('hidden');
+      dashboardContent.classList.remove('hidden');
+
+      renderMonthLabel();
+      renderSummary();
+      renderAccountStrip();
+      renderTransactionList();
+    }
+
+    // ---------- Month navigation ----------
+
+    prevMonthBtn.addEventListener('click', () => {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      renderMonthLabel();
+      renderSummary();
+      renderTransactionList();
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+      renderMonthLabel();
+      renderSummary();
+      renderTransactionList();
+    });
+
+    // ---------- Modal: Detail Transaksi ----------
+
+    function openDetailModal(id) {
+      const tx = allTransactions.find((t) => t.id === id);
+      if (!tx) return;
+
+      selectedTransactionId = id;
+
+      let iconName;
+      let colorClasses;
+      let title;
+      let amountPrefix = '';
+      let amountClass = 'text-sky-600';
+
+      if (tx.type === 'transfer') {
+        iconName = 'arrow-right-left';
+        colorClasses = TRANSFER_COLOR_CLASSES;
+        const fromName = getAccountById(tx.account_id)?.name || '?';
+        const toName = getAccountById(tx.to_account_id)?.name || '?';
+        title = `${fromName} → ${toName}`;
+        detailAccountRow.classList.add('hidden');
+      } else {
+        const cat = categoriesById.get(tx.category_id);
+        iconName = cat?.icon || 'circle';
+        colorClasses = getCategoryColorClasses(cat?.color || 'slate');
+        title = cat?.name || 'Lainnya';
+        detailAccountRow.classList.remove('hidden');
+        detailAccount.textContent = getAccountById(tx.account_id)?.name || '?';
+
+        if (tx.type === 'income') {
+          amountPrefix = '+';
+          amountClass = 'text-emerald-600';
+        } else {
+          amountPrefix = '-';
+          amountClass = 'text-red-500';
+        }
+      }
+
+      detailIconWrap.className = `w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}`;
+      detailIconWrap.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6 ${colorClasses.icon}"></i>`;
+
+      detailTitle.textContent = title;
+      if (tx.description) {
+        detailSubtitle.textContent = tx.description;
+        detailSubtitle.classList.remove('hidden');
+      } else {
+        detailSubtitle.classList.add('hidden');
+      }
+
+      const account = getAccountById(tx.account_id);
+      detailAmount.textContent = `${amountPrefix}${formatCurrency(Number(tx.amount), account?.currency || currency)}`;
+      detailAmount.className = `font-semibold ${amountClass}`;
+      detailDate.textContent = formatDate(tx.date);
+
+      detailModal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeDetailModal() {
+      detailModal.classList.add('hidden');
+    }
+
+    detailModalClose.addEventListener('click', closeDetailModal);
+
+    detailEditBtn.addEventListener('click', () => {
+      if (!selectedTransactionId) return;
+      window.location.href = `add.html?edit=${selectedTransactionId}`;
+    });
+
+    detailDeleteBtn.addEventListener('click', () => {
+      closeDetailModal();
+      confirmModal.classList.remove('hidden');
+    });
+
+    // ---------- Modal: Konfirmasi Hapus ----------
+
+    confirmCancelBtn.addEventListener('click', () => {
+      confirmModal.classList.add('hidden');
+      selectedTransactionId = null;
+    });
+
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (!selectedTransactionId) return;
+
+      try {
+        await deleteTransaction(selectedTransactionId);
+        confirmModal.classList.add('hidden');
+        selectedTransactionId = null;
+        await loadData();
+        showToast('Transaksi berhasil dihapus.');
+      } catch (err) {
+        showToast('Gagal menghapus transaksi: ' + err.message, 'error');
+      }
+    });
+
+    // ---------- Data loading ----------
+
+    async function loadData() {
+      accounts = await fetchAccounts(currentUser.id);
+      allTransactions = await fetchAllTransactions(currentUser.id);
+      render();
+    }
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      document.getElementById('user-email').textContent = currentUser.email;
+
+      try {
+        currency = await fetchProfileCurrency(currentUser.id);
+      } catch (err) {
+        console.log('[home] Gagal memuat preferensi mata uang:', err.message);
+      }
+
+      try {
+        const [incomeCats, expenseCats] = await Promise.all([fetchCategories('income'), fetchCategories('expense')]);
+        categoriesById = new Map([...incomeCats, ...expenseCats].map((c) => [c.id, c]));
+      } catch (err) {
+        console.log('[home] Gagal memuat kategori:', err.message);
+      }
+
+      try {
+        await loadData();
+      } catch (err) {
+        console.log('[home] Gagal memuat data:', err.message);
+        showToast('Gagal memuat data: ' + err.message, 'error');
+      }
+
+      flushQueuedToast();
+    });
   </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script>lucide.createIcons();</script>

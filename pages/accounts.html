@@ -215,7 +215,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, getAccountBalance } from '../assets/js/utils.js';
+    import { formatCurrency, getAccountBalance, formatThousands, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
     import {
       ACCOUNT_TYPES,
       ACCOUNT_COLORS,
@@ -381,18 +381,7 @@
 
     // ---------- Formatting saldo awal (thousand separator) ----------
 
-    function formatThousands(value) {
-      const digits = value.replace(/\D/g, '');
-      if (!digits) return '';
-      return Number(digits).toLocaleString('id-ID');
-    }
-
-    balanceInput.addEventListener('input', (e) => {
-      const cursorFromEnd = e.target.value.length - e.target.selectionStart;
-      e.target.value = formatThousands(e.target.value);
-      const pos = Math.max(0, e.target.value.length - cursorFromEnd);
-      e.target.setSelectionRange(pos, pos);
-    });
+    attachThousandsInput(balanceInput);
 
     // ---------- Modal: Tambah/Edit ----------
 
@@ -449,7 +438,7 @@
         name: nameInput.value.trim(),
         type: typeSelect.value,
         currency: currencySelect.value,
-        initial_balance: Number(balanceInput.value.replace(/\D/g, '')) || 0,
+        initial_balance: parseThousands(balanceInput.value),
         icon: selectedIcon,
         color: selectedColor,
       };

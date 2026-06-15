@@ -50,6 +50,36 @@ export function getAccountBalance(accountId, accounts, transactions) {
   }, initialBalance);
 }
 
+export function formatDateWithDay(date, locale = 'id-ID') {
+  const d = typeof date === 'string' ? new Date(date) : date;
+
+  return new Intl.DateTimeFormat(locale, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(d);
+}
+
+export function formatThousands(value) {
+  const digits = String(value).replace(/\D/g, '');
+  if (!digits) return '';
+  return Number(digits).toLocaleString('id-ID');
+}
+
+export function parseThousands(value) {
+  return Number(String(value).replace(/\D/g, '')) || 0;
+}
+
+export function attachThousandsInput(input) {
+  input.addEventListener('input', (e) => {
+    const cursorFromEnd = e.target.value.length - e.target.selectionStart;
+    e.target.value = formatThousands(e.target.value);
+    const pos = Math.max(0, e.target.value.length - cursorFromEnd);
+    e.target.setSelectionRange(pos, pos);
+  });
+}
+
 export function getMonthRange(date = new Date()) {
   const year = date.getFullYear();
   const month = date.getMonth();

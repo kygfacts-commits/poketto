@@ -66,14 +66,99 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-        <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-peach-light flex items-center justify-center">
-          <i data-lucide="receipt" class="w-7 h-7 text-peach"></i>
-        </div>
-        <h1 class="text-xl font-bold text-gray-800 mb-1">Tambah Transaksi</h1>
-        <p class="text-gray-500">Coming Soon &mdash; fitur ini sedang dikembangkan.</p>
+    <main class="p-6 md:p-10 max-w-2xl mx-auto">
+      <div class="flex items-center gap-3 mb-6">
+        <a href="home.html" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <h1 id="page-title" class="text-2xl font-bold text-gray-800">Tambah Transaksi</h1>
       </div>
+
+      <!-- Tabs -->
+      <div class="grid grid-cols-3 gap-2 mb-6">
+        <button type="button" data-tab="income" class="tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors">Pemasukan</button>
+        <button type="button" data-tab="expense" class="tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors">Pengeluaran</button>
+        <button type="button" data-tab="transfer" class="tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors">Transfer</button>
+      </div>
+
+      <!-- Form: Pemasukan / Pengeluaran -->
+      <form id="form-income-expense" class="space-y-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div>
+          <label for="ie-account" class="block text-sm font-medium text-gray-700 mb-1">Akun</label>
+          <select id="ie-account"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+          <div id="ie-category-grid" class="grid grid-cols-4 gap-3"></div>
+        </div>
+
+        <div>
+          <label for="ie-amount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
+          <input type="text" inputmode="numeric" id="ie-amount" placeholder="0"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <div>
+          <label for="ie-description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi (opsional)</label>
+          <input type="text" id="ie-description" placeholder="Contoh: Makan siang"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <div>
+          <label for="ie-date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+          <input type="date" id="ie-date"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <p id="ie-error" class="hidden text-sm text-red-500"></p>
+
+        <button type="submit" id="ie-submit"
+          class="w-full bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-2.5 transition-colors">
+          Simpan
+        </button>
+      </form>
+
+      <!-- Form: Transfer -->
+      <form id="form-transfer" class="hidden space-y-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div>
+          <label for="tr-from-account" class="block text-sm font-medium text-gray-700 mb-1">Dari Akun</label>
+          <select id="tr-from-account"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+        </div>
+
+        <div>
+          <label for="tr-to-account" class="block text-sm font-medium text-gray-700 mb-1">Ke Akun</label>
+          <select id="tr-to-account"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+        </div>
+
+        <div>
+          <label for="tr-amount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
+          <input type="text" inputmode="numeric" id="tr-amount" placeholder="0"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <div>
+          <label for="tr-description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi (opsional)</label>
+          <input type="text" id="tr-description" placeholder="Contoh: Tarik tunai"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <div>
+          <label for="tr-date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+          <input type="date" id="tr-date"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <p id="tr-error" class="hidden text-sm text-red-500"></p>
+
+        <button type="submit" id="tr-submit"
+          class="w-full bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-2.5 transition-colors">
+          Simpan
+        </button>
+      </form>
     </main>
   </div>
 
@@ -103,8 +188,311 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
+    import { fetchAccounts } from '../assets/js/accounts.js';
+    import { fetchCategories, getCategoryColorClasses } from '../assets/js/categories.js';
+    import { fetchTransactionById, createTransaction, updateTransaction } from '../assets/js/add.js';
+    import { queueToast, showToast } from '../assets/js/toast.js';
+    import { formatThousands, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
 
     document.getElementById('logout-btn').addEventListener('click', logout);
+
+    const pageTitle = document.getElementById('page-title');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+
+    const formIncomeExpense = document.getElementById('form-income-expense');
+    const formTransfer = document.getElementById('form-transfer');
+
+    const ieAccountSelect = document.getElementById('ie-account');
+    const ieCategoryGrid = document.getElementById('ie-category-grid');
+    const ieAmountInput = document.getElementById('ie-amount');
+    const ieDescriptionInput = document.getElementById('ie-description');
+    const ieDateInput = document.getElementById('ie-date');
+    const ieError = document.getElementById('ie-error');
+    const ieSubmitBtn = document.getElementById('ie-submit');
+
+    const trFromAccountSelect = document.getElementById('tr-from-account');
+    const trToAccountSelect = document.getElementById('tr-to-account');
+    const trAmountInput = document.getElementById('tr-amount');
+    const trDescriptionInput = document.getElementById('tr-description');
+    const trDateInput = document.getElementById('tr-date');
+    const trError = document.getElementById('tr-error');
+    const trSubmitBtn = document.getElementById('tr-submit');
+
+    const TAB_BASE_CLASSES = 'tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors';
+    const TAB_INACTIVE_CLASSES = 'bg-gray-100 text-gray-500 hover:bg-gray-200';
+    const TAB_ACTIVE_CLASSES = {
+      income: 'bg-mint text-emerald-800',
+      expense: 'bg-peach text-orange-800',
+      transfer: 'bg-sky text-blue-800',
+    };
+
+    let currentUser = null;
+    let currentTab = 'income';
+    let accounts = [];
+    let categoriesByType = { income: [], expense: [] };
+    let selectedCategoryId = null;
+    let editingId = null;
+
+    attachThousandsInput(ieAmountInput);
+    attachThousandsInput(trAmountInput);
+
+    // ---------- Tabs ----------
+
+    function setTab(tab) {
+      currentTab = tab;
+
+      tabButtons.forEach((btn) => {
+        btn.className = `${TAB_BASE_CLASSES} ${btn.dataset.tab === tab ? TAB_ACTIVE_CLASSES[tab] : TAB_INACTIVE_CLASSES}`;
+      });
+
+      if (tab === 'transfer') {
+        formIncomeExpense.classList.add('hidden');
+        formTransfer.classList.remove('hidden');
+      } else {
+        formTransfer.classList.add('hidden');
+        formIncomeExpense.classList.remove('hidden');
+        renderCategoryGrid(tab);
+      }
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => setTab(btn.dataset.tab));
+    });
+
+    // ---------- Kategori ----------
+
+    function renderCategoryGrid(type) {
+      const categories = categoriesByType[type] || [];
+
+      if (!categories.some((c) => c.id === selectedCategoryId)) {
+        selectedCategoryId = null;
+      }
+
+      ieCategoryGrid.innerHTML = categories.map((cat) => {
+        const colorClasses = getCategoryColorClasses(cat.color);
+        const isSelected = cat.id === selectedCategoryId;
+        return `
+          <button type="button" class="category-option flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${isSelected ? 'border-lavender bg-lavender-light/30' : 'border-transparent hover:bg-gray-50'}" data-id="${cat.id}">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClasses.bg}">
+              <i data-lucide="${cat.icon}" class="w-5 h-5 ${colorClasses.icon}"></i>
+            </div>
+            <span class="text-xs text-center text-gray-600 leading-tight">${cat.name}</span>
+          </button>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+
+      ieCategoryGrid.querySelectorAll('.category-option').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedCategoryId = btn.dataset.id;
+          renderCategoryGrid(type);
+        });
+      });
+    }
+
+    // ---------- Dropdown akun ----------
+
+    function populateAccountSelects() {
+      const options = accounts.map((acc) => `<option value="${acc.id}">${acc.name}</option>`).join('');
+
+      ieAccountSelect.innerHTML = options;
+      trFromAccountSelect.innerHTML = options;
+      renderToAccountOptions();
+    }
+
+    function renderToAccountOptions() {
+      const fromId = trFromAccountSelect.value;
+      const currentTo = trToAccountSelect.value;
+
+      trToAccountSelect.innerHTML = accounts
+        .filter((acc) => acc.id !== fromId)
+        .map((acc) => `<option value="${acc.id}">${acc.name}</option>`)
+        .join('');
+
+      if (accounts.some((acc) => acc.id === currentTo && acc.id !== fromId)) {
+        trToAccountSelect.value = currentTo;
+      }
+    }
+
+    trFromAccountSelect.addEventListener('change', renderToAccountOptions);
+
+    // ---------- Mode edit ----------
+
+    async function loadEditTransaction(id) {
+      let tx;
+      try {
+        tx = await fetchTransactionById(id, currentUser.id);
+      } catch (err) {
+        console.log('[add] Gagal memuat transaksi:', err.message);
+        tx = null;
+      }
+
+      if (!tx) {
+        queueToast('Transaksi tidak ditemukan.', 'error');
+        window.location.href = 'home.html';
+        return;
+      }
+
+      editingId = tx.id;
+      pageTitle.textContent = 'Edit Transaksi';
+      document.title = 'Poketto - Edit Transaksi';
+      ieSubmitBtn.textContent = 'Update';
+      trSubmitBtn.textContent = 'Update';
+
+      if (tx.type === 'transfer') {
+        setTab('transfer');
+        trFromAccountSelect.value = tx.account_id;
+        renderToAccountOptions();
+        trToAccountSelect.value = tx.to_account_id;
+        trAmountInput.value = formatThousands(String(Math.round(Number(tx.amount))));
+        trDescriptionInput.value = tx.description || '';
+        trDateInput.value = tx.date;
+      } else {
+        selectedCategoryId = tx.category_id;
+        setTab(tx.type);
+        ieAccountSelect.value = tx.account_id;
+        ieAmountInput.value = formatThousands(String(Math.round(Number(tx.amount))));
+        ieDescriptionInput.value = tx.description || '';
+        ieDateInput.value = tx.date;
+      }
+    }
+
+    // ---------- Submit: Pemasukan / Pengeluaran ----------
+
+    formIncomeExpense.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      ieError.classList.add('hidden');
+
+      const accountId = ieAccountSelect.value;
+      const amount = parseThousands(ieAmountInput.value);
+
+      if (!accountId || !selectedCategoryId) {
+        ieError.textContent = 'Akun dan kategori wajib dipilih.';
+        ieError.classList.remove('hidden');
+        return;
+      }
+      if (amount <= 0) {
+        ieError.textContent = 'Jumlah harus lebih dari 0.';
+        ieError.classList.remove('hidden');
+        return;
+      }
+
+      const resetLabel = editingId ? 'Update' : 'Simpan';
+      ieSubmitBtn.disabled = true;
+      ieSubmitBtn.textContent = 'Menyimpan...';
+
+      const payload = {
+        user_id: currentUser.id,
+        account_id: accountId,
+        category_id: selectedCategoryId,
+        to_account_id: null,
+        type: currentTab,
+        amount,
+        description: ieDescriptionInput.value.trim() || null,
+        date: ieDateInput.value,
+      };
+
+      try {
+        if (editingId) {
+          await updateTransaction(editingId, payload);
+        } else {
+          await createTransaction(payload);
+        }
+        queueToast('Transaksi berhasil disimpan.');
+        window.location.href = 'home.html';
+      } catch (err) {
+        ieError.textContent = err.message;
+        ieError.classList.remove('hidden');
+        ieSubmitBtn.disabled = false;
+        ieSubmitBtn.textContent = resetLabel;
+      }
+    });
+
+    // ---------- Submit: Transfer ----------
+
+    formTransfer.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      trError.classList.add('hidden');
+
+      const fromAccountId = trFromAccountSelect.value;
+      const toAccountId = trToAccountSelect.value;
+      const amount = parseThousands(trAmountInput.value);
+
+      if (!fromAccountId || !toAccountId) {
+        trError.textContent = 'Akun asal dan tujuan wajib dipilih.';
+        trError.classList.remove('hidden');
+        return;
+      }
+      if (fromAccountId === toAccountId) {
+        trError.textContent = 'Akun asal dan tujuan tidak boleh sama.';
+        trError.classList.remove('hidden');
+        return;
+      }
+      if (amount <= 0) {
+        trError.textContent = 'Jumlah harus lebih dari 0.';
+        trError.classList.remove('hidden');
+        return;
+      }
+
+      const resetLabel = editingId ? 'Update' : 'Simpan';
+      trSubmitBtn.disabled = true;
+      trSubmitBtn.textContent = 'Menyimpan...';
+
+      const payload = {
+        user_id: currentUser.id,
+        account_id: fromAccountId,
+        to_account_id: toAccountId,
+        category_id: null,
+        type: 'transfer',
+        amount,
+        description: trDescriptionInput.value.trim() || null,
+        date: trDateInput.value,
+      };
+
+      try {
+        if (editingId) {
+          await updateTransaction(editingId, payload);
+        } else {
+          await createTransaction(payload);
+        }
+        queueToast('Transaksi berhasil disimpan.');
+        window.location.href = 'home.html';
+      } catch (err) {
+        trError.textContent = err.message;
+        trError.classList.remove('hidden');
+        trSubmitBtn.disabled = false;
+        trSubmitBtn.textContent = resetLabel;
+      }
+    });
+
+    // ---------- Init ----------
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+
+      try {
+        accounts = await fetchAccounts(currentUser.id);
+        categoriesByType.income = await fetchCategories('income');
+        categoriesByType.expense = await fetchCategories('expense');
+      } catch (err) {
+        console.log('[add] Gagal memuat data awal:', err.message);
+        showToast('Gagal memuat data: ' + err.message, 'error');
+      }
+
+      populateAccountSelects();
+
+      const today = new Date().toISOString().slice(0, 10);
+      ieDateInput.value = today;
+      trDateInput.value = today;
+
+      const editId = new URLSearchParams(window.location.search).get('edit');
+      if (editId) {
+        await loadEditTransaction(editId);
+      } else {
+        setTab('income');
+      }
+    });
   </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script>lucide.createIcons();</script>
