@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Profil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
+            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
+            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
+            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+
+  <!-- Sidebar (desktop, >768px) -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-gray-800">Poketto</span>
+    </div>
+
+    <nav class="flex-1 space-y-1">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </a>
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+        <span>Charts</span>
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+        <span>Reports</span>
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      <span>Tambah Transaksi</span>
+    </a>
+
+    <button id="logout-btn" class="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500 font-medium rounded-xl py-2.5 transition-colors">
+      <i data-lucide="log-out" class="w-5 h-5"></i>
+      <span>Logout</span>
+    </button>
+  </aside>
+
+  <!-- Main content -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="p-6 md:p-10 max-w-2xl mx-auto">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">Profil</h1>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+        <div class="flex items-center gap-4 mb-6">
+          <div id="avatar" class="w-16 h-16 rounded-full bg-lavender-light flex items-center justify-center text-2xl font-bold text-lavender-dark overflow-hidden flex-shrink-0">
+            ?
+          </div>
+          <div>
+            <p id="profile-email" class="font-medium text-gray-800"></p>
+            <p class="text-sm text-gray-400">Akun Poketto</p>
+          </div>
+        </div>
+
+        <form id="profile-form" class="space-y-4">
+          <div>
+            <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+            <input type="text" id="full_name"
+              class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="currency_preference" class="block text-sm font-medium text-gray-700 mb-1">Mata Uang</label>
+              <select id="currency_preference"
+                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+                <option value="IDR">IDR - Rupiah</option>
+                <option value="USD">USD - Dolar AS</option>
+                <option value="SGD">SGD - Dolar Singapura</option>
+              </select>
+            </div>
+            <div>
+              <label for="language_preference" class="block text-sm font-medium text-gray-700 mb-1">Bahasa</label>
+              <select id="language_preference"
+                class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+                <option value="id">Indonesia</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+
+          <p id="profile-status" class="hidden text-sm rounded-lg px-3 py-2"></p>
+
+          <button type="submit" id="profile-submit"
+            class="bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-6 py-2.5 transition-colors">
+            Simpan
+          </button>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom nav (mobile, <=768px) -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+    <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-xs">Home</span>
+    </a>
+    <a href="charts.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+      <span class="text-xs">Charts</span>
+    </a>
+    <a href="add.html" class="flex items-center justify-center w-14 h-14 -mt-6 rounded-full bg-lavender text-white shadow-lg shadow-lavender/40">
+      <i data-lucide="plus" class="w-7 h-7"></i>
+    </a>
+    <a href="reports.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="file-text" class="w-5 h-5"></i>
+      <span class="text-xs">Reports</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-lavender-dark">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-xs">Profile</span>
+    </a>
+  </nav>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { logout } from '../assets/js/auth.js';
+    import { supabase } from '../assets/js/supabase-client.js';
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    const avatarEl = document.getElementById('avatar');
+    const emailEl = document.getElementById('profile-email');
+    const form = document.getElementById('profile-form');
+    const fullNameInput = document.getElementById('full_name');
+    const currencySelect = document.getElementById('currency_preference');
+    const languageSelect = document.getElementById('language_preference');
+    const statusEl = document.getElementById('profile-status');
+    const submitBtn = document.getElementById('profile-submit');
+
+    let currentUser = null;
+
+    function renderAvatar(profile, user) {
+      const avatarUrl = profile?.avatar_url;
+      if (avatarUrl) {
+        avatarEl.innerHTML = `<img src="${avatarUrl}" alt="Avatar" class="w-full h-full object-cover">`;
+        return;
+      }
+      const source = profile?.full_name || user.email || '?';
+      avatarEl.textContent = source.trim().charAt(0).toUpperCase();
+    }
+
+    async function loadProfile(user) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.log('[profile] Error fetch profile:', error.message);
+        return;
+      }
+
+      fullNameInput.value = data?.full_name || '';
+      currencySelect.value = data?.currency_preference || 'IDR';
+      languageSelect.value = data?.language_preference || 'id';
+      renderAvatar(data, user);
+    }
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      emailEl.textContent = currentUser.email;
+      await loadProfile(currentUser);
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Menyimpan...';
+      statusEl.classList.add('hidden');
+
+      const { error } = await supabase.from('profiles').upsert({
+        id: currentUser.id,
+        full_name: fullNameInput.value,
+        currency_preference: currencySelect.value,
+        language_preference: languageSelect.value,
+      });
+
+      if (error) {
+        statusEl.textContent = 'Gagal menyimpan: ' + error.message;
+        statusEl.className = 'text-sm rounded-lg px-3 py-2 bg-red-50 text-red-600';
+      } else {
+        await loadProfile(currentUser);
+        statusEl.textContent = 'Profil berhasil disimpan.';
+        statusEl.className = 'text-sm rounded-lg px-3 py-2 bg-mint-light text-emerald-700';
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Simpan';
+    });
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
