@@ -29,6 +29,27 @@ export function formatDate(date, locale = 'id-ID') {
   }).format(d);
 }
 
+export function getAccountBalance(accountId, accounts, transactions) {
+  const account = accounts.find((a) => a.id === accountId);
+  const initialBalance = Number(account?.initial_balance) || 0;
+
+  return transactions.reduce((balance, tx) => {
+    const amount = Number(tx.amount) || 0;
+
+    if (tx.type === 'income' && tx.account_id === accountId) {
+      return balance + amount;
+    }
+    if (tx.type === 'expense' && tx.account_id === accountId) {
+      return balance - amount;
+    }
+    if (tx.type === 'transfer') {
+      if (tx.account_id === accountId) balance -= amount;
+      if (tx.to_account_id === accountId) balance += amount;
+    }
+    return balance;
+  }, initialBalance);
+}
+
 export function getMonthRange(date = new Date()) {
   const year = date.getFullYear();
   const month = date.getMonth();

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Akun</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
+            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
+            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
+            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+
+  <!-- Sidebar (desktop, >768px) -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-gray-800">Poketto</span>
+    </div>
+
+    <nav class="flex-1 space-y-1">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </a>
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+        <i data-lucide="wallet" class="w-5 h-5"></i>
+        <span>Akun</span>
+      </a>
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+        <span>Charts</span>
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+        <span>Reports</span>
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      <span>Tambah Transaksi</span>
+    </a>
+
+    <button id="logout-btn" class="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500 font-medium rounded-xl py-2.5 transition-colors">
+      <i data-lucide="log-out" class="w-5 h-5"></i>
+      <span>Logout</span>
+    </button>
+  </aside>
+
+  <!-- Main content -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="p-6 md:p-10 max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Akun</h1>
+        <button id="add-account-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Tambah Akun</span>
+        </button>
+      </div>
+
+      <!-- Net worth -->
+      <div id="net-worth-section" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6"></div>
+
+      <!-- Accounts list -->
+      <div id="accounts-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+        <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-lavender-light/50 flex items-center justify-center">
+          <i data-lucide="wallet" class="w-7 h-7 text-lavender-dark"></i>
+        </div>
+        <h2 class="text-lg font-bold text-gray-800 mb-1">Belum ada akun</h2>
+        <p class="text-gray-500 mb-4">Tambahkan akun pertamamu untuk mulai mencatat transaksi.</p>
+        <button id="empty-add-btn" class="inline-flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-5 py-2.5 transition-colors">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Tambah akun pertamamu</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom nav (mobile, <=768px) -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+    <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-xs">Home</span>
+    </a>
+    <a href="charts.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+      <span class="text-xs">Charts</span>
+    </a>
+    <a href="add.html" class="flex items-center justify-center w-14 h-14 -mt-6 rounded-full bg-lavender text-white shadow-lg shadow-lavender/40">
+      <i data-lucide="plus" class="w-7 h-7"></i>
+    </a>
+    <a href="reports.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="file-text" class="w-5 h-5"></i>
+      <span class="text-xs">Reports</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-xs">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Modal: Tambah/Edit Akun -->
+  <div id="account-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="account-modal-title" class="text-lg font-bold text-gray-800">Tambah Akun</h2>
+        <button type="button" id="account-modal-close" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="account-form" class="space-y-4">
+        <input type="hidden" id="account-id">
+
+        <div>
+          <label for="account-name" class="block text-sm font-medium text-gray-700 mb-1">Nama Akun</label>
+          <input type="text" id="account-name" required placeholder="Contoh: Dompet, BCA, GoPay"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="account-type" class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+            <select id="account-type"
+              class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+              <option value="cash">Cash</option>
+              <option value="bank">Bank</option>
+              <option value="ewallet">E-Wallet</option>
+              <option value="investment">Investasi</option>
+              <option value="other">Lainnya</option>
+            </select>
+          </div>
+          <div>
+            <label for="account-currency" class="block text-sm font-medium text-gray-700 mb-1">Mata Uang</label>
+            <select id="account-currency"
+              class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+              <option value="IDR">IDR</option>
+              <option value="USD">USD</option>
+              <option value="SGD">SGD</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="account-initial-balance" class="block text-sm font-medium text-gray-700 mb-1">Saldo Awal</label>
+          <input type="text" inputmode="numeric" id="account-initial-balance" placeholder="0"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Icon</label>
+          <div id="account-icon-picker" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Warna</label>
+          <div id="account-color-picker" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <p id="account-form-error" class="hidden text-sm text-red-500"></p>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="account-cancel" class="flex-1 rounded-xl border border-gray-200 text-gray-600 font-semibold py-2.5 hover:bg-gray-50 transition-colors">
+            Batal
+          </button>
+          <button type="submit" id="account-submit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white font-semibold py-2.5 transition-colors">
+            Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Konfirmasi Hapus -->
+  <div id="confirm-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6 text-center">
+      <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-100 flex items-center justify-center">
+        <i data-lucide="trash-2" class="w-6 h-6 text-rose-500"></i>
+      </div>
+      <h2 class="text-lg font-bold text-gray-800 mb-1">Hapus Akun?</h2>
+      <p class="text-sm text-gray-500 mb-6">
+        Akun "<span id="confirm-account-name" class="font-medium text-gray-700"></span>" akan diarsipkan dan tidak muncul lagi di daftar.
+      </p>
+      <div class="flex gap-3">
+        <button type="button" id="confirm-cancel" class="flex-1 rounded-xl border border-gray-200 text-gray-600 font-semibold py-2.5 hover:bg-gray-50 transition-colors">
+          Batal
+        </button>
+        <button type="button" id="confirm-delete" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 transition-colors">
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { logout } from '../assets/js/auth.js';
+    import { formatCurrency, getAccountBalance } from '../assets/js/utils.js';
+    import {
+      ACCOUNT_TYPES,
+      ACCOUNT_COLORS,
+      ACCOUNT_COLOR_CLASSES,
+      getAccountTypeLabel,
+      getAccountTypeIcons,
+      fetchAccounts,
+      fetchTransactionsForAccounts,
+      createAccount,
+      updateAccount,
+      archiveAccount,
+    } from '../assets/js/accounts.js';
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    const netWorthSection = document.getElementById('net-worth-section');
+    const accountsList = document.getElementById('accounts-list');
+    const emptyState = document.getElementById('empty-state');
+
+    const modal = document.getElementById('account-modal');
+    const modalTitle = document.getElementById('account-modal-title');
+    const form = document.getElementById('account-form');
+    const idInput = document.getElementById('account-id');
+    const nameInput = document.getElementById('account-name');
+    const typeSelect = document.getElementById('account-type');
+    const currencySelect = document.getElementById('account-currency');
+    const balanceInput = document.getElementById('account-initial-balance');
+    const iconPicker = document.getElementById('account-icon-picker');
+    const colorPicker = document.getElementById('account-color-picker');
+    const formError = document.getElementById('account-form-error');
+    const submitBtn = document.getElementById('account-submit');
+
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmAccountName = document.getElementById('confirm-account-name');
+
+    let currentUser = null;
+    let accounts = [];
+    let transactions = [];
+    let selectedIcon = ACCOUNT_TYPES[0].icons[0];
+    let selectedColor = ACCOUNT_COLORS[0];
+    let accountPendingDelete = null;
+
+    // ---------- Rendering ----------
+
+    function renderNetWorth() {
+      if (accounts.length === 0) {
+        netWorthSection.classList.add('hidden');
+        netWorthSection.innerHTML = '';
+        return;
+      }
+
+      const totals = {};
+      for (const acc of accounts) {
+        const balance = getAccountBalance(acc.id, accounts, transactions);
+        totals[acc.currency] = (totals[acc.currency] || 0) + balance;
+      }
+
+      netWorthSection.innerHTML = Object.entries(totals).map(([currency, total]) => `
+        <div class="rounded-2xl bg-gradient-to-br from-lavender to-lavender-dark text-white p-5">
+          <p class="text-sm opacity-80 mb-1">Total Saldo (${currency})</p>
+          <p class="text-2xl font-bold">${formatCurrency(total, currency)}</p>
+        </div>
+      `).join('');
+
+      netWorthSection.classList.remove('hidden');
+    }
+
+    function renderAccountsList() {
+      if (accounts.length === 0) {
+        accountsList.innerHTML = '';
+        accountsList.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      accountsList.classList.remove('hidden');
+
+      accountsList.innerHTML = accounts.map((acc) => {
+        const balance = getAccountBalance(acc.id, accounts, transactions);
+        const colorClasses = ACCOUNT_COLOR_CLASSES[acc.color] || ACCOUNT_COLOR_CLASSES.lavender;
+
+        return `
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center ${colorClasses.bg} flex-shrink-0">
+              <i data-lucide="${acc.icon || 'wallet'}" class="w-6 h-6 ${colorClasses.icon}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-gray-800 truncate">${acc.name}</p>
+              <p class="text-xs text-gray-400">${getAccountTypeLabel(acc.type)} &middot; ${acc.currency}</p>
+              <p class="font-bold text-gray-800 mt-1">${formatCurrency(balance, acc.currency)}</p>
+            </div>
+            <div class="flex flex-col gap-1 flex-shrink-0">
+              <button class="edit-btn p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-lavender-dark transition-colors" data-id="${acc.id}" title="Edit">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              <button class="delete-btn p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-red-500 transition-colors" data-id="${acc.id}" title="Hapus">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+
+      accountsList.querySelectorAll('.edit-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const acc = accounts.find((a) => a.id === btn.dataset.id);
+          if (acc) openModal(acc);
+        });
+      });
+
+      accountsList.querySelectorAll('.delete-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const acc = accounts.find((a) => a.id === btn.dataset.id);
+          if (acc) openConfirmModal(acc);
+        });
+      });
+    }
+
+    function renderIconPicker(type) {
+      const icons = getAccountTypeIcons(type);
+      if (!icons.includes(selectedIcon)) {
+        selectedIcon = icons[0];
+      }
+
+      iconPicker.innerHTML = icons.map((icon) => `
+        <button type="button" class="icon-option w-11 h-11 rounded-xl border flex items-center justify-center transition-colors ${
+          icon === selectedIcon ? 'border-lavender bg-lavender-light/40 text-lavender-dark' : 'border-gray-200 text-gray-400 hover:border-lavender-light'
+        }" data-icon="${icon}">
+          <i data-lucide="${icon}" class="w-5 h-5"></i>
+        </button>
+      `).join('');
+
+      lucide.createIcons();
+
+      iconPicker.querySelectorAll('.icon-option').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedIcon = btn.dataset.icon;
+          renderIconPicker(typeSelect.value);
+        });
+      });
+    }
+
+    function renderColorPicker() {
+      colorPicker.innerHTML = ACCOUNT_COLORS.map((color) => {
+        const classes = ACCOUNT_COLOR_CLASSES[color];
+        const ring = color === selectedColor ? 'ring-2 ring-offset-2 ring-gray-400' : '';
+        return `
+          <button type="button" class="color-option w-9 h-9 rounded-full ${classes.swatch} ${ring} transition-all" data-color="${color}" title="${color}"></button>
+        `;
+      }).join('');
+
+      colorPicker.querySelectorAll('.color-option').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedColor = btn.dataset.color;
+          renderColorPicker();
+        });
+      });
+    }
+
+    // ---------- Formatting saldo awal (thousand separator) ----------
+
+    function formatThousands(value) {
+      const digits = value.replace(/\D/g, '');
+      if (!digits) return '';
+      return Number(digits).toLocaleString('id-ID');
+    }
+
+    balanceInput.addEventListener('input', (e) => {
+      const cursorFromEnd = e.target.value.length - e.target.selectionStart;
+      e.target.value = formatThousands(e.target.value);
+      const pos = Math.max(0, e.target.value.length - cursorFromEnd);
+      e.target.setSelectionRange(pos, pos);
+    });
+
+    // ---------- Modal: Tambah/Edit ----------
+
+    function openModal(account = null) {
+      formError.classList.add('hidden');
+      form.reset();
+
+      if (account) {
+        modalTitle.textContent = 'Edit Akun';
+        idInput.value = account.id;
+        nameInput.value = account.name;
+        typeSelect.value = account.type;
+        currencySelect.value = account.currency;
+        balanceInput.value = formatThousands(String(Math.round(Number(account.initial_balance) || 0)));
+        selectedIcon = account.icon || getAccountTypeIcons(account.type)[0];
+        selectedColor = account.color || ACCOUNT_COLORS[0];
+      } else {
+        modalTitle.textContent = 'Tambah Akun';
+        idInput.value = '';
+        typeSelect.value = ACCOUNT_TYPES[0].value;
+        currencySelect.value = 'IDR';
+        balanceInput.value = '';
+        selectedIcon = getAccountTypeIcons(ACCOUNT_TYPES[0].value)[0];
+        selectedColor = ACCOUNT_COLORS[0];
+      }
+
+      renderIconPicker(typeSelect.value);
+      renderColorPicker();
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    document.getElementById('add-account-btn').addEventListener('click', () => openModal());
+    document.getElementById('empty-add-btn').addEventListener('click', () => openModal());
+    document.getElementById('account-modal-close').addEventListener('click', closeModal);
+    document.getElementById('account-cancel').addEventListener('click', closeModal);
+
+    typeSelect.addEventListener('change', () => renderIconPicker(typeSelect.value));
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      formError.classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Menyimpan...';
+
+      const payload = {
+        user_id: currentUser.id,
+        name: nameInput.value.trim(),
+        type: typeSelect.value,
+        currency: currencySelect.value,
+        initial_balance: Number(balanceInput.value.replace(/\D/g, '')) || 0,
+        icon: selectedIcon,
+        color: selectedColor,
+      };
+
+      try {
+        if (idInput.value) {
+          await updateAccount(idInput.value, payload);
+        } else {
+          await createAccount(payload);
+        }
+        await loadAccounts();
+        closeModal();
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.classList.remove('hidden');
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Simpan';
+    });
+
+    // ---------- Modal: Konfirmasi Hapus ----------
+
+    function openConfirmModal(account) {
+      accountPendingDelete = account;
+      confirmAccountName.textContent = account.name;
+      confirmModal.classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      accountPendingDelete = null;
+      confirmModal.classList.add('hidden');
+    }
+
+    document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
+
+    document.getElementById('confirm-delete').addEventListener('click', async () => {
+      if (!accountPendingDelete) return;
+      await archiveAccount(accountPendingDelete.id);
+      closeConfirmModal();
+      await loadAccounts();
+    });
+
+    // ---------- Data loading ----------
+
+    async function loadAccounts() {
+      accounts = await fetchAccounts(currentUser.id);
+
+      try {
+        transactions = await fetchTransactionsForAccounts(currentUser.id);
+      } catch (err) {
+        console.log('[accounts] Gagal memuat transaksi, saldo = initial_balance:', err.message);
+        transactions = [];
+      }
+
+      renderNetWorth();
+      renderAccountsList();
+    }
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      await loadAccounts();
+    });
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
