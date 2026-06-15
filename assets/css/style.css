@@ -1,0 +1,36 @@
+/* Poketto - Pastel palette CSS variables
+   Digunakan di seluruh halaman sebagai sumber warna konsisten.
+   Tailwind (CDN) tetap dipakai untuk utility classes; variabel ini
+   untuk warna custom / non-Tailwind dan referensi desain. */
+
+:root {
+  /* Primary - Lavender */
+  --color-lavender: #A78BFA;
+  --color-lavender-light: #C4B5FD;
+  --color-lavender-dark: #8B5CF6;
+
+  /* Accent 1 - Peach */
+  --color-peach: #FDBA8C;
+  --color-peach-light: #FED7AA;
+
+  /* Accent 2 - Sky Blue */
+  --color-sky: #93C5FD;
+  --color-sky-light: #BFDBFE;
+
+  /* Accent 3 - Mint (gunakan tipis/jarang) */
+  --color-mint: #86EFAC;
+  --color-mint-light: #BBF7D0;
+
+  /* Neutral / background */
+  --color-bg: #FAFAFA;
+  --color-surface: #FFFFFF;
+  --color-text: #1F2937;
+  --color-text-muted: #6B7280;
+  --color-border: #E5E7EB;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}

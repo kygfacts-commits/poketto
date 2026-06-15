@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poketto - Test Page</title>
+<style>
+  body { font-family: monospace; padding: 20px; line-height: 1.6; max-width: 700px; margin: 0 auto; }
+  h1 { font-size: 1.4em; }
+  .test { border: 1px solid #ccc; padding: 12px; margin-bottom: 16px; }
+  .test h2 { margin: 0 0 8px 0; font-size: 1em; }
+  .ok { color: green; font-weight: bold; }
+  .error { color: red; font-weight: bold; }
+  .pending { color: #888; }
+  pre { background: #f5f5f5; padding: 8px; overflow: auto; white-space: pre-wrap; }
+  label { display: inline-block; min-width: 80px; }
+  input { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h1>Poketto - Test Page (Tahap 0)</h1>
+
+<div class="test">
+  <h2>Test 1: Supabase Client Init</h2>
+  <p id="test1-result" class="pending">Running...</p>
+</div>
+
+<div class="test">
+  <h2>Test 2: Status Session Auth</h2>
+  <p id="test2-result" class="pending">Running...</p>
+</div>
+
+<div class="test">
+  <h2>Test 3: Fetch Tabel Categories</h2>
+  <p id="test3-result" class="pending">Running...</p>
+  <pre id="test3-data"></pre>
+</div>
+
+<div class="test">
+  <h2>Test 4: Test Login (signInWithPassword)</h2>
+  <form id="login-form">
+    <div><label for="login-email">Email:</label> <input type="email" id="login-email" required></div>
+    <div><label for="login-password">Password:</label> <input type="password" id="login-password" required></div>
+    <button type="submit">Login</button>
+  </form>
+  <p id="test4-result" class="pending"></p>
+</div>
+
+<script type="module">
+  const t1 = document.getElementById('test1-result');
+  const t2 = document.getElementById('test2-result');
+  const t3 = document.getElementById('test3-result');
+  const t3data = document.getElementById('test3-data');
+  const t4 = document.getElementById('test4-result');
+  const form = document.getElementById('login-form');
+
+  let supabase;
+
+  // Test 1: init client
+  try {
+    const mod = await import('./assets/js/supabase-client.js');
+    supabase = mod.supabase;
+    if (!supabase || typeof supabase.from !== 'function') {
+      throw new Error('Objek client tidak valid');
+    }
+    t1.textContent = 'OK - Supabase client berhasil diinisialisasi';
+    t1.className = 'ok';
+  } catch (e) {
+    t1.textContent = 'ERROR - ' + e.message;
+    t1.className = 'error';
+  }
+
+  if (!supabase) {
+    for (const el of [t2, t3]) {
+      el.textContent = 'SKIPPED - client tidak tersedia';
+      el.className = 'error';
+    }
+    t4.textContent = 'SKIPPED - client tidak tersedia';
+    t4.className = 'error';
+  } else {
+    // Test 2: session auth
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (data.session) {
+        t2.innerHTML = `OK - Logged in<br>User ID: ${data.session.user.id}<br>Email: ${data.session.user.email}`;
+      } else {
+        t2.textContent = 'OK - Tidak ada session aktif (belum login)';
+      }
+      t2.className = 'ok';
+    } catch (e) {
+      t2.textContent = 'ERROR - ' + e.message;
+      t2.className = 'error';
+    }
+
+    // Test 3: fetch categories
+    try {
+      const { data, error } = await supabase.from('categories').select('*');
+      if (error) throw error;
+      t3.textContent = `OK - ${data.length} kategori ditemukan`;
+      t3.className = 'ok';
+      t3data.textContent = data.map(c => c.name).join(', ');
+    } catch (e) {
+      t3.textContent = 'ERROR - ' + e.message;
+      t3.className = 'error';
+    }
+
+    // Test 4: login form
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      t4.textContent = 'Logging in...';
+      t4.className = 'pending';
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        t4.innerHTML = `OK - Login berhasil<br>User ID: ${data.user.id}<br>Email: ${data.user.email}`;
+        t4.className = 'ok';
+      } catch (err) {
+        t4.textContent = 'ERROR - ' + err.message;
+        t4.className = 'error';
+      }
+    });
+  }
+</script>
+</body>
+</html>
