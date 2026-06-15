@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Budget</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
+            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
+            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
+            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+
+  <!-- Sidebar (desktop, >768px) -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-gray-800">Poketto</span>
+    </div>
+
+    <nav class="flex-1 space-y-1">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </a>
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="wallet" class="w-5 h-5"></i>
+        <span>Akun</span>
+      </a>
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+        <span>Budget</span>
+      </a>
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+        <span>Charts</span>
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+        <span>Reports</span>
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      <span>Tambah Transaksi</span>
+    </a>
+
+    <button id="logout-btn" class="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500 font-medium rounded-xl py-2.5 transition-colors">
+      <i data-lucide="log-out" class="w-5 h-5"></i>
+      <span>Logout</span>
+    </button>
+  </aside>
+
+  <!-- Main content -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="p-6 md:p-10 max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Budget</h1>
+        <button id="add-budget-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Tambah Budget</span>
+        </button>
+      </div>
+
+      <!-- Month navigator -->
+      <div class="flex items-center justify-between mb-4">
+        <button id="prev-month" type="button" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <h2 id="month-label" class="text-lg font-semibold text-gray-800"></h2>
+        <button id="next-month" type="button" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <p class="text-sm text-gray-400 mb-1">Total Budget</p>
+          <p id="summary-total" class="text-xl font-bold text-gray-800">Rp0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <p class="text-sm text-gray-400 mb-1">Total Terpakai</p>
+          <p id="summary-used" class="text-xl font-bold text-gray-800">Rp0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <p class="text-sm text-gray-400 mb-1">Sisa Budget</p>
+          <p id="summary-remaining" class="text-xl font-bold text-gray-800">Rp0</p>
+        </div>
+      </div>
+
+      <!-- Budget list -->
+      <div id="budget-list" class="space-y-4"></div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+        <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-lavender-light/50 flex items-center justify-center">
+          <i data-lucide="pie-chart" class="w-7 h-7 text-lavender-dark"></i>
+        </div>
+        <h2 class="text-lg font-bold text-gray-800 mb-1">Belum ada budget bulan ini</h2>
+        <p class="text-gray-500 mb-4">Atur batas pengeluaran per kategori agar keuanganmu lebih terkontrol.</p>
+        <button id="empty-add-btn" class="inline-flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-5 py-2.5 transition-colors">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Tambah Budget Pertama</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom nav (mobile, <=768px) -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+    <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-xs">Home</span>
+    </a>
+    <a href="budget.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-lavender-dark">
+      <i data-lucide="pie-chart" class="w-5 h-5"></i>
+      <span class="text-xs">Budget</span>
+    </a>
+    <a href="add.html" class="flex items-center justify-center w-14 h-14 -mt-6 rounded-full bg-lavender text-white shadow-lg shadow-lavender/40">
+      <i data-lucide="plus" class="w-7 h-7"></i>
+    </a>
+    <a href="reports.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="file-text" class="w-5 h-5"></i>
+      <span class="text-xs">Reports</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-xs">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Modal: Tambah/Edit Budget -->
+  <div id="budget-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="budget-modal-title" class="text-lg font-bold text-gray-800">Tambah Budget</h2>
+        <button type="button" id="budget-modal-close" class="text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="budget-form" class="space-y-4">
+        <input type="hidden" id="budget-id">
+
+        <div id="budget-category-field">
+          <label for="budget-category" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+          <select id="budget-category"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+        </div>
+
+        <div id="budget-category-display" class="hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+            <div id="budget-category-icon-wrap" class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"></div>
+            <span id="budget-category-name" class="font-medium text-gray-700"></span>
+          </div>
+        </div>
+
+        <div>
+          <label for="budget-limit" class="block text-sm font-medium text-gray-700 mb-1">Limit Bulanan</label>
+          <input type="text" inputmode="numeric" id="budget-limit" placeholder="0"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+
+        <p id="budget-form-error" class="hidden text-sm text-red-500"></p>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" id="budget-cancel" class="flex-1 rounded-xl border border-gray-200 text-gray-600 font-semibold py-2.5 hover:bg-gray-50 transition-colors">
+            Batal
+          </button>
+          <button type="submit" id="budget-submit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white font-semibold py-2.5 transition-colors">
+            Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Konfirmasi Hapus -->
+  <div id="confirm-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6 text-center">
+      <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-100 flex items-center justify-center">
+        <i data-lucide="trash-2" class="w-6 h-6 text-rose-500"></i>
+      </div>
+      <h2 class="text-lg font-bold text-gray-800 mb-1">Hapus Budget?</h2>
+      <p class="text-sm text-gray-500 mb-6">
+        Budget untuk "<span id="confirm-budget-name" class="font-medium text-gray-700"></span>" akan dihapus.
+      </p>
+      <div class="flex gap-3">
+        <button type="button" id="confirm-cancel" class="flex-1 rounded-xl border border-gray-200 text-gray-600 font-semibold py-2.5 hover:bg-gray-50 transition-colors">
+          Batal
+        </button>
+        <button type="button" id="confirm-delete" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 transition-colors">
+          Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { logout } from '../assets/js/auth.js';
+    import { formatCurrency, formatThousands, parseThousands, attachThousandsInput, getMonthRange } from '../assets/js/utils.js';
+    import { fetchCategories, getCategoryColorClasses } from '../assets/js/categories.js';
+    import { fetchProfileCurrency } from '../assets/js/home.js';
+    import {
+      fetchBudgets,
+      fetchExpensesForMonth,
+      createBudget,
+      updateBudget,
+      deleteBudget,
+      getBudgetBarColor,
+    } from '../assets/js/budget.js';
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    // ---------- Elements ----------
+
+    const monthLabel = document.getElementById('month-label');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+
+    const summaryTotal = document.getElementById('summary-total');
+    const summaryUsed = document.getElementById('summary-used');
+    const summaryRemaining = document.getElementById('summary-remaining');
+
+    const budgetList = document.getElementById('budget-list');
+    const emptyState = document.getElementById('empty-state');
+
+    const modal = document.getElementById('budget-modal');
+    const modalTitle = document.getElementById('budget-modal-title');
+    const form = document.getElementById('budget-form');
+    const idInput = document.getElementById('budget-id');
+    const categoryField = document.getElementById('budget-category-field');
+    const categorySelect = document.getElementById('budget-category');
+    const categoryDisplay = document.getElementById('budget-category-display');
+    const categoryIconWrap = document.getElementById('budget-category-icon-wrap');
+    const categoryNameEl = document.getElementById('budget-category-name');
+    const limitInput = document.getElementById('budget-limit');
+    const formError = document.getElementById('budget-form-error');
+    const submitBtn = document.getElementById('budget-submit');
+
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmBudgetName = document.getElementById('confirm-budget-name');
+
+    // ---------- State ----------
+
+    let currentUser = null;
+    let currency = 'IDR';
+    let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let expenseCategories = [];
+    let categoriesById = new Map();
+    let budgets = [];
+    let categoryUsage = new Map();
+    let budgetPendingDelete = null;
+
+    attachThousandsInput(limitInput);
+
+    // ---------- Render ----------
+
+    function renderMonthLabel() {
+      monthLabel.textContent = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(currentMonth);
+    }
+
+    function renderSummary() {
+      const totalBudget = budgets.reduce((sum, b) => sum + (Number(b.limit_amount) || 0), 0);
+      const totalUsed = budgets.reduce((sum, b) => sum + (categoryUsage.get(b.category_id) || 0), 0);
+      const remaining = totalBudget - totalUsed;
+
+      summaryTotal.textContent = formatCurrency(totalBudget, currency);
+      summaryUsed.textContent = formatCurrency(totalUsed, currency);
+      summaryRemaining.textContent = formatCurrency(remaining, currency);
+      summaryRemaining.className = `text-xl font-bold ${remaining < 0 ? 'text-red-500' : 'text-gray-800'}`;
+    }
+
+    function renderBudgetList() {
+      if (budgets.length === 0) {
+        budgetList.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      budgetList.innerHTML = budgets.map((b) => {
+        const cat = categoriesById.get(b.category_id);
+        const colorClasses = getCategoryColorClasses(cat?.color || 'slate');
+        const used = categoryUsage.get(b.category_id) || 0;
+        const limit = Number(b.limit_amount) || 0;
+        const percent = limit > 0 ? Math.round((used / limit) * 100) : 0;
+        const barWidth = Math.min(percent, 100);
+        const barColor = getBudgetBarColor(percent);
+        const overBadge = percent >= 100
+          ? '<span class="ml-2 text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">Over Budget!</span>'
+          : '';
+
+        return `
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}">
+                <i data-lucide="${cat?.icon || 'circle'}" class="w-5 h-5 ${colorClasses.icon}"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-800 truncate">${cat?.name || 'Lainnya'}</p>
+                <p class="text-xs text-gray-400">
+                  ${formatCurrency(used, currency)} / ${formatCurrency(limit, currency)} (${percent}%)${overBadge}
+                </p>
+              </div>
+              <div class="flex gap-1 flex-shrink-0">
+                <button class="edit-btn p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-lavender-dark transition-colors" data-id="${b.id}" title="Edit">
+                  <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+                <button class="delete-btn p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-red-500 transition-colors" data-id="${b.id}" title="Hapus">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div class="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div class="h-full rounded-full ${barColor}" style="width: ${barWidth}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+
+      budgetList.querySelectorAll('.edit-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const budget = budgets.find((b) => b.id === btn.dataset.id);
+          if (budget) openModal(budget);
+        });
+      });
+
+      budgetList.querySelectorAll('.delete-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const budget = budgets.find((b) => b.id === btn.dataset.id);
+          if (budget) openConfirmModal(budget);
+        });
+      });
+    }
+
+    // ---------- Modal: Tambah/Edit ----------
+
+    function openModal(budget = null) {
+      formError.classList.add('hidden');
+      form.reset();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Simpan';
+
+      if (budget) {
+        modalTitle.textContent = 'Edit Budget';
+        idInput.value = budget.id;
+        categoryField.classList.add('hidden');
+        categoryDisplay.classList.remove('hidden');
+
+        const cat = categoriesById.get(budget.category_id);
+        const colorClasses = getCategoryColorClasses(cat?.color || 'slate');
+        categoryIconWrap.className = `w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}`;
+        categoryIconWrap.innerHTML = `<i data-lucide="${cat?.icon || 'circle'}" class="w-5 h-5 ${colorClasses.icon}"></i>`;
+        categoryNameEl.textContent = cat?.name || 'Lainnya';
+
+        limitInput.value = formatThousands(String(Math.round(Number(budget.limit_amount))));
+      } else {
+        modalTitle.textContent = 'Tambah Budget';
+        idInput.value = '';
+        categoryField.classList.remove('hidden');
+        categoryDisplay.classList.add('hidden');
+        limitInput.value = '';
+
+        const available = expenseCategories.filter((c) => !budgets.some((b) => b.category_id === c.id));
+        categorySelect.innerHTML = available.map((c) => `<option value="${c.id}">${c.name}</option>`).join('');
+
+        if (available.length === 0) {
+          formError.textContent = 'Semua kategori pengeluaran sudah memiliki budget bulan ini.';
+          formError.classList.remove('hidden');
+          submitBtn.disabled = true;
+        }
+      }
+
+      lucide.createIcons();
+      modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
+
+    document.getElementById('add-budget-btn').addEventListener('click', () => openModal());
+    document.getElementById('empty-add-btn').addEventListener('click', () => openModal());
+    document.getElementById('budget-modal-close').addEventListener('click', closeModal);
+    document.getElementById('budget-cancel').addEventListener('click', closeModal);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      formError.classList.add('hidden');
+
+      const limit = parseThousands(limitInput.value);
+      if (limit <= 0) {
+        formError.textContent = 'Limit harus lebih dari 0.';
+        formError.classList.remove('hidden');
+        return;
+      }
+
+      if (!idInput.value && !categorySelect.value) {
+        formError.textContent = 'Kategori wajib dipilih.';
+        formError.classList.remove('hidden');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Menyimpan...';
+
+      try {
+        if (idInput.value) {
+          await updateBudget(idInput.value, { limit_amount: limit });
+        } else {
+          await createBudget({
+            user_id: currentUser.id,
+            category_id: categorySelect.value,
+            month: getMonthRange(currentMonth).start,
+            limit_amount: limit,
+          });
+        }
+        await loadBudgets();
+        closeModal();
+      } catch (err) {
+        formError.textContent = err.message;
+        formError.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Simpan';
+      }
+    });
+
+    // ---------- Modal: Konfirmasi Hapus ----------
+
+    function openConfirmModal(budget) {
+      budgetPendingDelete = budget;
+      const cat = categoriesById.get(budget.category_id);
+      confirmBudgetName.textContent = cat?.name || 'Lainnya';
+      confirmModal.classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      budgetPendingDelete = null;
+      confirmModal.classList.add('hidden');
+    }
+
+    document.getElementById('confirm-cancel').addEventListener('click', closeConfirmModal);
+
+    document.getElementById('confirm-delete').addEventListener('click', async () => {
+      if (!budgetPendingDelete) return;
+      await deleteBudget(budgetPendingDelete.id);
+      closeConfirmModal();
+      await loadBudgets();
+    });
+
+    // ---------- Month navigation ----------
+
+    prevMonthBtn.addEventListener('click', async () => {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      renderMonthLabel();
+      await loadBudgets();
+    });
+
+    nextMonthBtn.addEventListener('click', async () => {
+      currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+      renderMonthLabel();
+      await loadBudgets();
+    });
+
+    // ---------- Data loading ----------
+
+    async function loadBudgets() {
+      const { start, end } = getMonthRange(currentMonth);
+
+      budgets = await fetchBudgets(currentUser.id, start);
+
+      const expenses = await fetchExpensesForMonth(currentUser.id, start, end);
+      categoryUsage = new Map();
+      for (const tx of expenses) {
+        categoryUsage.set(tx.category_id, (categoryUsage.get(tx.category_id) || 0) + Number(tx.amount));
+      }
+
+      renderSummary();
+      renderBudgetList();
+    }
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+
+      try {
+        currency = await fetchProfileCurrency(currentUser.id);
+      } catch (err) {
+        console.log('[budget] Gagal memuat preferensi mata uang:', err.message);
+      }
+
+      try {
+        expenseCategories = await fetchCategories('expense');
+        categoriesById = new Map(expenseCategories.map((c) => [c.id, c]));
+      } catch (err) {
+        console.log('[budget] Gagal memuat kategori:', err.message);
+      }
+
+      renderMonthLabel();
+      await loadBudgets();
+    });
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
