@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Detail Akun</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
+            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
+            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
+            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+
+  <!-- Sidebar (desktop, >768px) -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-gray-800">Poketto</span>
+    </div>
+
+    <nav class="flex-1 space-y-1">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </a>
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="wallet" class="w-5 h-5"></i>
+        <span>Akun</span>
+      </a>
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+        <span>Budget</span>
+      </a>
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="line-chart" class="w-5 h-5"></i>
+        <span>Charts</span>
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+        <span>Reports</span>
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      <span>Tambah Transaksi</span>
+    </a>
+
+    <button id="logout-btn" class="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500 font-medium rounded-xl py-2.5 transition-colors">
+      <i data-lucide="log-out" class="w-5 h-5"></i>
+      <span>Logout</span>
+    </button>
+  </aside>
+
+  <!-- Main content -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="p-6 md:p-10 max-w-3xl mx-auto">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-6">
+        <button type="button" id="back-btn" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </button>
+        <h1 id="page-title" class="text-2xl font-bold text-gray-800">Detail Akun</h1>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loading-state" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400 text-sm">
+        Memuat data…
+      </div>
+
+      <!-- Account card -->
+      <div id="account-card" class="hidden rounded-2xl p-6 mb-6">
+        <div class="flex items-center gap-4">
+          <div id="account-icon-wrap" class="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"></div>
+          <div>
+            <p id="account-name" class="text-lg font-bold text-gray-800"></p>
+            <p id="account-type-label" class="text-sm text-gray-500"></p>
+          </div>
+        </div>
+        <div class="mt-5">
+          <p class="text-xs text-gray-500 mb-1">Saldo Saat Ini</p>
+          <p id="account-balance" class="text-3xl font-bold text-gray-800"></p>
+        </div>
+      </div>
+
+      <!-- Not found state -->
+      <div id="not-found-state" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400 text-sm">
+        Akun tidak ditemukan.
+      </div>
+
+      <!-- Transaction list -->
+      <div id="tx-section" class="hidden">
+        <p class="text-sm font-semibold text-gray-500 mb-3">Riwayat Transaksi</p>
+        <div id="tx-list" class="space-y-4"></div>
+        <div id="tx-empty" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400 text-sm">
+          Belum ada transaksi untuk akun ini
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Bottom nav (mobile, <=768px) -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+    <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="home" class="w-5 h-5"></i>
+      <span class="text-xs">Home</span>
+    </a>
+    <a href="budget.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="pie-chart" class="w-5 h-5"></i>
+      <span class="text-xs">Budget</span>
+    </a>
+    <a href="add.html" class="flex items-center justify-center w-14 h-14 -mt-6 rounded-full bg-lavender text-white shadow-lg shadow-lavender/40">
+      <i data-lucide="plus" class="w-7 h-7"></i>
+    </a>
+    <a href="charts.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="line-chart" class="w-5 h-5"></i>
+      <span class="text-xs">Charts</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
+      <i data-lucide="user" class="w-5 h-5"></i>
+      <span class="text-xs">Profile</span>
+    </a>
+  </nav>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { logout } from '../assets/js/auth.js';
+    import { formatCurrency, formatDateWithDay, getAccountBalance } from '../assets/js/utils.js';
+    import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
+    import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
+    import { fetchAccounts, ACCOUNT_COLOR_CLASSES, getAccountTypeLabel } from '../assets/js/accounts.js';
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
+    document.getElementById('back-btn').addEventListener('click', () => window.history.back());
+
+    const accountId = new URLSearchParams(window.location.search).get('id');
+
+    let currentUser, currency = 'IDR', accounts = [], allTransactions = [], categoriesById = new Map();
+
+    function getAccountById(id) { return accounts.find((a) => a.id === id); }
+
+    function renderTxRow(tx) {
+      let iconName, colorClasses, title;
+      if (tx.type === 'transfer') {
+        iconName = 'arrow-right-left';
+        colorClasses = TRANSFER_COLOR_CLASSES;
+        title = `${getAccountById(tx.account_id)?.name || '?'} &rarr; ${getAccountById(tx.to_account_id)?.name || '?'}`;
+      } else {
+        const cat = categoriesById.get(tx.category_id);
+        iconName = cat?.icon || 'circle';
+        colorClasses = getCategoryColorClasses(cat?.color || 'slate');
+        title = cat?.name || 'Lainnya';
+      }
+      let amountClass = 'text-sky-600', amountPrefix = '';
+      if (tx.type === 'income') { amountClass = 'text-emerald-600'; amountPrefix = '+'; }
+      else if (tx.type === 'expense') { amountClass = 'text-red-500'; amountPrefix = '-'; }
+
+      const acc = getAccountById(tx.account_id);
+      const amountText = formatCurrency(Number(tx.amount), acc?.currency || currency);
+      const desc = tx.description ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
+
+      return `<div class="flex items-center gap-3 p-4">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}">
+          <i data-lucide="${iconName}" class="w-5 h-5 ${colorClasses.icon}"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-gray-800 truncate">${title}</p>
+          ${desc}
+        </div>
+        <p class="font-semibold ${amountClass} flex-shrink-0">${amountPrefix}${amountText}</p>
+      </div>`;
+    }
+
+    function render(account) {
+      // Hide loading, show content
+      document.getElementById('loading-state').classList.add('hidden');
+
+      // Account card
+      const cc = ACCOUNT_COLOR_CLASSES[account.color] || ACCOUNT_COLOR_CLASSES.lavender;
+      const cardEl = document.getElementById('account-card');
+      cardEl.classList.remove('hidden');
+      cardEl.className = `rounded-2xl p-6 mb-6 ${cc.bg}`;
+
+      const iconWrap = document.getElementById('account-icon-wrap');
+      iconWrap.className = `w-14 h-14 rounded-2xl bg-white/70 flex items-center justify-center flex-shrink-0`;
+      iconWrap.innerHTML = `<i data-lucide="${account.icon || 'wallet'}" class="w-7 h-7 ${cc.icon}"></i>`;
+
+      document.getElementById('account-name').textContent = account.name;
+      document.getElementById('account-type-label').textContent = getAccountTypeLabel(account.type || 'other');
+
+      const balance = getAccountBalance(account.id, accounts, allTransactions);
+      document.getElementById('account-balance').textContent = formatCurrency(balance, account.currency || currency);
+      document.getElementById('page-title').textContent = account.name;
+
+      // Transaction list for this account
+      const txSection = document.getElementById('tx-section');
+      txSection.classList.remove('hidden');
+
+      const accountTxs = allTransactions.filter(
+        (tx) => tx.account_id === account.id || tx.to_account_id === account.id
+      );
+
+      const listEl = document.getElementById('tx-list');
+      const emptyEl = document.getElementById('tx-empty');
+
+      if (accountTxs.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      // Group by date (already ordered desc from fetchAllTransactions)
+      const groups = [];
+      for (const tx of accountTxs) {
+        const last = groups[groups.length - 1];
+        if (last && last.date === tx.date) last.items.push(tx);
+        else groups.push({ date: tx.date, items: [tx] });
+      }
+
+      listEl.innerHTML = groups.map((g) => `
+        <div>
+          <p class="text-sm font-semibold text-gray-400 mb-2">${formatDateWithDay(g.date)}</p>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+            ${g.items.map((tx) => renderTxRow(tx)).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+
+      if (!accountId) {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('not-found-state').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
+      try {
+        const [inc, exp] = await Promise.all([fetchCategories('income'), fetchCategories('expense')]);
+        categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
+      } catch {}
+      try {
+        [accounts, allTransactions] = await Promise.all([
+          fetchAccounts(currentUser.id),
+          fetchAllTransactions(currentUser.id),
+        ]);
+      } catch (err) {
+        console.log('[account-detail] Error:', err.message);
+      }
+
+      const account = accounts.find((a) => a.id === accountId);
+      if (!account) {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('not-found-state').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      render(account);
+    });
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
