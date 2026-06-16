@@ -5,7 +5,7 @@
 //   • set active state berdasarkan URL
 //   • init drawer open/close + swipe gesture
 //   • bind tombol Logout ke Supabase signOut
-//   • reveal halaman (body.nav-loader-ready) setelah nav siap
+//   • reveal nav container via fade-in setelah nav siap
 //
 // Diimpor sebagai ES module di setiap halaman terproteksi.
 
@@ -15,72 +15,6 @@ import './notification-badge.js';
 // ── Path base (halaman ada di /pages/, komponen di /components/) ──────────────
 const IN_PAGES = window.location.pathname.includes('/pages/');
 const BASE     = IN_PAGES ? '../' : './';
-
-// ── CSS untuk mobile nav dan drawer ───────────────────────────────────────────
-const NAV_CSS = `
-  #pkn-bottom-nav {
-    display: none;
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(255,255,255,0.96);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid #EDE9FE;
-    align-items: center; justify-content: space-around;
-    padding: 8px; z-index: 40;
-  }
-  @media (max-width: 767px) { #pkn-bottom-nav { display: flex; } }
-
-  .pkn-slot {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 2px; padding: 4px 12px; border-radius: 10px;
-    border: none; background: none; cursor: pointer;
-    color: #9CA3AF; font-family: inherit; transition: color .15s;
-  }
-  .pkn-slot.pkn-active { color: #7C3AED; }
-  .pkn-slot-label { font-size: 10px; font-weight: 600; line-height: 1; }
-
-  .pkn-add-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 56px; height: 56px; margin-top: -24px;
-    border-radius: 9999px; background: #A78BFA; color: white;
-    border: none; cursor: pointer;
-    box-shadow: 0 8px 24px rgba(167,139,250,.45);
-    transition: background .15s, transform .1s; flex-shrink: 0;
-  }
-  .pkn-add-btn.pkn-active { background: #7C3AED; }
-  .pkn-add-btn:active { transform: scale(.94); }
-
-  #pkn-backdrop {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0); z-index: 60; transition: background .3s;
-  }
-  #pkn-backdrop.pkn-open { background: rgba(0,0,0,.45); }
-
-  #pkn-drawer {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: #fff; border-radius: 20px 20px 0 0; z-index: 70;
-    box-shadow: 0 -8px 40px rgba(0,0,0,.12);
-    transform: translateY(100%);
-    transition: transform .3s cubic-bezier(.32,.72,0,1);
-  }
-  #pkn-drawer.pkn-open { transform: translateY(0); }
-
-  .pkn-drawer-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-
-  .pkn-drawer-item {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    padding: 12px 8px; border-radius: 14px; background: #F8F7FF;
-    border: none; cursor: pointer; font-family: inherit;
-    transition: background .12s, transform .1s;
-  }
-  .pkn-drawer-item:active { transform: scale(.95); background: #EDE9FE; }
-
-  .pkn-drawer-icon {
-    width: 44px; height: 44px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    position: relative; flex-shrink: 0;
-  }
-  .pkn-drawer-label { font-size: 11px; font-weight: 600; color: #1E1B4B; line-height: 1; }
-`;
 
 // ── Active state config ────────────────────────────────────────────────────────
 const FILENAME = window.location.pathname.split('/').pop() || 'home.html';
@@ -96,41 +30,30 @@ const ACTIVE_SLOT  =
   ACTIVE_FILE === 'add.html'          ? 'add'          :
   DRAWER_PAGES.has(ACTIVE_FILE)       ? 'other'        : '';
 
-// ── Inject CSS early so it's ready before HTML is painted ─────────────────────
-(function injectCSS() {
-  if (document.getElementById('pkn-styles')) return;
-  const s = document.createElement('style');
-  s.id = 'pkn-styles';
-  s.textContent = NAV_CSS;
-  document.head.appendChild(s);
-})();
-
 // ── Expose drawer functions globally (called from component onclick attrs) ─────
 window.pknOpenDrawer  = openDrawer;
 window.pknCloseDrawer = closeDrawer;
 
 // ── Main loader ────────────────────────────────────────────────────────────────
 async function loadNav() {
+  const sidebarEl = document.getElementById('sidebar-container');
+  const mobileEl  = document.getElementById('mobile-nav-container');
   try {
     const [sidebarHTML, mobileHTML] = await Promise.all([
       fetchComponent('components/sidebar.html'),
       fetchComponent('components/mobile-nav.html'),
     ]);
 
-    const sidebarEl  = document.getElementById('sidebar-container');
-    const mobileEl   = document.getElementById('mobile-nav-container');
-
-    if (sidebarEl)  sidebarEl.innerHTML  = sidebarHTML;
-    if (mobileEl)   mobileEl.innerHTML   = mobileHTML;
+    if (sidebarEl) { sidebarEl.innerHTML = sidebarHTML; sidebarEl.classList.remove('opacity-0'); }
+    if (mobileEl)  { mobileEl.innerHTML  = mobileHTML;  mobileEl.classList.remove('opacity-0'); }
 
     setActiveNav();
     initDrawerSwipe();
     await initLogout();
   } catch (err) {
     console.warn('[nav-loader] Nav load failed:', err.message);
-  } finally {
-    // Reveal page — prevents FOUC regardless of success/failure
-    document.body.classList.add('nav-loader-ready');
+    sidebarEl?.classList.remove('opacity-0');
+    mobileEl?.classList.remove('opacity-0');
   }
 }
 
@@ -221,9 +144,6 @@ async function initLogout() {
     window.location.href = IN_PAGES ? '../index.html' : 'index.html';
   });
 }
-
-// ── Fallback: reveal page after 4 s even if fetch hangs ───────────────────────
-setTimeout(() => document.body.classList.add('nav-loader-ready'), 4000);
 
 // ── Kick off ───────────────────────────────────────────────────────────────────
 loadNav();
