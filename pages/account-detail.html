@@ -39,6 +39,10 @@
         <i data-lucide="wallet" class="w-5 h-5"></i>
         <span>Akun</span>
       </a>
+      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="list" class="w-5 h-5"></i>
+        <span>Transaksi</span>
+      </a>
       <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
         <i data-lucide="pie-chart" class="w-5 h-5"></i>
         <span>Budget</span>
@@ -58,6 +62,10 @@
       <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
         <i data-lucide="calendar-clock" class="w-5 h-5"></i>
         <span>Tagihan</span>
+      </a>
+      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="trending-up" class="w-5 h-5"></i>
+        <span>Portfolio</span>
       </a>
       <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
         <i data-lucide="user" class="w-5 h-5"></i>
@@ -122,6 +130,15 @@
         </div>
       </div>
 
+      <!-- Holdings (investment accounts only) -->
+      <div id="holdings-section" class="hidden mt-6">
+        <p class="text-sm font-semibold text-gray-500 mb-3">Holdings Portfolio</p>
+        <div id="holdings-list" class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50"></div>
+        <div id="holdings-empty" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center text-sm text-gray-400">
+          Belum ada holdings untuk akun ini. <a href="portfolio.html" class="text-lavender hover:underline">Tambah di Portfolio</a>.
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -155,6 +172,7 @@
     import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
     import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
     import { fetchAccounts, ACCOUNT_COLOR_CLASSES, getAccountTypeLabel } from '../assets/js/accounts.js';
+    import { fetchHoldings } from '../assets/js/portfolio.js';
 
     document.getElementById('logout-btn').addEventListener('click', logout);
     document.getElementById('back-btn').addEventListener('click', () => window.history.back());
@@ -257,6 +275,44 @@
       lucide.createIcons();
     }
 
+    async function renderHoldings(account) {
+      if (account.type !== 'investment') return;
+      try {
+        const holdings = (await fetchHoldings(currentUser.id)).filter(h => h.account_id === account.id);
+        const section = document.getElementById('holdings-section');
+        section.classList.remove('hidden');
+        const listEl = document.getElementById('holdings-list');
+        const emptyEl = document.getElementById('holdings-empty');
+        if (holdings.length === 0) {
+          emptyEl.classList.remove('hidden');
+          lucide.createIcons();
+          return;
+        }
+        emptyEl.classList.add('hidden');
+        listEl.innerHTML = holdings.map(h => {
+          const val = Number(h.quantity) * Number(h.current_price || h.avg_buy_price);
+          const cost = Number(h.quantity) * Number(h.avg_buy_price);
+          const gain = val - cost;
+          const gainPct = cost > 0 ? (gain / cost * 100).toFixed(1) : '0.0';
+          const cur = h.currency || currency;
+          const isPos = gain >= 0;
+          return `<div class="flex items-center justify-between p-4">
+            <div>
+              <p class="font-medium text-gray-800">${h.name}</p>
+              <p class="text-xs text-gray-400">${Number(h.quantity).toLocaleString('id-ID')} unit · Avg ${formatCurrency(Number(h.avg_buy_price), cur)}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold text-gray-800">${formatCurrency(val, cur)}</p>
+              <p class="text-xs ${isPos ? 'text-emerald-600' : 'text-red-500'}">${isPos ? '+' : ''}${formatCurrency(gain, cur)} (${isPos ? '+' : ''}${gainPct}%)</p>
+            </div>
+          </div>`;
+        }).join('');
+        lucide.createIcons();
+      } catch (err) {
+        console.error('[holdings]', err.message);
+      }
+    }
+
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
 
@@ -290,6 +346,7 @@
       }
 
       render(account);
+      renderHoldings(account);
     });
   </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>

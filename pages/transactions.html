@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Transaksi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
+            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
+            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
+            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+
+  <!-- Sidebar -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-gray-800">Poketto</span>
+    </div>
+    <nav class="flex-1 space-y-1 overflow-y-auto">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="home" class="w-5 h-5"></i><span>Home</span>
+      </a>
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="wallet" class="w-5 h-5"></i><span>Akun</span>
+      </a>
+      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+        <i data-lucide="list" class="w-5 h-5"></i><span>Transaksi</span>
+      </a>
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="pie-chart" class="w-5 h-5"></i><span>Budget</span>
+      </a>
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="line-chart" class="w-5 h-5"></i><span>Charts</span>
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="file-text" class="w-5 h-5"></i><span>Reports</span>
+      </a>
+      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="target" class="w-5 h-5"></i><span>Goals</span>
+      </a>
+      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="calendar-clock" class="w-5 h-5"></i><span>Tagihan</span>
+      </a>
+      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="trending-up" class="w-5 h-5"></i><span>Portfolio</span>
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="user" class="w-5 h-5"></i><span>Profile</span>
+      </a>
+    </nav>
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+      <i data-lucide="plus" class="w-5 h-5"></i><span>Tambah Transaksi</span>
+    </a>
+    <button id="logout-btn" class="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500 font-medium rounded-xl py-2.5 transition-colors">
+      <i data-lucide="log-out" class="w-5 h-5"></i><span>Logout</span>
+    </button>
+  </aside>
+
+  <!-- Main -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="p-6 md:p-10 max-w-5xl mx-auto">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Transaksi</h1>
+          <p class="text-sm text-gray-400 mt-0.5">Semua transaksi kamu</p>
+        </div>
+        <button id="export-btn" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Export Excel</span>
+          <span class="sm:hidden">Excel</span>
+        </button>
+      </div>
+
+      <!-- Month nav -->
+      <div class="flex items-center justify-between bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 mb-4">
+        <button id="prev-month" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <p id="month-label" class="font-semibold text-gray-700 text-sm"></p>
+        <button id="next-month" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-3 mb-4 items-center">
+        <div id="type-tabs" class="flex gap-1 bg-white rounded-xl border border-gray-100 shadow-sm p-1">
+          <button data-type="all" class="type-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-lavender text-white transition-colors">Semua</button>
+          <button data-type="income" class="type-tab px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors">Pemasukan</button>
+          <button data-type="expense" class="type-tab px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors">Pengeluaran</button>
+          <button data-type="transfer" class="type-tab px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors">Transfer</button>
+        </div>
+        <select id="cat-filter" class="rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-lavender">
+          <option value="">Semua Kategori</option>
+        </select>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-xs text-gray-400 mb-1">Total Pemasukan</p>
+          <p id="sum-income" class="text-base font-bold text-emerald-600">–</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-xs text-gray-400 mb-1">Total Pengeluaran</p>
+          <p id="sum-expense" class="text-base font-bold text-red-500">–</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <p class="text-xs text-gray-400 mb-1">Selisih</p>
+          <p id="sum-diff" class="text-base font-bold text-gray-800">–</p>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" style="min-width:640px">
+            <thead>
+              <tr class="border-b border-gray-100 bg-gray-50/80">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Akun</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kategori</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Deskripsi</th>
+                <th class="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipe</th>
+                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nominal</th>
+                <th class="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody id="tx-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Empty state inside table wrapper -->
+        <div id="tx-empty" class="hidden p-12 text-center">
+          <i data-lucide="inbox" class="w-10 h-10 text-gray-200 mx-auto mb-3"></i>
+          <p class="text-sm text-gray-400">Tidak ada transaksi untuk periode ini.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination-wrap" class="hidden flex items-center justify-between px-5 py-3 border-t border-gray-50">
+          <p id="pagination-info" class="text-xs text-gray-400"></p>
+          <div class="flex gap-2">
+            <button id="prev-page" class="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Sebelumnya</button>
+            <button id="next-page" class="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Berikutnya</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+    <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="home" class="w-5 h-5"></i><span class="text-xs">Home</span>
+    </a>
+    <a href="budget.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="pie-chart" class="w-5 h-5"></i><span class="text-xs">Budget</span>
+    </a>
+    <a href="add.html" class="flex items-center justify-center w-14 h-14 -mt-6 rounded-full bg-lavender text-white shadow-lg shadow-lavender/40">
+      <i data-lucide="plus" class="w-7 h-7"></i>
+    </a>
+    <a href="charts.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="line-chart" class="w-5 h-5"></i><span class="text-xs">Charts</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="user" class="w-5 h-5"></i><span class="text-xs">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Edit Transaction Modal -->
+  <div id="edit-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-bold text-gray-800">Edit Transaksi</h2>
+        <button id="edit-modal-close" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="edit-form" class="space-y-4">
+        <input type="hidden" id="edit-id">
+        <input type="hidden" id="edit-type">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+          <input type="date" id="edit-date" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nominal</label>
+          <input type="text" inputmode="numeric" id="edit-amount" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <div id="edit-account-wrap">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Akun</label>
+          <select id="edit-account" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+        </div>
+        <div id="edit-to-account-wrap" class="hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ke Akun</label>
+          <select id="edit-to-account" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+        </div>
+        <div id="edit-category-wrap">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+          <select id="edit-category" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            <option value="">– Tanpa Kategori –</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+          <input type="text" id="edit-description" placeholder="Opsional" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <p id="edit-error" class="hidden text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2"></p>
+        <div class="flex gap-3 pt-1">
+          <button type="button" id="edit-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+          <button type="submit" id="edit-submit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div id="delete-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 text-center">
+      <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="trash-2" class="w-7 h-7 text-red-500"></i>
+      </div>
+      <h2 class="text-lg font-bold text-gray-800 mb-1">Hapus Transaksi?</h2>
+      <p class="text-sm text-gray-400 mb-5">Tindakan ini tidak bisa dibatalkan.</p>
+      <div class="flex gap-3">
+        <button id="delete-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button id="delete-confirm" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white py-2.5 text-sm font-semibold transition-colors">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl shadow-lg text-sm font-medium text-white transition-all"></div>
+
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { logout } from '../assets/js/auth.js';
+    import { formatCurrency, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
+    import { fetchProfileCurrency, fetchAllTransactions } from '../assets/js/home.js';
+    import { fetchAccounts } from '../assets/js/accounts.js';
+    import { fetchCategories } from '../assets/js/categories.js';
+    import { updateTransaction, deleteTransaction } from '../assets/js/transactions.js';
+    import { showToast } from '../assets/js/toast.js';
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    const MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni',
+                         'Juli','Agustus','September','Oktober','November','Desember'];
+    const DAY_NAMES = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const PAGE_SIZE = 20;
+
+    let currentUser, currency = 'IDR';
+    let accounts = [], accountsById = new Map();
+    let allTransactions = [], filteredTxs = [];
+    let incomeCategories = [], expenseCategories = [], allCategories = [];
+    let categoriesById = new Map();
+    let currentYear, currentMonth, filterType = 'all', filterCategoryId = '';
+    let currentPage = 1;
+    let deletingId = null, editingTx = null;
+
+    const today = new Date();
+    currentYear = today.getFullYear();
+    currentMonth = today.getMonth();
+
+    attachThousandsInput(document.getElementById('edit-amount'));
+
+    // --- Load ---
+    async function loadData() {
+      try {
+        [accounts, allTransactions, incomeCategories, expenseCategories] = await Promise.all([
+          fetchAccounts(currentUser.id),
+          fetchAllTransactions(currentUser.id),
+          fetchCategories('income'),
+          fetchCategories('expense'),
+        ]);
+        accountsById = new Map(accounts.map(a => [a.id, a]));
+        allCategories = [...incomeCategories, ...expenseCategories];
+        categoriesById = new Map(allCategories.map(c => [c.id, c]));
+        populateCategoryFilter();
+        populateEditDropdowns();
+        applyFilters();
+      } catch (err) {
+        console.error('[transactions]', err.message);
+      }
+    }
+
+    function populateCategoryFilter() {
+      const sel = document.getElementById('cat-filter');
+      sel.innerHTML = `<option value="">Semua Kategori</option>` +
+        `<optgroup label="Pemasukan">` +
+        incomeCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('') +
+        `</optgroup><optgroup label="Pengeluaran">` +
+        expenseCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('') +
+        `</optgroup>`;
+    }
+
+    function populateEditDropdowns() {
+      const accountOpts = accounts.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+      document.getElementById('edit-account').innerHTML = accountOpts;
+      document.getElementById('edit-to-account').innerHTML = accountOpts;
+    }
+
+    // --- Filters ---
+    function applyFilters() {
+      document.getElementById('month-label').textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+
+      filteredTxs = allTransactions.filter(tx => {
+        const [y, m] = tx.date.split('-').map(Number);
+        if (y !== currentYear || m !== currentMonth + 1) return false;
+        if (filterType !== 'all' && tx.type !== filterType) return false;
+        if (filterCategoryId && tx.category_id !== filterCategoryId) return false;
+        return true;
+      });
+
+      currentPage = 1;
+      renderSummary();
+      renderTable();
+    }
+
+    function renderSummary() {
+      const income = filteredTxs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+      const expense = filteredTxs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+      const diff = income - expense;
+      document.getElementById('sum-income').textContent = formatCurrency(income, currency);
+      document.getElementById('sum-expense').textContent = formatCurrency(expense, currency);
+      const diffEl = document.getElementById('sum-diff');
+      diffEl.textContent = (diff >= 0 ? '+' : '') + formatCurrency(Math.abs(diff), currency);
+      diffEl.className = `text-base font-bold ${diff >= 0 ? 'text-emerald-600' : 'text-red-500'}`;
+    }
+
+    function renderTable() {
+      const total = filteredTxs.length;
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, total);
+      const page = filteredTxs.slice(start, end);
+
+      const tbody = document.getElementById('tx-tbody');
+      const emptyEl = document.getElementById('tx-empty');
+      const paginationWrap = document.getElementById('pagination-wrap');
+
+      if (total === 0) {
+        tbody.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        paginationWrap.classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+
+      tbody.innerHTML = page.map(tx => {
+        const acct = accountsById.get(tx.account_id);
+        const cat = categoriesById.get(tx.category_id);
+        const [y, m, d] = tx.date.split('-').map(Number);
+        const dateStr = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+        const toAcct = tx.to_account_id ? accountsById.get(tx.to_account_id) : null;
+
+        let typeBadge, amountClass, prefix;
+        if (tx.type === 'income') {
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-mint-light/50 text-emerald-700">Pemasukan</span>';
+          amountClass = 'text-emerald-600'; prefix = '+';
+        } else if (tx.type === 'expense') {
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-500">Pengeluaran</span>';
+          amountClass = 'text-red-500'; prefix = '-';
+        } else {
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-light/50 text-sky-600">Transfer</span>';
+          amountClass = 'text-sky-600'; prefix = '';
+        }
+
+        const catName = cat?.name || (tx.type === 'transfer' ? (toAcct ? `→ ${toAcct.name}` : 'Transfer') : '–');
+        const acctCur = acct?.currency || currency;
+
+        return `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+          <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${dateStr}</td>
+          <td class="px-4 py-3 text-sm text-gray-700 max-w-[100px] truncate">${acct?.name || '–'}</td>
+          <td class="px-4 py-3 text-sm text-gray-600 max-w-[120px] truncate">${catName}</td>
+          <td class="px-4 py-3 text-xs text-gray-400 max-w-[150px] truncate hidden md:table-cell">${tx.description || '–'}</td>
+          <td class="px-4 py-3 text-center">${typeBadge}</td>
+          <td class="px-4 py-3 text-right font-semibold ${amountClass} whitespace-nowrap">${prefix}${formatCurrency(Number(tx.amount), acctCur)}</td>
+          <td class="px-4 py-3">
+            <div class="flex gap-1 justify-end">
+              <button data-id="${tx.id}" class="edit-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <i data-lucide="edit-2" class="w-4 h-4"></i>
+              </button>
+              <button data-id="${tx.id}" class="delete-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      // Pagination
+      if (total > PAGE_SIZE) {
+        paginationWrap.classList.remove('hidden');
+        document.getElementById('pagination-info').textContent =
+          `Menampilkan ${start + 1}–${end} dari ${total} transaksi`;
+        document.getElementById('prev-page').disabled = currentPage <= 1;
+        document.getElementById('next-page').disabled = currentPage >= totalPages;
+      } else {
+        paginationWrap.classList.add('hidden');
+      }
+
+      lucide.createIcons();
+    }
+
+    // --- Event delegation on tbody ---
+    document.getElementById('tx-tbody').addEventListener('click', e => {
+      const editBtn = e.target.closest('.edit-btn');
+      const deleteBtn = e.target.closest('.delete-btn');
+      if (editBtn) openEditModal(editBtn.dataset.id);
+      else if (deleteBtn) openDeleteModal(deleteBtn.dataset.id);
+    });
+
+    // --- Month navigation ---
+    document.getElementById('prev-month').addEventListener('click', () => {
+      if (currentMonth === 0) { currentYear--; currentMonth = 11; }
+      else currentMonth--;
+      applyFilters();
+    });
+    document.getElementById('next-month').addEventListener('click', () => {
+      if (currentMonth === 11) { currentYear++; currentMonth = 0; }
+      else currentMonth++;
+      applyFilters();
+    });
+
+    // --- Type filter tabs ---
+    document.getElementById('type-tabs').addEventListener('click', e => {
+      const btn = e.target.closest('.type-tab');
+      if (!btn) return;
+      filterType = btn.dataset.type;
+      document.querySelectorAll('.type-tab').forEach(b => {
+        b.className = b === btn
+          ? 'type-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-lavender text-white transition-colors'
+          : 'type-tab px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors';
+      });
+      applyFilters();
+    });
+
+    // --- Category filter ---
+    document.getElementById('cat-filter').addEventListener('change', e => {
+      filterCategoryId = e.target.value;
+      applyFilters();
+    });
+
+    // --- Pagination ---
+    document.getElementById('prev-page').addEventListener('click', () => {
+      if (currentPage > 1) { currentPage--; renderTable(); }
+    });
+    document.getElementById('next-page').addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredTxs.length / PAGE_SIZE);
+      if (currentPage < totalPages) { currentPage++; renderTable(); }
+    });
+
+    // --- Edit Modal ---
+    function openEditModal(txId) {
+      editingTx = allTransactions.find(t => t.id === txId);
+      if (!editingTx) return;
+      const tx = editingTx;
+      document.getElementById('edit-id').value = tx.id;
+      document.getElementById('edit-type').value = tx.type;
+      document.getElementById('edit-date').value = tx.date;
+
+      const amountEl = document.getElementById('edit-amount');
+      amountEl.value = Number(tx.amount).toLocaleString('id-ID');
+      amountEl.dispatchEvent(new Event('input'));
+
+      document.getElementById('edit-account').value = tx.account_id;
+      document.getElementById('edit-description').value = tx.description || '';
+
+      const catWrap = document.getElementById('edit-category-wrap');
+      const toWrap = document.getElementById('edit-to-account-wrap');
+
+      if (tx.type === 'transfer') {
+        catWrap.classList.add('hidden');
+        toWrap.classList.remove('hidden');
+        document.getElementById('edit-to-account').value = tx.to_account_id || '';
+      } else {
+        toWrap.classList.add('hidden');
+        catWrap.classList.remove('hidden');
+        const cats = tx.type === 'income' ? incomeCategories : expenseCategories;
+        document.getElementById('edit-category').innerHTML =
+          `<option value="">– Tanpa Kategori –</option>` +
+          cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        document.getElementById('edit-category').value = tx.category_id || '';
+      }
+
+      document.getElementById('edit-error').classList.add('hidden');
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.add('hidden');
+      editingTx = null;
+    }
+
+    document.getElementById('edit-modal-close').addEventListener('click', closeEditModal);
+    document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
+
+    document.getElementById('edit-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const errEl = document.getElementById('edit-error');
+      errEl.classList.add('hidden');
+      const id = document.getElementById('edit-id').value;
+      const type = document.getElementById('edit-type').value;
+      const date = document.getElementById('edit-date').value;
+      const amount = parseThousands(document.getElementById('edit-amount').value);
+      const account_id = document.getElementById('edit-account').value;
+      const description = document.getElementById('edit-description').value.trim();
+
+      if (!date || isNaN(amount) || amount <= 0 || !account_id) {
+        errEl.textContent = 'Mohon isi semua field wajib.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const payload = { date, amount, account_id, description: description || null };
+      if (type === 'transfer') {
+        payload.to_account_id = document.getElementById('edit-to-account').value;
+      } else {
+        payload.category_id = document.getElementById('edit-category').value || null;
+      }
+
+      const submitBtn = document.getElementById('edit-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Menyimpan…';
+
+      try {
+        await updateTransaction(id, payload);
+        showToast('Transaksi berhasil diupdate');
+        closeEditModal();
+        allTransactions = await fetchAllTransactions(currentUser.id);
+        applyFilters();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Simpan';
+      }
+    });
+
+    // --- Delete Modal ---
+    function openDeleteModal(txId) {
+      deletingId = txId;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    document.getElementById('delete-cancel').addEventListener('click', () => {
+      document.getElementById('delete-modal').classList.add('hidden');
+      deletingId = null;
+    });
+    document.getElementById('delete-confirm').addEventListener('click', async () => {
+      if (!deletingId) return;
+      try {
+        await deleteTransaction(deletingId);
+        showToast('Transaksi dihapus');
+        document.getElementById('delete-modal').classList.add('hidden');
+        allTransactions = await fetchAllTransactions(currentUser.id);
+        applyFilters();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+      deletingId = null;
+    });
+
+    // --- Export Excel ---
+    document.getElementById('export-btn').addEventListener('click', () => {
+      const XLSX = window.XLSX;
+      if (!XLSX) { showToast('Library Excel belum siap, coba lagi.', 'error'); return; }
+      if (filteredTxs.length === 0) { showToast('Tidak ada data untuk diexport.', 'error'); return; }
+
+      const headers = ['Tanggal','Hari','Akun','Kategori','Deskripsi','Tipe','Nominal','Mata Uang'];
+      const rows = filteredTxs.map(tx => {
+        const [y, m, d] = tx.date.split('-').map(Number);
+        const dateStr = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+        const dayName = DAY_NAMES[new Date(y, m - 1, d).getDay()];
+        const acct = accountsById.get(tx.account_id);
+        const cat = categoriesById.get(tx.category_id);
+        const toAcct = tx.to_account_id ? accountsById.get(tx.to_account_id) : null;
+        const typeLabel = tx.type === 'income' ? 'Pemasukan' : tx.type === 'expense' ? 'Pengeluaran' : 'Transfer';
+        const catName = cat?.name || (tx.type === 'transfer' ? (toAcct ? `Transfer → ${toAcct.name}` : 'Transfer') : '–');
+        return [
+          dateStr, dayName, acct?.name || '–', catName,
+          tx.description || '', typeLabel, Number(tx.amount), acct?.currency || currency,
+        ];
+      });
+
+      const data = [headers, ...rows];
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws['!cols'] = [{wch:12},{wch:10},{wch:15},{wch:18},{wch:25},{wch:12},{wch:15},{wch:8}];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Transaksi');
+      XLSX.writeFile(wb, `Poketto_Transaksi_${MONTH_NAMES[currentMonth]}_${currentYear}.xlsx`);
+      showToast('File Excel berhasil didownload');
+    });
+
+    // --- Close modals on backdrop ---
+    ['edit-modal','delete-modal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', e => {
+        if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+      });
+    });
+
+    // --- Auth ready ---
+    window.addEventListener('schatz:auth-ready', async e => {
+      currentUser = e.detail.user;
+      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
+      await loadData();
+    });
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

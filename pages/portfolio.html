@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
+            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
+            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
+            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-gray-50">
+
+  <!-- Sidebar -->
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-gray-800">Poketto</span>
+    </div>
+    <nav class="flex-1 space-y-1 overflow-y-auto">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="home" class="w-5 h-5"></i><span>Home</span>
+      </a>
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="wallet" class="w-5 h-5"></i><span>Akun</span>
+      </a>
+      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="list" class="w-5 h-5"></i><span>Transaksi</span>
+      </a>
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="pie-chart" class="w-5 h-5"></i><span>Budget</span>
+      </a>
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="line-chart" class="w-5 h-5"></i><span>Charts</span>
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="file-text" class="w-5 h-5"></i><span>Reports</span>
+      </a>
+      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="target" class="w-5 h-5"></i><span>Goals</span>
+      </a>
+      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="calendar-clock" class="w-5 h-5"></i><span>Tagihan</span>
+      </a>
+      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+        <i data-lucide="trending-up" class="w-5 h-5"></i><span>Portfolio</span>
+      </a>
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+        <i data-lucide="user" class="w-5 h-5"></i><span>Profile</span>
+      </a>
+    </nav>
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+      <i data-lucide="plus" class="w-5 h-5"></i><span>Tambah Transaksi</span>
+    </a>
+    <button id="logout-btn" class="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500 font-medium rounded-xl py-2.5 transition-colors">
+      <i data-lucide="log-out" class="w-5 h-5"></i><span>Logout</span>
+    </button>
+  </aside>
+
+  <!-- Main -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="p-6 md:p-10 max-w-5xl mx-auto">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Portfolio</h1>
+          <p class="text-sm text-gray-400 mt-0.5">Pantau investasi kamu</p>
+        </div>
+        <button id="open-add-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Tambah Holding</span>
+          <span class="sm:hidden">Tambah</span>
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading-state" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400 text-sm">Memuat data…</div>
+
+      <!-- No investment account empty state -->
+      <div id="no-account-state" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+        <div class="w-16 h-16 bg-lavender-light/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="trending-up" class="w-8 h-8 text-lavender"></i>
+        </div>
+        <p class="font-semibold text-gray-700 mb-2">Belum ada akun investasi</p>
+        <p class="text-sm text-gray-400 mb-6">Tambahkan akun bertipe <strong>Investasi</strong> di halaman Akun terlebih dahulu, lalu kembali ke sini untuk mencatat holdings kamu.</p>
+        <a href="accounts.html" class="inline-flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-5 py-2.5 transition-colors">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Tambah Akun Investasi
+        </a>
+      </div>
+
+      <!-- Main portfolio content -->
+      <div id="portfolio-content" class="hidden space-y-6">
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">Total Nilai</p>
+            <p id="sum-nilai" class="text-xl font-bold text-gray-800">–</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">Total Modal</p>
+            <p id="sum-modal" class="text-xl font-bold text-gray-800">–</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">Gain/Loss</p>
+            <p id="sum-gain" class="text-xl font-bold text-gray-800">–</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs text-gray-400 mb-1">Return</p>
+            <p id="sum-pct" class="text-xl font-bold text-gray-800">–</p>
+          </div>
+        </div>
+
+        <!-- Filter + Allocation -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <label class="text-sm font-medium text-gray-600">Filter Akun:</label>
+            <select id="filter-account" class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+              <option value="">Semua Akun</option>
+            </select>
+          </div>
+          <div id="allocation-wrap" class="hidden">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Alokasi Aset</p>
+            <div id="allocation-bar" class="flex h-3 rounded-full overflow-hidden gap-px mb-3"></div>
+            <div id="allocation-legend" class="flex flex-wrap gap-3"></div>
+          </div>
+        </div>
+
+        <!-- Holdings table -->
+        <div id="holdings-wrap" class="hidden">
+          <div class="overflow-x-auto rounded-2xl shadow-sm border border-gray-100 bg-white">
+            <table class="w-full text-sm" style="min-width:720px">
+              <thead>
+                <tr class="border-b border-gray-100 bg-gray-50/80">
+                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nama Aset</th>
+                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipe</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Jumlah</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Avg Price</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Harga Kini</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nilai</th>
+                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">G/L</th>
+                  <th class="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody id="holdings-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Empty holdings state -->
+        <div id="holdings-empty" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+          <i data-lucide="inbox" class="w-10 h-10 text-gray-200 mx-auto mb-3"></i>
+          <p class="text-gray-400 text-sm">Belum ada holdings. Klik <strong>Tambah Holding</strong> untuk mulai mencatat.</p>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+    <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="home" class="w-5 h-5"></i><span class="text-xs">Home</span>
+    </a>
+    <a href="budget.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="pie-chart" class="w-5 h-5"></i><span class="text-xs">Budget</span>
+    </a>
+    <a href="add.html" class="flex items-center justify-center w-14 h-14 -mt-6 rounded-full bg-lavender text-white shadow-lg shadow-lavender/40">
+      <i data-lucide="plus" class="w-7 h-7"></i>
+    </a>
+    <a href="charts.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="line-chart" class="w-5 h-5"></i><span class="text-xs">Charts</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
+      <i data-lucide="user" class="w-5 h-5"></i><span class="text-xs">Profile</span>
+    </a>
+  </nav>
+
+  <!-- Add / Edit Holding Modal -->
+  <div id="holding-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h2 id="holding-modal-title" class="text-lg font-bold text-gray-800">Tambah Holding</h2>
+        <button id="holding-modal-close" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="holding-form" class="space-y-4">
+        <input type="hidden" id="holding-id">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Akun Investasi <span class="text-red-400">*</span></label>
+          <select id="holding-account" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Aset <span class="text-red-400">*</span></label>
+          <select id="holding-type" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            <option value="stock">Saham</option>
+            <option value="mutual_fund">Reksadana</option>
+            <option value="gold">Emas</option>
+            <option value="crypto">Kripto</option>
+            <option value="bond">Obligasi</option>
+            <option value="other">Lainnya</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset <span class="text-red-400">*</span></label>
+          <input type="text" id="holding-name" placeholder="cth. BBCA, RD Pasar Uang" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah / Unit <span class="text-red-400">*</span></label>
+            <input type="number" id="holding-qty" step="any" min="0" placeholder="0" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mata Uang</label>
+            <select id="holding-currency" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+              <option value="IDR">IDR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Avg Buy Price <span class="text-red-400">*</span></label>
+          <input type="text" inputmode="numeric" id="holding-avg-price" placeholder="0" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Harga Sekarang <span class="text-gray-400 font-normal">(opsional)</span></label>
+          <input type="text" inputmode="numeric" id="holding-cur-price" placeholder="Sama dengan avg price jika kosong" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <p id="holding-error" class="hidden text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2"></p>
+        <div class="flex gap-3 pt-1">
+          <button type="button" id="holding-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+          <button type="submit" id="holding-submit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Update Price Modal -->
+  <div id="price-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-bold text-gray-800">Update Harga</h2>
+          <p id="price-modal-name" class="text-sm text-gray-400 mt-0.5"></p>
+        </div>
+        <button id="price-modal-close" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="price-form" class="space-y-4">
+        <input type="hidden" id="price-holding-id">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Harga Sekarang</label>
+          <input type="text" inputmode="numeric" id="price-input" placeholder="0" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <p id="price-error" class="hidden text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2"></p>
+        <div class="flex gap-3">
+          <button type="button" id="price-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+          <button type="submit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div id="delete-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 text-center">
+      <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="trash-2" class="w-7 h-7 text-red-500"></i>
+      </div>
+      <h2 class="text-lg font-bold text-gray-800 mb-1">Hapus Holding?</h2>
+      <p id="delete-modal-name" class="text-sm text-gray-400 mb-5"></p>
+      <div class="flex gap-3">
+        <button id="delete-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button id="delete-confirm" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white py-2.5 text-sm font-semibold transition-colors">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl shadow-lg text-sm font-medium text-white transition-all"></div>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { logout } from '../assets/js/auth.js';
+    import { formatCurrency, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
+    import { fetchProfileCurrency } from '../assets/js/home.js';
+    import { fetchAccounts } from '../assets/js/accounts.js';
+    import { fetchHoldings, createHolding, updateHolding, deleteHolding } from '../assets/js/portfolio.js';
+    import { showToast } from '../assets/js/toast.js';
+
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    const ASSET_TYPE_LABELS = {
+      stock: 'Saham', mutual_fund: 'Reksadana', bond: 'Obligasi',
+      gold: 'Emas', crypto: 'Kripto', other: 'Lainnya',
+    };
+    const ASSET_TYPE_COLORS = {
+      stock:       { bg: 'bg-lavender-light/50', text: 'text-lavender-dark', hex: '#A78BFA' },
+      mutual_fund: { bg: 'bg-sky-light/50',      text: 'text-sky-600',       hex: '#93C5FD' },
+      bond:        { bg: 'bg-rose-100',           text: 'text-rose-500',      hex: '#FDA4AF' },
+      gold:        { bg: 'bg-peach-light/50',     text: 'text-orange-500',    hex: '#FDBA8C' },
+      crypto:      { bg: 'bg-mint-light/50',      text: 'text-emerald-600',   hex: '#86EFAC' },
+      other:       { bg: 'bg-amber-100',          text: 'text-amber-500',     hex: '#FCD34D' },
+    };
+
+    let currentUser, currency = 'IDR', accounts = [], holdings = [];
+    let investmentAccounts = [];
+    let filterAccountId = '';
+    let deletingId = null;
+
+    // Wire thousand-separator inputs
+    attachThousandsInput(document.getElementById('holding-avg-price'));
+    attachThousandsInput(document.getElementById('holding-cur-price'));
+    attachThousandsInput(document.getElementById('price-input'));
+
+    async function loadData() {
+      try {
+        [accounts, holdings] = await Promise.all([
+          fetchAccounts(currentUser.id),
+          fetchHoldings(currentUser.id),
+        ]);
+        investmentAccounts = accounts.filter(a => a.type === 'investment');
+      } catch (err) {
+        console.error('[portfolio]', err.message);
+      }
+      render();
+    }
+
+    function render() {
+      document.getElementById('loading-state').classList.add('hidden');
+
+      if (investmentAccounts.length === 0) {
+        document.getElementById('no-account-state').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      document.getElementById('portfolio-content').classList.remove('hidden');
+
+      // Populate filter dropdown
+      const filterSel = document.getElementById('filter-account');
+      const savedFilter = filterSel.value;
+      filterSel.innerHTML = `<option value="">Semua Akun</option>` +
+        investmentAccounts.map(a => `<option value="${a.id}"${a.id === savedFilter ? ' selected' : ''}>${a.name}</option>`).join('');
+
+      // Populate account dropdown in add/edit modal
+      document.getElementById('holding-account').innerHTML =
+        investmentAccounts.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+
+      applyFilter();
+    }
+
+    function applyFilter() {
+      filterAccountId = document.getElementById('filter-account').value;
+      const filtered = filterAccountId
+        ? holdings.filter(h => h.account_id === filterAccountId)
+        : holdings;
+
+      renderSummary(filtered);
+      renderAllocation(filtered);
+      renderTable(filtered);
+    }
+
+    function renderSummary(filtered) {
+      const totalNilai = filtered.reduce((s, h) => s + Number(h.quantity) * Number(h.current_price || h.avg_buy_price), 0);
+      const totalModal = filtered.reduce((s, h) => s + Number(h.quantity) * Number(h.avg_buy_price), 0);
+      const gainLoss = totalNilai - totalModal;
+      const gainLossPct = totalModal > 0 ? (gainLoss / totalModal * 100) : 0;
+      const isPos = gainLoss >= 0;
+
+      document.getElementById('sum-nilai').textContent = formatCurrency(totalNilai, currency);
+      document.getElementById('sum-modal').textContent = formatCurrency(totalModal, currency);
+      document.getElementById('sum-gain').innerHTML = `<span class="${isPos ? 'text-emerald-600' : 'text-red-500'}">${isPos ? '+' : ''}${formatCurrency(Math.abs(gainLoss), currency)}</span>`;
+      document.getElementById('sum-pct').innerHTML = `<span class="${isPos ? 'text-emerald-600' : 'text-red-500'}">${isPos ? '+' : ''}${gainLossPct.toFixed(2)}%</span>`;
+    }
+
+    function renderAllocation(filtered) {
+      const wrap = document.getElementById('allocation-wrap');
+      if (filtered.length === 0) { wrap.classList.add('hidden'); return; }
+
+      const totals = {};
+      for (const h of filtered) {
+        const val = Number(h.quantity) * Number(h.current_price || h.avg_buy_price);
+        totals[h.asset_type] = (totals[h.asset_type] || 0) + val;
+      }
+      const total = Object.values(totals).reduce((s, v) => s + v, 0);
+      if (total === 0) { wrap.classList.add('hidden'); return; }
+
+      wrap.classList.remove('hidden');
+      const segments = Object.entries(totals).map(([type, val]) => ({
+        type, val, pct: (val / total) * 100,
+      }));
+
+      document.getElementById('allocation-bar').innerHTML = segments.map(s =>
+        `<div style="width:${s.pct.toFixed(1)}%;background-color:${ASSET_TYPE_COLORS[s.type]?.hex || '#d1d5db'}" title="${ASSET_TYPE_LABELS[s.type] || s.type} ${s.pct.toFixed(1)}%"></div>`
+      ).join('');
+
+      document.getElementById('allocation-legend').innerHTML = segments.map(s =>
+        `<div class="flex items-center gap-1.5">
+          <div class="w-3 h-3 rounded-full flex-shrink-0" style="background-color:${ASSET_TYPE_COLORS[s.type]?.hex || '#d1d5db'}"></div>
+          <span class="text-xs text-gray-600">${ASSET_TYPE_LABELS[s.type] || s.type} ${s.pct.toFixed(1)}%</span>
+        </div>`
+      ).join('');
+    }
+
+    function renderTable(filtered) {
+      const tbody = document.getElementById('holdings-tbody');
+      const wrap = document.getElementById('holdings-wrap');
+      const emptyEl = document.getElementById('holdings-empty');
+
+      if (filtered.length === 0) {
+        wrap.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      wrap.classList.remove('hidden');
+
+      tbody.innerHTML = filtered.map(h => {
+        const price = Number(h.current_price || h.avg_buy_price);
+        const nilai = Number(h.quantity) * price;
+        const modal = Number(h.quantity) * Number(h.avg_buy_price);
+        const gainNom = nilai - modal;
+        const gainPct = modal > 0 ? (gainNom / modal * 100) : 0;
+        const tc = ASSET_TYPE_COLORS[h.asset_type] || ASSET_TYPE_COLORS.other;
+        const gc = gainNom >= 0 ? 'text-emerald-600' : 'text-red-500';
+        const arrow = gainNom >= 0 ? '↑' : '↓';
+        const cur = h.currency || 'IDR';
+
+        return `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+          <td class="px-4 py-3">
+            <p class="font-medium text-gray-800">${h.name}</p>
+            <p class="text-xs text-gray-400">${cur}</p>
+          </td>
+          <td class="px-4 py-3">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${tc.bg} ${tc.text}">${ASSET_TYPE_LABELS[h.asset_type] || 'Lainnya'}</span>
+          </td>
+          <td class="px-4 py-3 text-right text-gray-700">${Number(h.quantity).toLocaleString('id-ID', { maximumFractionDigits: 8 })}</td>
+          <td class="px-4 py-3 text-right text-gray-700">${formatCurrency(Number(h.avg_buy_price), cur)}</td>
+          <td class="px-4 py-3 text-right text-gray-700">${h.current_price ? formatCurrency(Number(h.current_price), cur) : '–'}</td>
+          <td class="px-4 py-3 text-right font-semibold text-gray-800">${formatCurrency(nilai, cur)}</td>
+          <td class="px-4 py-3 text-right">
+            <p class="${gc} font-medium text-xs">${arrow} ${formatCurrency(Math.abs(gainNom), cur)}</p>
+            <p class="${gc} text-xs">${gainNom >= 0 ? '+' : ''}${gainPct.toFixed(1)}%</p>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-1 justify-end">
+              <button data-id="${h.id}" class="update-price-btn text-xs bg-lavender-light/50 hover:bg-lavender-light text-lavender-dark px-2 py-1 rounded-lg font-medium transition-colors whitespace-nowrap">Harga</button>
+              <button data-id="${h.id}" class="edit-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <i data-lucide="edit-2" class="w-4 h-4"></i>
+              </button>
+              <button data-id="${h.id}" class="delete-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // --- Add / Edit Modal ---
+    function openAddModal() {
+      document.getElementById('holding-id').value = '';
+      document.getElementById('holding-modal-title').textContent = 'Tambah Holding';
+      document.getElementById('holding-form').reset();
+      document.getElementById('holding-error').classList.add('hidden');
+      document.getElementById('holding-modal').classList.remove('hidden');
+    }
+
+    function openEditModal(h) {
+      document.getElementById('holding-id').value = h.id;
+      document.getElementById('holding-modal-title').textContent = 'Edit Holding';
+      document.getElementById('holding-account').value = h.account_id;
+      document.getElementById('holding-type').value = h.asset_type;
+      document.getElementById('holding-name').value = h.name;
+      document.getElementById('holding-qty').value = h.quantity;
+      document.getElementById('holding-currency').value = h.currency || 'IDR';
+      // Format with thousands
+      const avgEl = document.getElementById('holding-avg-price');
+      avgEl.value = Number(h.avg_buy_price).toLocaleString('id-ID');
+      avgEl.dispatchEvent(new Event('input'));
+      const curEl = document.getElementById('holding-cur-price');
+      curEl.value = h.current_price ? Number(h.current_price).toLocaleString('id-ID') : '';
+      if (h.current_price) curEl.dispatchEvent(new Event('input'));
+      document.getElementById('holding-error').classList.add('hidden');
+      document.getElementById('holding-modal').classList.remove('hidden');
+    }
+
+    function closeHoldingModal() {
+      document.getElementById('holding-modal').classList.add('hidden');
+    }
+
+    document.getElementById('open-add-btn').addEventListener('click', openAddModal);
+    document.getElementById('holding-modal-close').addEventListener('click', closeHoldingModal);
+    document.getElementById('holding-cancel').addEventListener('click', closeHoldingModal);
+
+    document.getElementById('holding-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('holding-error');
+      errEl.classList.add('hidden');
+      const id = document.getElementById('holding-id').value;
+      const account_id = document.getElementById('holding-account').value;
+      const asset_type = document.getElementById('holding-type').value;
+      const name = document.getElementById('holding-name').value.trim();
+      const qty = parseFloat(document.getElementById('holding-qty').value);
+      const avg = parseThousands(document.getElementById('holding-avg-price').value);
+      const cur = parseThousands(document.getElementById('holding-cur-price').value) || null;
+      const cur_code = document.getElementById('holding-currency').value;
+
+      if (!name || isNaN(qty) || qty <= 0 || isNaN(avg) || avg <= 0) {
+        errEl.textContent = 'Mohon isi semua field wajib dengan benar.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const submitBtn = document.getElementById('holding-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Menyimpan…';
+
+      try {
+        const payload = {
+          account_id, asset_type, name,
+          quantity: qty,
+          avg_buy_price: avg,
+          current_price: cur || null,
+          currency: cur_code,
+        };
+        if (id) {
+          await updateHolding(id, payload);
+          showToast('Holding berhasil diupdate');
+        } else {
+          await createHolding({ ...payload, user_id: currentUser.id });
+          showToast('Holding berhasil ditambahkan');
+        }
+        closeHoldingModal();
+        holdings = await fetchHoldings(currentUser.id);
+        applyFilter();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Simpan';
+      }
+    });
+
+    // --- Update Price Modal ---
+    function openPriceModal(h) {
+      document.getElementById('price-holding-id').value = h.id;
+      document.getElementById('price-modal-name').textContent = h.name;
+      const priceEl = document.getElementById('price-input');
+      priceEl.value = h.current_price ? Number(h.current_price).toLocaleString('id-ID') : '';
+      document.getElementById('price-error').classList.add('hidden');
+      document.getElementById('price-modal').classList.remove('hidden');
+      priceEl.focus();
+    }
+
+    function closePriceModal() {
+      document.getElementById('price-modal').classList.add('hidden');
+    }
+
+    document.getElementById('price-modal-close').addEventListener('click', closePriceModal);
+    document.getElementById('price-cancel').addEventListener('click', closePriceModal);
+
+    document.getElementById('price-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('price-error');
+      errEl.classList.add('hidden');
+      const id = document.getElementById('price-holding-id').value;
+      const price = parseThousands(document.getElementById('price-input').value);
+
+      if (isNaN(price) || price <= 0) {
+        errEl.textContent = 'Masukkan harga yang valid.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await updateHolding(id, { current_price: price });
+        showToast('Harga berhasil diupdate');
+        closePriceModal();
+        holdings = await fetchHoldings(currentUser.id);
+        applyFilter();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+    });
+
+    // --- Delete Modal ---
+    function openDeleteModal(h) {
+      deletingId = h.id;
+      document.getElementById('delete-modal-name').textContent = `"${h.name}" akan dihapus permanen.`;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    document.getElementById('delete-cancel').addEventListener('click', () => {
+      document.getElementById('delete-modal').classList.add('hidden');
+    });
+    document.getElementById('delete-confirm').addEventListener('click', async () => {
+      if (!deletingId) return;
+      try {
+        await deleteHolding(deletingId);
+        showToast('Holding dihapus');
+        document.getElementById('delete-modal').classList.add('hidden');
+        holdings = await fetchHoldings(currentUser.id);
+        applyFilter();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+      deletingId = null;
+    });
+
+    // --- Event delegation on tbody ---
+    document.getElementById('holdings-tbody').addEventListener('click', (e) => {
+      const updateBtn = e.target.closest('.update-price-btn');
+      const editBtn = e.target.closest('.edit-btn');
+      const deleteBtn = e.target.closest('.delete-btn');
+      const id = (updateBtn || editBtn || deleteBtn)?.dataset.id;
+      if (!id) return;
+      const h = holdings.find(x => x.id === id);
+      if (!h) return;
+      if (updateBtn) openPriceModal(h);
+      else if (editBtn) openEditModal(h);
+      else if (deleteBtn) openDeleteModal(h);
+    });
+
+    // --- Filter change ---
+    document.getElementById('filter-account').addEventListener('change', applyFilter);
+
+    // --- Close modals on backdrop ---
+    ['holding-modal','price-modal','delete-modal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+      });
+    });
+
+    // --- Auth ready ---
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
+      await loadData();
+    });
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
