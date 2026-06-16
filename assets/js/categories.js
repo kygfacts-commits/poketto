@@ -7,7 +7,7 @@ export async function fetchCategories(type, userId = null, includeInactive = fal
     query = query.or(`user_id.is.null,user_id.eq.${userId}`);
   }
   if (!includeInactive) {
-    query = query.eq('is_active', true);
+    query = query.filter('is_active', 'neq', false);
   }
   const { data, error } = await query.order('name', { ascending: true });
   if (error) throw error;
