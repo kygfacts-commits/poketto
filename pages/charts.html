@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poketto - Charts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -32,52 +35,54 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-5xl mx-auto">
-      <h1 class="text-2xl font-bold text-[#1E1B4B] mb-6">Charts</h1>
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-5xl mx-auto">
+      <div class="mb-5">
+        <h1 class="text-2xl font-bold text-[#1E1B4B]">Charts</h1>
+        <p class="text-sm text-gray-400 mt-0.5">Visualisasi keuangan kamu</p>
+      </div>
 
-      <!-- Filter -->
-      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 mb-6">
-        <div id="preset-tabs" class="flex gap-2 flex-wrap mb-3"></div>
-        <div class="flex flex-wrap gap-3 items-end">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Dari</label>
-            <input type="date" id="custom-start"
-              class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">Sampai</label>
-            <input type="date" id="custom-end"
-              class="rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
-          </div>
-          <button id="clear-custom" class="text-xs text-gray-400 hover:text-gray-600 py-2 px-3 rounded-xl hover:bg-gray-50 transition-colors">
-            Reset
-          </button>
+      <!-- Filter presets -->
+      <div id="preset-tabs" class="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-3"></div>
+      <!-- Custom date range -->
+      <div class="flex flex-wrap gap-3 items-end mb-6">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Dari</label>
+          <input type="date" id="custom-start"
+            class="rounded-xl border border-[#DDD6FE] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Sampai</label>
+          <input type="date" id="custom-end"
+            class="rounded-xl border border-[#DDD6FE] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+        </div>
+        <button id="clear-custom" class="text-xs text-gray-400 hover:text-gray-600 py-2 px-3 rounded-xl hover:bg-gray-50 transition-colors">
+          Reset
+        </button>
       </div>
 
       <!-- Summary stats -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
           <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pemasukan</p>
           <p id="stat-income" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-sky-600">Rp0</p>
         </div>
-        <div class="bg-peach-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
           <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pengeluaran</p>
           <p id="stat-expense" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-peach">Rp0</p>
         </div>
-        <div class="bg-mint-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
           <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Selisih</p>
           <p id="stat-diff" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">Rp0</p>
         </div>
-        <div class="bg-lavender-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
           <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Transaksi</p>
           <p id="stat-count" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">0</p>
         </div>
       </div>
 
       <!-- Chart 1: Cashflow line -->
-      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-6">
-        <h2 class="text-base font-semibold text-gray-700 mb-1">Arus Kas</h2>
+      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 mb-6">
+        <h2 class="text-base font-semibold text-[#1E1B4B] mb-3">Arus Kas</h2>
         <div class="flex gap-4 mb-3">
           <div class="flex items-center gap-1.5">
             <span class="w-3 h-3 rounded-full" style="background:#38BDF8"></span>
@@ -97,8 +102,8 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
         <!-- Doughnut -->
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
-          <h2 class="text-base font-semibold text-gray-700 mb-4">Pengeluaran per Kategori</h2>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <h2 class="text-base font-semibold text-[#1E1B4B] mb-4">Pengeluaran per Kategori</h2>
           <div id="doughnut-canvas-wrap" class="relative max-w-xs mx-auto" style="height:200px;">
             <canvas id="category-doughnut"></canvas>
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -113,8 +118,8 @@
         </div>
 
         <!-- Top 5 bar -->
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
-          <h2 class="text-base font-semibold text-gray-700 mb-4">Top Kategori Pengeluaran</h2>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <h2 class="text-base font-semibold text-[#1E1B4B] mb-4">Top Kategori Pengeluaran</h2>
           <div class="relative" style="height:200px;">
             <canvas id="top-category-bar"></canvas>
             <div id="bar-empty" class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm" style="display:none;">
@@ -125,7 +130,7 @@
       </div>
 
       <!-- Transaction list -->
-      <h2 class="text-base font-semibold text-gray-700 mb-3">Transaksi</h2>
+      <h2 class="text-base font-semibold text-[#1E1B4B] mb-3">Transaksi</h2>
       <div id="tx-list" class="space-y-4"></div>
       <div id="tx-empty" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-8 text-center text-gray-400 text-sm">
         Tidak ada transaksi dalam rentang ini
@@ -150,8 +155,8 @@
     let activePreset = '7d', customStart = '', customEnd = '';
     let cashflowChart = null, doughnutChart = null, barChart = null;
 
-    const PRESET_ACTIVE = 'preset-btn px-3.5 py-1.5 rounded-lg text-sm font-semibold bg-lavender text-white';
-    const PRESET_INACTIVE = 'preset-btn px-3.5 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors';
+    const PRESET_ACTIVE = 'preset-btn px-3.5 py-1.5 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white whitespace-nowrap flex-shrink-0';
+    const PRESET_INACTIVE = 'preset-btn px-3.5 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors whitespace-nowrap flex-shrink-0';
 
     // ---------- Build preset buttons ----------
     const presetTabsEl = document.getElementById('preset-tabs');

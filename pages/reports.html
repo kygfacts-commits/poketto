@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poketto - Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -32,17 +35,20 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
-      <h1 class="text-2xl font-bold text-[#1E1B4B] mb-6">Reports</h1>
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
+      <div class="mb-5">
+        <h1 class="text-2xl font-bold text-[#1E1B4B]">Reports</h1>
+        <p class="text-sm text-gray-400 mt-0.5">Ringkasan keuangan bulanan</p>
+      </div>
 
       <!-- Tab switcher -->
-      <div class="flex bg-[#F3F0FF] rounded-xl p-1 mb-6">
+      <div class="flex gap-2 mb-6">
         <button id="tab-btn-ringkasan" type="button"
-          class="flex-1 rounded-lg py-2 text-sm font-semibold bg-white text-lavender-dark shadow-sm transition-colors">
+          class="px-4 py-2 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors">
           Ringkasan
         </button>
         <button id="tab-btn-akun" type="button"
-          class="flex-1 rounded-lg py-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700">
+          class="px-4 py-2 rounded-full text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors">
           Akun
         </button>
       </div>
@@ -63,15 +69,15 @@
 
         <!-- Summary cards -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-          <div class="bg-peach-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pengeluaran</p>
-            <p id="stat-expense" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-peach">Rp0</p>
-          </div>
-          <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
             <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pemasukan</p>
             <p id="stat-income" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-sky-600">Rp0</p>
           </div>
-          <div class="bg-lavender-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4 col-span-2 sm:col-span-1">
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pengeluaran</p>
+            <p id="stat-expense" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-peach">Rp0</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 col-span-2 sm:col-span-1">
             <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Selisih</p>
             <p id="stat-diff" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">Rp0</p>
           </div>
@@ -200,8 +206,8 @@
     let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let activeTab = 'ringkasan', budgets = [], budgetDonutChart = null;
 
-    const TAB_ACTIVE = 'flex-1 rounded-lg py-2 text-sm font-semibold bg-white text-lavender-dark shadow-sm transition-colors';
-    const TAB_INACTIVE = 'flex-1 rounded-lg py-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-700';
+    const TAB_ACTIVE = 'px-4 py-2 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors';
+    const TAB_INACTIVE = 'px-4 py-2 rounded-full text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors';
 
     // ---------- Tabs ----------
     function switchTab(tab) {

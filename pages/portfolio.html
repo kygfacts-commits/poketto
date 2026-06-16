@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poketto - Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -31,7 +34,7 @@
 
   <!-- Main -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-5xl mx-auto">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-5xl mx-auto">
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
@@ -66,30 +69,27 @@
       <div id="portfolio-content" class="hidden space-y-6">
 
         <!-- Summary cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-lavender-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-            <p class="text-xs font-semibold text-lavender-dark uppercase tracking-wide mb-1">Total Nilai</p>
-            <p id="sum-nilai" class="text-xl font-bold text-lavender-dark">–</p>
+        <p id="sum-gain" class="hidden">–</p>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Nilai</p>
+            <p id="sum-nilai" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">–</p>
           </div>
-          <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-            <p class="text-xs font-semibold text-sky-600 uppercase tracking-wide mb-1">Total Modal</p>
-            <p id="sum-modal" class="text-xl font-bold text-[#1E1B4B]">–</p>
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Invested</p>
+            <p id="sum-modal" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">–</p>
           </div>
-          <div class="bg-mint-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-            <p class="text-xs font-semibold text-mint uppercase tracking-wide mb-1">Gain/Loss</p>
-            <p id="sum-gain" class="text-xl font-bold text-[#1E1B4B]">–</p>
-          </div>
-          <div class="bg-peach-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-            <p class="text-xs font-semibold text-peach uppercase tracking-wide mb-1">Return</p>
-            <p id="sum-pct" class="text-xl font-bold text-[#1E1B4B]">–</p>
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 col-span-2 sm:col-span-1">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Return</p>
+            <p id="sum-pct" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">–</p>
           </div>
         </div>
 
         <!-- Filter + Allocation -->
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
           <div class="flex flex-wrap items-center gap-3 mb-4">
             <label class="text-sm font-medium text-gray-600">Filter Akun:</label>
-            <select id="filter-account" class="rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            <select id="filter-account" class="rounded-xl border border-[#DDD6FE] px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
               <option value="">Semua Akun</option>
             </select>
           </div>
@@ -100,25 +100,9 @@
           </div>
         </div>
 
-        <!-- Holdings table -->
+        <!-- Holdings cards -->
         <div id="holdings-wrap" class="hidden">
-          <div class="overflow-x-auto rounded-2xl shadow-sm border border-[#EDE9FE] bg-white">
-            <table class="w-full text-sm" style="min-width:720px">
-              <thead>
-                <tr class="border-b border-[#EDE9FE] bg-[#F3F0FF]">
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nama Aset</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipe</th>
-                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Jumlah</th>
-                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Avg Price</th>
-                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Harga Kini</th>
-                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nilai</th>
-                  <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">G/L</th>
-                  <th class="px-4 py-3"></th>
-                </tr>
-              </thead>
-              <tbody id="holdings-tbody"></tbody>
-            </table>
-          </div>
+          <div id="holdings-tbody" class="space-y-3"></div>
         </div>
 
         <!-- Empty holdings state -->
@@ -147,11 +131,11 @@
         <input type="hidden" id="holding-id">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Akun Investasi <span class="text-red-400">*</span></label>
-          <select id="holding-account" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+          <select id="holding-account" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]"></select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Aset <span class="text-red-400">*</span></label>
-          <select id="holding-type" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          <select id="holding-type" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
             <option value="saham">Saham</option>
             <option value="reksadana">Reksadana</option>
             <option value="emas">Emas</option>
@@ -162,16 +146,16 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Nama Aset <span class="text-red-400">*</span></label>
-          <input type="text" id="holding-name" placeholder="cth. BBCA, RD Pasar Uang" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          <input type="text" id="holding-name" placeholder="cth. BBCA, RD Pasar Uang" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah / Unit <span class="text-red-400">*</span></label>
-            <input type="number" id="holding-qty" step="any" min="0" placeholder="0" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            <input type="number" id="holding-qty" step="any" min="0" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Mata Uang</label>
-            <select id="holding-currency" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            <select id="holding-currency" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
               <option value="IDR">IDR</option>
               <option value="USD">USD</option>
             </select>
@@ -179,16 +163,16 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Avg Buy Price <span class="text-red-400">*</span></label>
-          <input type="text" inputmode="numeric" id="holding-avg-price" placeholder="0" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          <input type="text" inputmode="numeric" id="holding-avg-price" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Harga Sekarang <span class="text-gray-400 font-normal">(opsional)</span></label>
-          <input type="text" inputmode="numeric" id="holding-cur-price" placeholder="Sama dengan avg price jika kosong" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          <input type="text" inputmode="numeric" id="holding-cur-price" placeholder="Sama dengan avg price jika kosong" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
         <p id="holding-error" class="hidden text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2"></p>
         <div class="flex gap-3 pt-1">
           <button type="button" id="holding-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
-          <button type="submit" id="holding-submit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
+          <button type="submit" id="holding-submit" class="flex-1 rounded-xl bg-[#8B5CF6] hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
         </div>
       </form>
     </div>
@@ -210,12 +194,12 @@
         <input type="hidden" id="price-holding-id">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Harga Sekarang</label>
-          <input type="text" inputmode="numeric" id="price-input" placeholder="0" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          <input type="text" inputmode="numeric" id="price-input" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
         <p id="price-error" class="hidden text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2"></p>
         <div class="flex gap-3">
           <button type="button" id="price-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
-          <button type="submit" class="flex-1 rounded-xl bg-lavender hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
+          <button type="submit" class="flex-1 rounded-xl bg-[#8B5CF6] hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
         </div>
       </form>
     </div>
@@ -384,28 +368,18 @@
         const gainPct = modal > 0 ? (gainNom / modal * 100) : 0;
         const tc = ASSET_TYPE_COLORS[h.asset_type] || ASSET_TYPE_COLORS.lainnya;
         const gc = gainNom >= 0 ? 'text-mint' : 'text-peach';
-        const arrow = gainNom >= 0 ? '↑' : '↓';
         const cur = h.currency || 'IDR';
 
-        return `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-          <td class="px-4 py-3">
-            <p class="font-medium text-gray-800">${h.asset_name}</p>
-            <p class="text-xs text-gray-400">${cur}</p>
-          </td>
-          <td class="px-4 py-3">
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${tc.bg} ${tc.text}">${ASSET_TYPE_LABELS[h.asset_type] || 'Lainnya'}</span>
-          </td>
-          <td class="px-4 py-3 text-right text-gray-700">${Number(h.quantity).toLocaleString('id-ID', { maximumFractionDigits: 8 })}</td>
-          <td class="px-4 py-3 text-right text-gray-700">${formatCurrency(Number(h.avg_buy_price), cur)}</td>
-          <td class="px-4 py-3 text-right text-gray-700">${h.current_price ? formatCurrency(Number(h.current_price), cur) : '–'}</td>
-          <td class="px-4 py-3 text-right font-semibold text-gray-800">${formatCurrency(nilai, cur)}</td>
-          <td class="px-4 py-3 text-right">
-            <p class="${gc} font-medium text-xs">${arrow} ${formatCurrency(Math.abs(gainNom), cur)}</p>
-            <p class="${gc} text-xs">${gainNom >= 0 ? '+' : ''}${gainPct.toFixed(1)}%</p>
-          </td>
-          <td class="px-4 py-3">
-            <div class="flex items-center gap-1 justify-end">
-              <button data-id="${h.id}" class="update-price-btn text-xs bg-lavender-light/50 hover:bg-lavender-light text-lavender-dark px-2 py-1 rounded-lg font-medium transition-colors whitespace-nowrap">Harga</button>
+        return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${tc.bg} ${tc.text}">${ASSET_TYPE_LABELS[h.asset_type] || 'Lainnya'}</span>
+              </div>
+              <p class="font-semibold text-gray-800 truncate">${h.asset_name}</p>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button data-id="${h.id}" class="update-price-btn text-xs border border-[#8B5CF6] text-[#8B5CF6] px-2 py-1 rounded-lg font-medium hover:bg-lavender-light/50 transition-colors whitespace-nowrap">Harga</button>
               <button data-id="${h.id}" class="edit-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                 <i data-lucide="edit-2" class="w-4 h-4"></i>
               </button>
@@ -413,8 +387,18 @@
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
-          </td>
-        </tr>`;
+          </div>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-xs text-gray-400">${Number(h.quantity).toLocaleString('id-ID', { maximumFractionDigits: 8 })} × ${formatCurrency(Number(h.avg_buy_price), cur)}</p>
+              <p class="text-xs text-gray-400">Harga kini: ${h.current_price ? formatCurrency(Number(h.current_price), cur) : '–'}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-gray-800">${formatCurrency(nilai, cur)}</p>
+              <p class="${gc} text-xs font-semibold">${gainNom >= 0 ? '+' : ''}${gainPct.toFixed(1)}% (${gainNom >= 0 ? '+' : ''}${formatCurrency(Math.abs(gainNom), cur)})</p>
+            </div>
+          </div>
+        </div>`;
       }).join('');
 
       lucide.createIcons();
