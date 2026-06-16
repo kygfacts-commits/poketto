@@ -10,7 +10,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -22,6 +22,8 @@
       }
     }
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="min-h-screen bg-[#F8F7FF] font-sans">
@@ -31,20 +33,22 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-[#1E1B4B]">Akun</h1>
-        <button id="add-account-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors">
-          <i data-lucide="plus" class="w-4 h-4"></i>
-          <span>Tambah Akun</span>
-        </button>
       </div>
 
       <!-- Net worth -->
       <div id="net-worth-section" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6"></div>
 
       <!-- Accounts list -->
-      <div id="accounts-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      <div id="accounts-list" class="grid grid-cols-2 gap-4"></div>
+
+      <!-- Add account button -->
+      <button id="add-account-btn" class="w-full mt-4 flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold rounded-2xl py-3 transition-colors">
+        <i data-lucide="plus" class="w-5 h-5"></i>
+        <span>Tambah Akun</span>
+      </button>
 
       <!-- Empty state -->
       <div id="empty-state" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center">
@@ -203,6 +207,11 @@
 
     // ---------- Rendering ----------
 
+    function typeAccentColor(type) {
+      const map = { bank: '#8B5CF6', ewallet: '#FB923C', cash: '#34D399', investment: '#38BDF8', other: '#9CA3AF' };
+      return map[type] || '#9CA3AF';
+    }
+
     function renderNetWorth() {
       if (accounts.length === 0) {
         netWorthSection.classList.add('hidden');
@@ -241,24 +250,27 @@
       accountsList.innerHTML = accounts.map((acc) => {
         const balance = getAccountBalance(acc.id, accounts, transactions);
         const colorClasses = ACCOUNT_COLOR_CLASSES[acc.color] || ACCOUNT_COLOR_CLASSES.lavender;
+        const accent = typeAccentColor(acc.type);
 
         return `
-          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center ${colorClasses.bg} flex-shrink-0">
-              <i data-lucide="${acc.icon || 'wallet'}" class="w-6 h-6 ${colorClasses.icon}"></i>
-            </div>
-            <div class="flex-1 min-w-0">
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm overflow-hidden" style="border-top: 4px solid ${accent}">
+            <div class="p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center ${colorClasses.bg}">
+                  <i data-lucide="${acc.icon || 'wallet'}" class="w-5 h-5 ${colorClasses.icon}"></i>
+                </div>
+                <div class="flex gap-1">
+                  <button class="edit-btn p-1.5 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-lavender-dark transition-colors" data-id="${acc.id}" title="Edit">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                  </button>
+                  <button class="delete-btn p-1.5 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-red-500 transition-colors" data-id="${acc.id}" title="Hapus">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
               <p class="font-semibold text-gray-800 truncate">${acc.name}</p>
-              <p class="text-xs text-gray-400">${getAccountTypeLabel(acc.type)} &middot; ${acc.currency}</p>
-              <p class="font-bold text-[#1E1B4B] mt-1">${formatCurrency(balance, acc.currency)}</p>
-            </div>
-            <div class="flex flex-col gap-1 flex-shrink-0">
-              <button class="edit-btn p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-lavender-dark transition-colors" data-id="${acc.id}" title="Edit">
-                <i data-lucide="pencil" class="w-4 h-4"></i>
-              </button>
-              <button class="delete-btn p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-red-500 transition-colors" data-id="${acc.id}" title="Hapus">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
+              <p class="text-xs text-gray-400 mb-2">${getAccountTypeLabel(acc.type)}</p>
+              <p class="font-bold text-lg text-[#1E1B4B]">${formatCurrency(balance, acc.currency)}</p>
             </div>
           </div>
         `;

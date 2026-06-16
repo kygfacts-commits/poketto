@@ -10,7 +10,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -22,6 +22,8 @@
       }
     }
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="min-h-screen bg-[#F8F7FF] font-sans">
@@ -31,11 +33,12 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
-      <h1 class="text-2xl font-bold text-[#1E1B4B] mb-1">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
+      <h1 class="text-2xl font-bold text-[#1E1B4B] mb-0.5">
         Selamat datang, <span id="user-email" class="text-lavender-dark">...</span>
       </h1>
-      <p class="text-gray-400 text-sm mb-6">Ringkasan keuanganmu.</p>
+      <p id="today-date" class="text-gray-400 text-sm mb-6"></p>
+      <script>document.getElementById('today-date').textContent = new Intl.DateTimeFormat('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date());</script>
 
       <!-- Empty state: 0 akun -->
       <div id="empty-accounts" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center">
@@ -63,6 +66,17 @@
           </button>
         </div>
 
+        <!-- Total saldo card -->
+        <div class="w-full rounded-2xl bg-gradient-to-r from-[#EDE9FE] to-white border border-[#EDE9FE] shadow-sm p-5 mb-6 flex items-center justify-between">
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Saldo</p>
+            <p id="total-balance-amount" class="text-3xl font-extrabold tracking-tight text-[#1E1B4B]">***</p>
+          </div>
+          <button id="toggle-balance" type="button" class="ml-4 p-2.5 rounded-xl hover:bg-lavender-light/50 text-lavender-dark transition-colors flex-shrink-0">
+            <i data-lucide="eye-off" id="toggle-balance-icon" class="w-5 h-5"></i>
+          </button>
+        </div>
+
         <!-- Summary cards -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
           <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
@@ -80,11 +94,14 @@
         </div>
 
         <!-- Account balance strip -->
-        <p class="text-sm font-semibold text-gray-500 mb-2">Akun</p>
+        <p class="font-bold text-lg text-[#1E1B4B] mb-3">Akun</p>
         <div id="account-strip" class="flex gap-3 overflow-x-auto pb-2 mb-6"></div>
 
         <!-- Transaction list -->
-        <p class="text-sm font-semibold text-gray-500 mb-2">Transaksi</p>
+        <div class="flex items-center justify-between mb-3">
+          <p class="font-bold text-lg text-[#1E1B4B]">Transaksi Terakhir</p>
+          <a href="transactions.html" class="text-sm font-medium text-lavender-dark hover:underline transition-colors">Lihat Semua →</a>
+        </div>
         <div id="transaction-list" class="space-y-6"></div>
 
         <!-- Empty state: 0 transaksi -->
@@ -195,6 +212,7 @@
     const summaryIncome = document.getElementById('summary-income');
     const summaryExpense = document.getElementById('summary-expense');
     const summaryDiff = document.getElementById('summary-diff');
+    const totalBalanceAmount = document.getElementById('total-balance-amount');
 
     const accountStrip = document.getElementById('account-strip');
     const transactionList = document.getElementById('transaction-list');
@@ -226,6 +244,7 @@
     let categoriesById = new Map();
     let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let selectedTransactionId = null;
+    let balanceVisible = false;
 
     function getAccountById(id) {
       return accounts.find((a) => a.id === id);
@@ -249,6 +268,15 @@
       summaryExpense.textContent = formatCurrency(expense, currency);
       summaryDiff.textContent = formatCurrency(diff, currency);
       summaryDiff.className = `text-xl md:text-2xl font-extrabold tracking-tight truncate ${diff < 0 ? 'text-peach' : 'text-mint'}`;
+    }
+
+    function renderTotalBalance() {
+      const total = accounts.reduce((sum, acc) => {
+        return sum + getAccountBalance(acc.id, accounts, allTransactions);
+      }, 0);
+      const formatted = formatCurrency(total, currency);
+      totalBalanceAmount.dataset.formatted = formatted;
+      totalBalanceAmount.textContent = balanceVisible ? formatted : '***';
     }
 
     function renderAccountStrip() {
@@ -377,6 +405,7 @@
 
       renderMonthLabel();
       renderSummary();
+      renderTotalBalance();
       renderAccountStrip();
       renderTransactionList();
     }
@@ -472,6 +501,16 @@
     });
 
     // ---------- Modal: Konfirmasi Hapus ----------
+
+    document.getElementById('toggle-balance').addEventListener('click', () => {
+      balanceVisible = !balanceVisible;
+      const icon = document.getElementById('toggle-balance-icon');
+      icon.setAttribute('data-lucide', balanceVisible ? 'eye' : 'eye-off');
+      lucide.createIcons();
+      if (totalBalanceAmount.dataset.formatted) {
+        totalBalanceAmount.textContent = balanceVisible ? totalBalanceAmount.dataset.formatted : '***';
+      }
+    });
 
     confirmCancelBtn.addEventListener('click', () => {
       confirmModal.classList.add('hidden');
