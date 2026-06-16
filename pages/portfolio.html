@@ -447,7 +447,7 @@
 
         return `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
           <td class="px-4 py-3">
-            <p class="font-medium text-gray-800">${h.name}</p>
+            <p class="font-medium text-gray-800">${h.asset_name}</p>
             <p class="text-xs text-gray-400">${cur}</p>
           </td>
           <td class="px-4 py-3">
@@ -492,7 +492,7 @@
       document.getElementById('holding-modal-title').textContent = 'Edit Holding';
       document.getElementById('holding-account').value = h.account_id;
       document.getElementById('holding-type').value = h.asset_type;
-      document.getElementById('holding-name').value = h.name;
+      document.getElementById('holding-name').value = h.asset_name;
       document.getElementById('holding-qty').value = h.quantity;
       document.getElementById('holding-currency').value = h.currency || 'IDR';
       // Format with thousands
@@ -521,13 +521,13 @@
       const id = document.getElementById('holding-id').value;
       const account_id = document.getElementById('holding-account').value;
       const asset_type = document.getElementById('holding-type').value;
-      const name = document.getElementById('holding-name').value.trim();
+      const asset_name = document.getElementById('holding-name').value.trim();
       const qty = parseFloat(document.getElementById('holding-qty').value);
       const avg = parseThousands(document.getElementById('holding-avg-price').value);
       const cur = parseThousands(document.getElementById('holding-cur-price').value) || null;
       const cur_code = document.getElementById('holding-currency').value;
 
-      if (!name || isNaN(qty) || qty <= 0 || isNaN(avg) || avg <= 0) {
+      if (!asset_name || isNaN(qty) || qty <= 0 || isNaN(avg) || avg <= 0) {
         errEl.textContent = 'Mohon isi semua field wajib dengan benar.';
         errEl.classList.remove('hidden');
         return;
@@ -539,7 +539,7 @@
 
       try {
         const payload = {
-          account_id, asset_type, name,
+          account_id, asset_type, asset_name,
           quantity: qty,
           avg_buy_price: avg,
           current_price: cur || null,
@@ -567,7 +567,7 @@
     // --- Update Price Modal ---
     function openPriceModal(h) {
       document.getElementById('price-holding-id').value = h.id;
-      document.getElementById('price-modal-name').textContent = h.name;
+      document.getElementById('price-modal-name').textContent = h.asset_name;
       const priceEl = document.getElementById('price-input');
       priceEl.value = h.current_price ? Number(h.current_price).toLocaleString('id-ID') : '';
       document.getElementById('price-error').classList.add('hidden');
@@ -610,7 +610,7 @@
     // --- Delete Modal ---
     function openDeleteModal(h) {
       deletingId = h.id;
-      document.getElementById('delete-modal-name').textContent = `"${h.name}" akan dihapus permanen.`;
+      document.getElementById('delete-modal-name').textContent = `"${h.asset_name}" akan dihapus permanen.`;
       document.getElementById('delete-modal').classList.remove('hidden');
     }
 
