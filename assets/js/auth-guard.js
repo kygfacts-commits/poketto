@@ -1,32 +1,33 @@
-// Poketto - Auth guard
-// Diimpor di halaman yang butuh login (home, profile, add, charts, reports).
-// Jika tidak ada session aktif -> redirect ke login.html.
-// Jika ada session -> dispatch CustomEvent 'schatz:auth-ready' dengan detail { user }.
+// Poketto — auth-guard.js
+// Single responsibility: cek session Supabase.
+//   • Tidak ada session  → redirect ke login.html
+//   • Ada session        → dispatch 'schatz:auth-ready' dengan { user }
 //
-// Catatan: sengaja tidak memakai top-level await, supaya statement `import`
-// di halaman pemanggil selesai duluan dan event listener-nya sempat terpasang
-// sebelum event 'schatz:auth-ready' di-dispatch.
+// Semua inisialisasi navigasi ada di nav-loader.js.
+// Semua DOM manipulation navigasi ada di components/sidebar.html + components/mobile-nav.html.
 
 import { supabase } from './supabase-client.js';
-import './notification-badge.js';
-import './mobile-nav.js';
-
-console.log('[auth-guard] Memeriksa session...');
 
 supabase.auth.getSession().then(({ data, error }) => {
   if (error) {
-    console.log('[auth-guard] Error saat getSession:', error.message);
+    console.warn('[auth-guard] getSession error:', error.message);
     window.location.href = 'login.html';
     return;
   }
 
   if (!data.session) {
-    console.log('[auth-guard] Tidak ada session aktif. Redirect ke login.html');
+    console.log('[auth-guard] Tidak ada session — redirect ke login.');
     window.location.href = 'login.html';
     return;
   }
 
-  console.log('[auth-guard] Session ditemukan untuk:', data.session.user.email);
-  console.log('[auth-guard] Dispatch event "schatz:auth-ready"');
-  window.dispatchEvent(new CustomEvent('schatz:auth-ready', { detail: { user: data.session.user } }));
+  window.dispatchEvent(
+    new CustomEvent('schatz:auth-ready', { detail: { user: data.session.user } })
+  );
 });
+
+/** Ambil user yang sedang login (async). */
+export async function getCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
