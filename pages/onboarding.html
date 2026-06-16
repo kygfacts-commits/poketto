@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto — Setup Awal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          colors: {
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach:    { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky:      { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint:     { light: '#A7F3D0', DEFAULT: '#34D399' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    body { background: linear-gradient(135deg, #F8F7FF 0%, #EDE9FE 60%, #F0FDF4 100%); min-height: 100vh; }
+
+    /* Progress step */
+    .step-circle { transition: all .3s ease; }
+    .step-line   { transition: background-color .4s ease; }
+
+    /* Chip toggle */
+    .cat-chip { cursor: pointer; transition: all .15s ease; user-select: none; }
+    .cat-chip.selected { box-shadow: 0 0 0 2px #A78BFA; }
+    .cat-chip:hover { transform: scale(1.03); }
+
+    /* Fade step */
+    .step-panel { animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Number input cleanup */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+  </style>
+</head>
+<body class="font-sans p-4 flex flex-col items-center justify-start pt-10 pb-16">
+
+  <!-- Logo -->
+  <div class="flex items-center gap-2 mb-8">
+    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-lavender to-lavender-dark shadow-sm flex items-center justify-center text-white font-bold text-lg">P</div>
+    <span class="text-xl font-bold text-[#1E1B4B]">Poketto</span>
+  </div>
+
+  <!-- Progress Indicator -->
+  <div class="flex items-center gap-0 mb-10 w-full max-w-xs">
+    <!-- Step 1 -->
+    <div class="flex flex-col items-center">
+      <div id="p-circle-1" class="step-circle w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold bg-lavender-dark text-white shadow-md">1</div>
+      <span class="text-[10px] font-medium text-lavender-dark mt-1.5 whitespace-nowrap">Akun</span>
+    </div>
+    <div id="p-line-1" class="step-line flex-1 h-0.5 bg-lavender-dark mx-1 -mt-4"></div>
+    <!-- Step 2 -->
+    <div class="flex flex-col items-center">
+      <div id="p-circle-2" class="step-circle w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold bg-lavender-light text-lavender border-2 border-lavender-light">2</div>
+      <span id="p-label-2" class="text-[10px] font-medium text-[#6B7280] mt-1.5 whitespace-nowrap">Kategori</span>
+    </div>
+    <div id="p-line-2" class="step-line flex-1 h-0.5 bg-lavender-light mx-1 -mt-4"></div>
+    <!-- Step 3 -->
+    <div class="flex flex-col items-center">
+      <div id="p-circle-3" class="step-circle w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold bg-lavender-light text-lavender border-2 border-lavender-light">3</div>
+      <span id="p-label-3" class="text-[10px] font-medium text-[#6B7280] mt-1.5 whitespace-nowrap">Selesai</span>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="bg-white rounded-2xl shadow-md border border-[#EDE9FE] w-full max-w-md overflow-hidden">
+
+    <!-- ═══ STEP 1: Buat Akun Pertama ═══ -->
+    <div id="step-1" class="step-panel p-7">
+      <h1 id="greeting" class="text-xl font-bold text-[#1E1B4B] mb-1">Halo! Yuk setup akunmu dulu 👋</h1>
+      <p class="text-sm text-[#6B7280] mb-6">Buat akun keuangan pertamamu untuk mulai mencatat transaksi.</p>
+
+      <form id="step1-form" class="space-y-4" novalidate>
+        <!-- Nama Akun -->
+        <div>
+          <label for="acc-name" class="block text-sm font-medium text-gray-700 mb-1">Nama Akun <span class="text-red-400">*</span></label>
+          <input type="text" id="acc-name" placeholder="Contoh: BCA Tabungan, GoPay, Dompet"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender transition">
+          <p id="err-name" class="hidden text-xs text-red-500 mt-1">Nama akun wajib diisi.</p>
+        </div>
+
+        <!-- Tipe Akun -->
+        <div>
+          <label for="acc-type" class="block text-sm font-medium text-gray-700 mb-1">Tipe Akun <span class="text-red-400">*</span></label>
+          <select id="acc-type"
+            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender transition appearance-none bg-white">
+            <option value="">— Pilih tipe —</option>
+            <option value="bank">Tabungan</option>
+            <option value="bank-giro">Giro</option>
+            <option value="ewallet">Dompet Digital</option>
+            <option value="cash">Tunai</option>
+            <option value="investment">Investasi</option>
+          </select>
+          <p id="err-type" class="hidden text-xs text-red-500 mt-1">Pilih tipe akun.</p>
+        </div>
+
+        <!-- Saldo Awal + Mata Uang -->
+        <div>
+          <label for="acc-balance" class="block text-sm font-medium text-gray-700 mb-1">Saldo Awal</label>
+          <div class="flex gap-2">
+            <div class="flex items-center px-3 py-2.5 rounded-xl border border-gray-200 bg-[#F8F7FF] text-sm text-[#6B7280] font-medium select-none">IDR</div>
+            <input type="number" id="acc-balance" placeholder="0" min="0"
+              class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender transition">
+          </div>
+          <p class="text-xs text-[#6B7280] mt-1">Kosongi jika mulai dari nol.</p>
+        </div>
+
+        <p id="step1-error" class="hidden text-sm text-red-500 bg-red-50 rounded-xl px-4 py-2.5"></p>
+
+        <button type="submit" id="step1-btn"
+          class="w-full mt-2 bg-lavender-dark hover:bg-[#7C3AED] text-white font-semibold rounded-xl py-3 transition-all shadow-sm shadow-lavender-dark/20 flex items-center justify-center gap-2">
+          <span>Lanjut</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- ═══ STEP 2: Pilih Kategori Favorit ═══ -->
+    <div id="step-2" class="step-panel p-7 hidden">
+      <h1 class="text-xl font-bold text-[#1E1B4B] mb-1">Pilih kategori yang sering kamu pakai</h1>
+      <p class="text-sm text-[#6B7280] mb-5">Tenang, bisa diubah kapan saja.</p>
+
+      <!-- Category chips container -->
+      <div id="cat-loading" class="flex items-center justify-center py-8">
+        <div class="w-6 h-6 border-2 border-lavender border-t-transparent rounded-full animate-spin"></div>
+        <span class="ml-2 text-sm text-[#6B7280]">Memuat kategori...</span>
+      </div>
+      <div id="cat-chips" class="hidden flex flex-wrap gap-2 max-h-72 overflow-y-auto pr-1 mb-5"></div>
+
+      <div class="flex gap-3 mt-4">
+        <button id="step2-skip"
+          class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-[#6B7280] hover:bg-gray-50 transition-colors">
+          Lewati
+        </button>
+        <button id="step2-btn"
+          class="flex-1 py-2.5 rounded-xl bg-lavender-dark hover:bg-[#7C3AED] text-white text-sm font-semibold transition-all shadow-sm shadow-lavender-dark/20 flex items-center justify-center gap-2">
+          <span>Lanjut</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 3: Selesai ═══ -->
+    <div id="step-3" class="step-panel p-7 hidden text-center">
+      <!-- Rocket SVG illustration -->
+      <div class="flex justify-center mb-6">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background circle -->
+          <circle cx="60" cy="60" r="56" fill="#EDE9FE"/>
+          <!-- Rocket body -->
+          <path d="M60 28 C60 28 75 40 75 58 L60 70 L45 58 C45 40 60 28 60 28Z" fill="#A78BFA"/>
+          <!-- Rocket nose -->
+          <path d="M60 22 L68 36 L52 36 Z" fill="#8B5CF6"/>
+          <!-- Window -->
+          <circle cx="60" cy="52" r="7" fill="white" opacity="0.85"/>
+          <circle cx="60" cy="52" r="4" fill="#DDD6FE"/>
+          <!-- Left fin -->
+          <path d="M45 60 L38 72 L48 68 Z" fill="#8B5CF6"/>
+          <!-- Right fin -->
+          <path d="M75 60 L82 72 L72 68 Z" fill="#8B5CF6"/>
+          <!-- Flame outer -->
+          <path d="M52 70 Q56 84 60 90 Q64 84 68 70 Z" fill="#FDE68A" opacity="0.9"/>
+          <!-- Flame inner -->
+          <path d="M55 70 Q58 80 60 85 Q62 80 65 70 Z" fill="#FB923C" opacity="0.9"/>
+          <!-- Stars -->
+          <circle cx="30" cy="38" r="2.5" fill="#DDD6FE"/>
+          <circle cx="88" cy="44" r="2" fill="#DDD6FE"/>
+          <circle cx="25" cy="58" r="1.5" fill="#A78BFA" opacity="0.6"/>
+          <circle cx="92" cy="62" r="2" fill="#A78BFA" opacity="0.6"/>
+          <circle cx="35" cy="78" r="1.5" fill="#DDD6FE"/>
+          <!-- Checkmark badge -->
+          <circle cx="88" cy="32" r="14" fill="#34D399"/>
+          <path d="M81 32 L86 37 L95 26" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <h1 class="text-2xl font-extrabold text-[#1E1B4B] mb-2">Poketto siap digunakan! 🎉</h1>
+      <p class="text-sm text-[#6B7280] mb-2">Akun keuanganmu sudah dibuat.</p>
+      <p class="text-sm text-[#6B7280] mb-8">Mulai catat transaksi pertamamu sekarang.</p>
+
+      <p id="step3-error" class="hidden text-sm text-red-500 bg-red-50 rounded-xl px-4 py-2.5 mb-4"></p>
+
+      <button id="finish-btn"
+        class="w-full bg-lavender-dark hover:bg-[#7C3AED] text-white font-semibold rounded-xl py-3 transition-all shadow-sm shadow-lavender-dark/20 flex items-center justify-center gap-2">
+        <span>Mulai Sekarang</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { supabase } from '../assets/js/supabase-client.js';
+
+    // ─── Konstanta ─────────────────────────────────────────────────────────────
+    const TYPE_TO_DB = {
+      'bank':       'bank',
+      'bank-giro':  'bank',
+      'ewallet':    'ewallet',
+      'cash':       'cash',
+      'investment': 'investment',
+    };
+    const TYPE_TO_ICON = {
+      bank:       'landmark',
+      ewallet:    'smartphone',
+      cash:       'wallet',
+      investment: 'trending-up',
+      other:      'circle-dollar-sign',
+    };
+    const CAT_COLOR_MAP = {
+      lavender: { bg: '#EDE9FE', dot: '#8B5CF6' },
+      pink:     { bg: '#FCE7F3', dot: '#EC4899' },
+      red:      { bg: '#FEE2E2', dot: '#EF4444' },
+      orange:   { bg: '#FFEDD5', dot: '#F97316' },
+      amber:    { bg: '#FEF3C7', dot: '#D97706' },
+      yellow:   { bg: '#FEF9C3', dot: '#CA8A04' },
+      lime:     { bg: '#ECFCCB', dot: '#65A30D' },
+      green:    { bg: '#DCFCE7', dot: '#16A34A' },
+      teal:     { bg: '#CCFBF1', dot: '#0D9488' },
+      cyan:     { bg: '#CFFAFE', dot: '#0891B2' },
+      sky:      { bg: '#E0F2FE', dot: '#0284C7' },
+      blue:     { bg: '#DBEAFE', dot: '#2563EB' },
+      indigo:   { bg: '#E0E7FF', dot: '#4338CA' },
+      violet:   { bg: '#EDE9FE', dot: '#7C3AED' },
+      purple:   { bg: '#F3E8FF', dot: '#9333EA' },
+      fuchsia:  { bg: '#FDF4FF', dot: '#C026D3' },
+      rose:     { bg: '#FFE4E6', dot: '#E11D48' },
+      gray:     { bg: '#F3F4F6', dot: '#6B7280' },
+      slate:    { bg: '#F1F5F9', dot: '#475569' },
+      stone:    { bg: '#F5F5F4', dot: '#57534E' },
+    };
+
+    // ─── State ─────────────────────────────────────────────────────────────────
+    let currentStep = 1;
+    let currentUser = null;
+    let selectedCatIds = new Set();
+
+    // ─── DOM refs ──────────────────────────────────────────────────────────────
+    const step1El  = document.getElementById('step-1');
+    const step2El  = document.getElementById('step-2');
+    const step3El  = document.getElementById('step-3');
+    const greetEl  = document.getElementById('greeting');
+
+    // ─── Init: cek session & onboarding_completed ──────────────────────────────
+    async function init() {
+      const { data: { session }, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr || !session) {
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = session.user;
+
+      // Sapaan dari email (sebelum @)
+      const name = currentUser.email.split('@')[0];
+      greetEl.textContent = `Halo, ${name}! Yuk setup akunmu dulu 👋`;
+
+      // Cek apakah onboarding sudah selesai
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if (profile?.onboarding_completed === true) {
+        window.location.href = 'home.html';
+        return;
+      }
+
+      // Load kategori untuk step 2 di background
+      loadCategories();
+    }
+
+    // ─── Progress indicator helper ─────────────────────────────────────────────
+    function setProgress(step) {
+      for (let i = 1; i <= 3; i++) {
+        const circle = document.getElementById(`p-circle-${i}`);
+        const label  = document.getElementById(`p-label-${i}`);
+        if (i < step) {
+          // completed
+          circle.className = 'step-circle w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold bg-mint text-white shadow-md';
+          circle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+          if (label) label.className = 'text-[10px] font-medium text-mint mt-1.5 whitespace-nowrap';
+        } else if (i === step) {
+          // active
+          circle.className = 'step-circle w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold bg-lavender-dark text-white shadow-md';
+          circle.innerHTML = String(i);
+          if (label) label.className = 'text-[10px] font-medium text-lavender-dark mt-1.5 whitespace-nowrap';
+        } else {
+          // future
+          circle.className = 'step-circle w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold bg-lavender-light text-lavender border-2 border-lavender-light';
+          circle.innerHTML = String(i);
+          if (label) label.className = 'text-[10px] font-medium text-[#6B7280] mt-1.5 whitespace-nowrap';
+        }
+      }
+      // Lines
+      const line1 = document.getElementById('p-line-1');
+      const line2 = document.getElementById('p-line-2');
+      if (line1) line1.className = `step-line flex-1 h-0.5 mx-1 -mt-4 ${step > 1 ? 'bg-mint' : 'bg-lavender-dark'}`;
+      if (line2) line2.className = `step-line flex-1 h-0.5 mx-1 -mt-4 ${step > 2 ? 'bg-mint' : 'bg-lavender-light'}`;
+    }
+
+    // ─── Show/hide step panels ─────────────────────────────────────────────────
+    function goToStep(n) {
+      [step1El, step2El, step3El].forEach((el, i) => {
+        if (i + 1 === n) {
+          el.classList.remove('hidden');
+          el.classList.add('step-panel');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+      currentStep = n;
+      setProgress(n);
+    }
+
+    // ─── Step 1: submit ────────────────────────────────────────────────────────
+    document.getElementById('step1-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nameVal    = document.getElementById('acc-name').value.trim();
+      const typeVal    = document.getElementById('acc-type').value;
+      const balanceRaw = document.getElementById('acc-balance').value;
+      const balance    = balanceRaw === '' ? 0 : parseFloat(balanceRaw);
+
+      // Validasi
+      let hasErr = false;
+      const errName = document.getElementById('err-name');
+      const errType = document.getElementById('err-type');
+      errName.classList.add('hidden');
+      errType.classList.add('hidden');
+
+      if (!nameVal) { errName.classList.remove('hidden'); hasErr = true; }
+      if (!typeVal) { errType.classList.remove('hidden'); hasErr = true; }
+      if (hasErr) return;
+
+      const step1Err = document.getElementById('step1-error');
+      const btn = document.getElementById('step1-btn');
+      step1Err.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Menyimpan...</span>';
+
+      const dbType = TYPE_TO_DB[typeVal] ?? 'other';
+      const icon   = TYPE_TO_ICON[dbType] ?? 'wallet';
+
+      const { error } = await supabase.from('accounts').insert({
+        user_id:         currentUser.id,
+        name:            nameVal,
+        type:            dbType,
+        initial_balance: balance,
+        currency:        'IDR',
+        icon:            icon,
+        color:           'lavender',
+      });
+
+      if (error) {
+        step1Err.textContent = error.message;
+        step1Err.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span>Lanjut</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+        return;
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>Lanjut</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+      goToStep(2);
+    });
+
+    // ─── Step 2: load categories ───────────────────────────────────────────────
+    async function loadCategories() {
+      const { data: cats, error } = await supabase
+        .from('categories')
+        .select('id, name, color, type')
+        .order('name', { ascending: true });
+
+      const loadEl  = document.getElementById('cat-loading');
+      const chipsEl = document.getElementById('cat-chips');
+      loadEl.classList.add('hidden');
+
+      if (error || !cats || cats.length === 0) {
+        chipsEl.innerHTML = '<p class="text-sm text-[#6B7280]">Kategori tidak tersedia.</p>';
+        chipsEl.classList.remove('hidden');
+        return;
+      }
+
+      // Pre-select semua
+      cats.forEach(c => selectedCatIds.add(c.id));
+
+      chipsEl.innerHTML = '';
+      cats.forEach(cat => {
+        const colorKey = cat.color ?? 'lavender';
+        const colors   = CAT_COLOR_MAP[colorKey] ?? CAT_COLOR_MAP.lavender;
+        const chip     = document.createElement('button');
+        chip.type      = 'button';
+        chip.dataset.id = cat.id;
+        chip.className  = 'cat-chip selected inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all';
+        chip.style.backgroundColor = colors.bg;
+        chip.style.borderColor     = colors.dot + '55';
+        chip.style.color           = colors.dot;
+        chip.innerHTML = `<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${colors.dot}"></span>${cat.name}`;
+
+        chip.addEventListener('click', () => {
+          if (selectedCatIds.has(cat.id)) {
+            selectedCatIds.delete(cat.id);
+            chip.classList.remove('selected');
+            chip.style.opacity = '0.45';
+          } else {
+            selectedCatIds.add(cat.id);
+            chip.classList.add('selected');
+            chip.style.opacity = '1';
+          }
+        });
+
+        chipsEl.appendChild(chip);
+      });
+
+      chipsEl.classList.remove('hidden');
+    }
+
+    // ─── Step 2: lanjut ───────────────────────────────────────────────────────
+    async function saveCategories() {
+      if (selectedCatIds.size > 0) {
+        await supabase
+          .from('profiles')
+          .update({ preferred_categories: [...selectedCatIds] })
+          .eq('id', currentUser.id);
+      }
+      goToStep(3);
+    }
+
+    document.getElementById('step2-btn').addEventListener('click', saveCategories);
+    document.getElementById('step2-skip').addEventListener('click', () => goToStep(3));
+
+    // ─── Step 3: selesai ──────────────────────────────────────────────────────
+    document.getElementById('finish-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('finish-btn');
+      const errEl = document.getElementById('step3-error');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Memuat...</span>';
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', currentUser.id);
+
+      if (error) {
+        errEl.textContent = error.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<span>Mulai Sekarang</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+        return;
+      }
+
+      window.location.href = 'home.html';
+    });
+
+    // ─── Kick off ─────────────────────────────────────────────────────────────
+    init();
+  </script>
+</body>
+</html>

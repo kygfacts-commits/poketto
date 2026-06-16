@@ -24,7 +24,7 @@ export async function register(email, password) {
     });
     if (profileError) return { error: profileError };
 
-    window.location.href = 'home.html';
+    window.location.href = 'onboarding.html';
     return { data };
   }
 
