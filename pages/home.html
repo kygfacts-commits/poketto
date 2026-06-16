@@ -37,7 +37,11 @@
       <h1 class="text-2xl font-bold text-[#1E1B4B] mb-0.5">
         Selamat datang, <span id="user-email" class="text-lavender-dark">...</span>
       </h1>
-      <p id="today-date" class="text-gray-400 text-sm mb-6"></p>
+      <p id="today-date" class="text-gray-400 text-sm mb-3"></p>
+      <div id="profile-banner" class="hidden mb-5 rounded-xl bg-[#EDE9FE] border border-[#8B5CF6]/20 px-4 py-3 flex items-center gap-3">
+        <span class="text-[#6B21A8] text-sm flex-1">Lengkapi nama profilmu agar lebih personal 👤</span>
+        <a href="profile.html" class="text-[#8B5CF6] text-sm font-semibold whitespace-nowrap hover:underline">Atur sekarang →</a>
+      </div>
       <script>document.getElementById('today-date').textContent = new Intl.DateTimeFormat('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).format(new Date());</script>
 
       <!-- Empty state: 0 akun -->
@@ -194,6 +198,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
+    import { supabase } from '../assets/js/supabase-client.js';
     import { formatCurrency, formatDate, formatDateWithDay, getAccountBalance, getMonthRange } from '../assets/js/utils.js';
     import { ACCOUNT_COLOR_CLASSES, fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
@@ -544,6 +549,20 @@
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
       document.getElementById('user-email').textContent = currentUser.email;
+
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+        const fullName = profile?.full_name?.trim();
+        if (fullName) {
+          document.getElementById('user-email').textContent = fullName;
+        } else {
+          document.getElementById('profile-banner').classList.remove('hidden');
+        }
+      } catch {}
 
       try {
         currency = await fetchProfileCurrency(currentUser.id);

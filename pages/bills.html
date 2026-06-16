@@ -266,8 +266,8 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-0.5">
-              <p class="font-semibold text-gray-800 truncate">${bill.name}</p>
-              ${getBillStatusBadge(bill)}
+              <p class="flex-1 min-w-0 font-semibold text-gray-800 truncate">${bill.name}</p>
+              <span class="flex-shrink-0">${getBillStatusBadge(bill)}</span>
             </div>
             <p class="text-xs text-gray-500">${freqLabel} · Tgl ${bill.day_of_month}</p>
             <p class="text-xs mt-0.5">${renderDueBadge(bill.next_due_date)}</p>

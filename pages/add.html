@@ -133,11 +133,51 @@
 
   <div id="mobile-nav-container" class="opacity-0 transition-opacity duration-300"></div>
 
+  <!-- Category Picker Modal -->
+  <div id="cat-picker-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md max-h-[92vh] flex flex-col shadow-xl">
+      <div class="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100 flex-shrink-0">
+        <h3 class="text-lg font-bold text-[#1E1B4B]">Tambah Kategori</h3>
+        <button type="button" id="cat-picker-close" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
+          <input type="text" id="new-cat-name" placeholder="Contoh: Gaji" maxlength="30"
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6] text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tipe</label>
+          <div class="flex gap-2">
+            <button type="button" data-type-btn="income" class="px-4 py-2 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors">Pemasukan</button>
+            <button type="button" data-type-btn="expense" class="px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">Pengeluaran</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Warna</label>
+          <div id="picker-color-grid" class="grid grid-cols-6 gap-2"></div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Ikon</label>
+          <div id="picker-icon-groups" class="space-y-3"></div>
+        </div>
+      </div>
+      <div class="px-5 pb-6 pt-3 border-t border-gray-100 flex-shrink-0">
+        <p id="cat-picker-error" class="hidden text-sm text-red-500 mb-2"></p>
+        <button type="button" id="cat-picker-save" class="w-full bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold rounded-2xl py-3 transition-colors">
+          Simpan
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
-    import { fetchCategories, getCategoryColorClasses } from '../assets/js/categories.js';
+    import { fetchCategories, getCategoryColorClasses, createCategory, CATEGORY_COLORS, ICON_GROUPS } from '../assets/js/categories.js';
     import { fetchTransactionById, createTransaction, updateTransaction } from '../assets/js/add.js';
     import { queueToast, showToast } from '../assets/js/toast.js';
     import { formatThousands, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
@@ -227,6 +267,15 @@
         `;
       }).join('');
 
+      ieCategoryGrid.insertAdjacentHTML('beforeend', `
+        <button type="button" id="add-category-btn" class="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#8B5CF6] hover:bg-lavender-light/20 text-gray-400 hover:text-lavender-dark transition-colors">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center bg-gray-50">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+          </div>
+          <span class="text-xs text-center leading-tight">Tambah</span>
+        </button>
+      `);
+
       lucide.createIcons();
 
       ieCategoryGrid.querySelectorAll('.category-option').forEach((btn) => {
@@ -235,7 +284,101 @@
           renderCategoryGrid(type);
         });
       });
+
+      document.getElementById('add-category-btn').addEventListener('click', () => {
+        openCatPicker(type);
+      });
     }
+
+    // ---------- Category picker modal ----------
+
+    let newCatType = 'income';
+    let newCatColor = 'lavender';
+    let newCatIcon = 'circle';
+
+    function openCatPicker(type) {
+      newCatType = type;
+      newCatColor = 'lavender';
+      newCatIcon = 'circle';
+      document.getElementById('new-cat-name').value = '';
+      document.getElementById('cat-picker-error').classList.add('hidden');
+      renderPickerTypePills();
+      renderPickerColorGrid();
+      renderPickerIconGroups();
+      document.getElementById('cat-picker-modal').classList.remove('hidden');
+    }
+
+    function renderPickerTypePills() {
+      document.querySelectorAll('[data-type-btn]').forEach(btn => {
+        const active = btn.dataset.typeBtn === newCatType;
+        btn.className = `px-4 py-2 rounded-full text-sm transition-colors ${active ? 'bg-[#8B5CF6] text-white font-semibold' : 'border border-gray-200 text-gray-500 font-medium hover:bg-gray-50'}`;
+      });
+    }
+
+    function renderPickerColorGrid() {
+      const grid = document.getElementById('picker-color-grid');
+      grid.innerHTML = CATEGORY_COLORS.map(c =>
+        `<button type="button" data-color="${c.name}" class="picker-color-dot w-8 h-8 rounded-full border-2 transition-all ${c.name === newCatColor ? 'border-gray-700 scale-110' : 'border-transparent hover:scale-105'}" style="background-color:${c.hex}"></button>`
+      ).join('');
+      grid.querySelectorAll('.picker-color-dot').forEach(btn => {
+        btn.addEventListener('click', () => { newCatColor = btn.dataset.color; renderPickerColorGrid(); });
+      });
+    }
+
+    function renderPickerIconGroups() {
+      const container = document.getElementById('picker-icon-groups');
+      container.innerHTML = ICON_GROUPS.map(group =>
+        `<div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">${group.label}</p>
+          <div class="grid grid-cols-8 gap-1">
+            ${group.icons.map(icon =>
+              `<button type="button" data-icon="${icon}" class="picker-icon-btn w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${icon === newCatIcon ? 'bg-lavender-light text-lavender-dark' : 'text-gray-400 hover:bg-gray-100'}">
+                <i data-lucide="${icon}" class="w-5 h-5 pointer-events-none"></i>
+              </button>`
+            ).join('')}
+          </div>
+        </div>`
+      ).join('');
+      container.querySelectorAll('.picker-icon-btn').forEach(btn => {
+        btn.addEventListener('click', () => { newCatIcon = btn.dataset.icon; renderPickerIconGroups(); lucide.createIcons(); });
+      });
+      lucide.createIcons();
+    }
+
+    document.getElementById('cat-picker-modal').addEventListener('click', e => {
+      const typeBtn = e.target.closest('[data-type-btn]');
+      if (typeBtn) { newCatType = typeBtn.dataset.typeBtn; renderPickerTypePills(); }
+    });
+
+    document.getElementById('cat-picker-close').addEventListener('click', () => {
+      document.getElementById('cat-picker-modal').classList.add('hidden');
+    });
+
+    document.getElementById('cat-picker-save').addEventListener('click', async () => {
+      const name = document.getElementById('new-cat-name').value.trim();
+      const errEl = document.getElementById('cat-picker-error');
+      errEl.classList.add('hidden');
+      if (!name) {
+        errEl.textContent = 'Nama kategori wajib diisi.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const saveBtn = document.getElementById('cat-picker-save');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+      try {
+        await createCategory({ name, type: newCatType, icon: newCatIcon, color: newCatColor, userId: currentUser.id });
+        categoriesByType[newCatType] = await fetchCategories(newCatType, currentUser.id);
+        document.getElementById('cat-picker-modal').classList.add('hidden');
+        if (currentTab === newCatType) renderCategoryGrid(currentTab);
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan';
+      }
+    });
 
     // ---------- Dropdown akun ----------
 
@@ -419,8 +562,8 @@
 
       try {
         accounts = await fetchAccounts(currentUser.id);
-        categoriesByType.income = await fetchCategories('income');
-        categoriesByType.expense = await fetchCategories('expense');
+        categoriesByType.income = await fetchCategories('income', currentUser.id);
+        categoriesByType.expense = await fetchCategories('expense', currentUser.id);
       } catch (err) {
         console.log('[add] Gagal memuat data awal:', err.message);
         showToast('Gagal memuat data: ' + err.message, 'error');
