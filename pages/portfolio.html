@@ -208,12 +208,12 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Aset <span class="text-red-400">*</span></label>
           <select id="holding-type" class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
-            <option value="stock">Saham</option>
-            <option value="mutual_fund">Reksadana</option>
-            <option value="gold">Emas</option>
-            <option value="crypto">Kripto</option>
-            <option value="bond">Obligasi</option>
-            <option value="other">Lainnya</option>
+            <option value="saham">Saham</option>
+            <option value="reksadana">Reksadana</option>
+            <option value="emas">Emas</option>
+            <option value="kripto">Kripto</option>
+            <option value="obligasi">Obligasi</option>
+            <option value="lainnya">Lainnya</option>
           </select>
         </div>
         <div>
@@ -307,16 +307,16 @@
     document.getElementById('logout-btn').addEventListener('click', logout);
 
     const ASSET_TYPE_LABELS = {
-      stock: 'Saham', mutual_fund: 'Reksadana', bond: 'Obligasi',
-      gold: 'Emas', crypto: 'Kripto', other: 'Lainnya',
+      saham: 'Saham', reksadana: 'Reksadana', obligasi: 'Obligasi',
+      emas: 'Emas', kripto: 'Kripto', lainnya: 'Lainnya',
     };
     const ASSET_TYPE_COLORS = {
-      stock:       { bg: 'bg-lavender-light/50', text: 'text-lavender-dark', hex: '#A78BFA' },
-      mutual_fund: { bg: 'bg-sky-light/50',      text: 'text-sky-600',       hex: '#93C5FD' },
-      bond:        { bg: 'bg-rose-100',           text: 'text-rose-500',      hex: '#FDA4AF' },
-      gold:        { bg: 'bg-peach-light/50',     text: 'text-orange-500',    hex: '#FDBA8C' },
-      crypto:      { bg: 'bg-mint-light/50',      text: 'text-emerald-600',   hex: '#86EFAC' },
-      other:       { bg: 'bg-amber-100',          text: 'text-amber-500',     hex: '#FCD34D' },
+      saham:     { bg: 'bg-lavender-light/50', text: 'text-lavender-dark', hex: '#A78BFA' },
+      reksadana: { bg: 'bg-sky-light/50',      text: 'text-sky-600',       hex: '#93C5FD' },
+      obligasi:  { bg: 'bg-rose-100',          text: 'text-rose-500',      hex: '#FDA4AF' },
+      emas:      { bg: 'bg-peach-light/50',    text: 'text-orange-500',    hex: '#FDBA8C' },
+      kripto:    { bg: 'bg-mint-light/50',     text: 'text-emerald-600',   hex: '#86EFAC' },
+      lainnya:   { bg: 'bg-amber-100',         text: 'text-amber-500',     hex: '#FCD34D' },
     };
 
     let currentUser, currency = 'IDR', accounts = [], holdings = [];
@@ -440,7 +440,7 @@
         const modal = Number(h.quantity) * Number(h.avg_buy_price);
         const gainNom = nilai - modal;
         const gainPct = modal > 0 ? (gainNom / modal * 100) : 0;
-        const tc = ASSET_TYPE_COLORS[h.asset_type] || ASSET_TYPE_COLORS.other;
+        const tc = ASSET_TYPE_COLORS[h.asset_type] || ASSET_TYPE_COLORS.lainnya;
         const gc = gainNom >= 0 ? 'text-emerald-600' : 'text-red-500';
         const arrow = gainNom >= 0 ? '↑' : '↓';
         const cur = h.currency || 'IDR';
