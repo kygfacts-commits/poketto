@@ -8,6 +8,7 @@
 // sebelum event 'schatz:auth-ready' di-dispatch.
 
 import { supabase } from './supabase-client.js';
+import './notification-badge.js';
 
 console.log('[auth-guard] Memeriksa session...');
 
