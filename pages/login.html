@@ -9,11 +9,14 @@
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
           colors: {
-            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
-            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
-            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
-            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
           }
         }
       }
@@ -21,14 +24,18 @@
   </script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-lavender-light/40 via-sky-light/40 to-peach-light/40 p-4">
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-lavender-light/60 via-sky-light/40 to-peach-light/40 p-4 font-sans">
   <div class="w-full max-w-md">
     <a href="../index.html" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-lavender-dark mb-6 transition-colors">
       &larr; Kembali ke Beranda
     </a>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-      <h1 class="text-2xl font-bold text-lavender-dark mb-1">Masuk ke Poketto</h1>
+    <div class="bg-white rounded-2xl shadow-md border border-[#EDE9FE] p-8">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-lavender to-lavender-dark shadow-sm flex items-center justify-center text-white font-bold">P</div>
+        <span class="text-xl font-bold text-[#1E1B4B]">Poketto</span>
+      </div>
+      <h1 class="text-2xl font-bold text-[#1E1B4B] mb-1">Masuk ke Poketto</h1>
       <p class="text-gray-500 text-sm mb-6">Kelola keuanganmu dengan tenang.</p>
 
       <p id="login-message" class="hidden mb-4 text-sm rounded-lg px-3 py-2"></p>
@@ -48,7 +55,7 @@
         <p id="login-error" class="hidden text-sm text-red-500"></p>
 
         <button type="submit" id="login-submit"
-          class="w-full bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-2.5 transition-colors">
+          class="w-full bg-lavender-dark hover:bg-[#7C3AED] shadow-sm shadow-lavender-dark/20 text-white font-semibold rounded-xl py-2.5 transition-colors">
           Masuk
         </button>
       </form>

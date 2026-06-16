@@ -9,11 +9,14 @@
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
           colors: {
-            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
-            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
-            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
-            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
           }
         }
       }
@@ -21,59 +24,59 @@
   </script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
 
   <!-- Sidebar (desktop) -->
-  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-[#F3F0FF] border-r border-[#DDD6FE] p-6 z-30">
     <div class="flex items-center gap-2 mb-10">
-      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
-      <span class="text-xl font-bold text-gray-800">Poketto</span>
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-lavender to-lavender-dark shadow-sm flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-[#1E1B4B]">Poketto</span>
     </div>
 
     <nav class="flex-1 space-y-1">
-      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="home" class="w-5 h-5"></i>
         <span>Home</span>
       </a>
-      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="wallet" class="w-5 h-5"></i>
         <span>Akun</span>
       </a>
-      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="list" class="w-5 h-5"></i>
         <span>Transaksi</span>
       </a>
-      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="pie-chart" class="w-5 h-5"></i>
         <span>Budget</span>
       </a>
-      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="line-chart" class="w-5 h-5"></i>
         <span>Charts</span>
       </a>
-      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="file-text" class="w-5 h-5"></i>
         <span>Reports</span>
       </a>
-      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="target" class="w-5 h-5"></i>
         <span>Goals</span>
       </a>
-      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold bg-lavender-dark text-white shadow-sm">
         <i data-lucide="calendar-clock" class="w-5 h-5"></i>
         <span>Tagihan</span>
       </a>
-      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="trending-up" class="w-5 h-5"></i>
         <span>Portfolio</span>
       </a>
-      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="user" class="w-5 h-5"></i>
         <span>Profile</span>
       </a>
     </nav>
 
-    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender-dark hover:bg-[#7C3AED] shadow-sm shadow-lavender-dark/20 text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
       <i data-lucide="plus" class="w-5 h-5"></i>
       <span>Tambah Transaksi</span>
     </a>
@@ -90,7 +93,7 @@
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Tagihan Terjadwal</h1>
+        <h1 class="text-2xl font-bold text-[#1E1B4B]">Tagihan Terjadwal</h1>
         <button id="add-bill-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 text-sm transition-colors">
           <i data-lucide="plus" class="w-4 h-4"></i>
           <span>Tambah Tagihan</span>
@@ -99,22 +102,22 @@
 
       <!-- Summary cards -->
       <div class="grid grid-cols-3 gap-3 mb-6">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
           <p class="text-xs text-gray-400 mb-1">Tagihan Aktif</p>
           <p id="sum-active" class="text-2xl font-bold text-lavender-dark">0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
           <p class="text-xs text-gray-400 mb-1">Total Nominal</p>
-          <p id="sum-total" class="text-base font-bold text-gray-800 break-all">Rp 0</p>
+          <p id="sum-total" class="text-base font-bold text-[#1E1B4B] break-all">Rp 0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
           <p class="text-xs text-gray-400 mb-1">Dibayar Bulan Ini</p>
-          <p id="sum-paid" class="text-2xl font-bold text-emerald-600">0</p>
+          <p id="sum-paid" class="text-2xl font-bold text-mint">0</p>
         </div>
       </div>
 
       <!-- Loading state -->
-      <div id="loading-state" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-400 text-sm">
+      <div id="loading-state" class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center text-gray-400 text-sm">
         Memuat data…
       </div>
 
@@ -128,11 +131,11 @@
       </div>
 
       <!-- Empty state -->
-      <div id="empty-state" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+      <div id="empty-state" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-12 text-center">
         <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-lavender-light/50 flex items-center justify-center">
           <i data-lucide="calendar-clock" class="w-8 h-8 text-lavender-dark"></i>
         </div>
-        <h2 class="text-lg font-bold text-gray-800 mb-2">Belum ada tagihan terjadwal</h2>
+        <h2 class="text-lg font-bold text-[#1E1B4B] mb-2">Belum ada tagihan terjadwal</h2>
         <p class="text-gray-500 text-sm mb-5">Tambahkan tagihan rutin agar tidak terlewat setiap bulannya.</p>
         <button id="empty-add-btn" class="inline-flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-5 py-2.5 transition-colors">
           <i data-lucide="plus" class="w-4 h-4"></i>
@@ -144,7 +147,7 @@
   </div>
 
   <!-- Bottom nav (mobile) -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-[#EDE9FE] flex items-center justify-around px-2 py-2 z-40">
     <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
       <i data-lucide="home" class="w-5 h-5"></i>
       <span class="text-xs">Home</span>
@@ -172,7 +175,7 @@
   <div id="bill-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6" style="max-height:90vh;overflow-y:auto">
       <div class="flex items-center justify-between mb-5">
-        <h2 id="bill-modal-title" class="text-lg font-bold text-gray-800">Tambah Tagihan</h2>
+        <h2 id="bill-modal-title" class="text-lg font-bold text-[#1E1B4B]">Tambah Tagihan</h2>
         <button id="bill-modal-close" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -239,7 +242,7 @@
       <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-100 flex items-center justify-center">
         <i data-lucide="trash-2" class="w-6 h-6 text-rose-500"></i>
       </div>
-      <h2 class="text-lg font-bold text-gray-800 mb-1">Hapus Tagihan?</h2>
+      <h2 class="text-lg font-bold text-[#1E1B4B] mb-1">Hapus Tagihan?</h2>
       <p class="text-sm text-gray-500 mb-6">
         Tagihan "<span id="confirm-bill-name" class="font-medium text-gray-700"></span>" akan dihapus permanen.
       </p>
@@ -334,7 +337,7 @@
       const toggleIcon = bill.is_active ? 'pause-circle' : 'play-circle';
       const toggleTitle = bill.is_active ? 'Nonaktifkan' : 'Aktifkan';
 
-      return `<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-3 ${!bill.is_active ? 'opacity-60' : ''}">
+      return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-3 ${!bill.is_active ? 'opacity-60' : ''}">
         <div class="flex items-start gap-3">
           <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${cc.bg}">
             <i data-lucide="${cat?.icon || 'circle'}" class="w-5 h-5 ${cc.icon}"></i>

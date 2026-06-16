@@ -9,11 +9,14 @@
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
           colors: {
-            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
-            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
-            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
-            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
           }
         }
       }
@@ -22,59 +25,59 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
 
   <!-- Sidebar (desktop, >768px) -->
-  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-[#F3F0FF] border-r border-[#DDD6FE] p-6 z-30">
     <div class="flex items-center gap-2 mb-10">
-      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
-      <span class="text-xl font-bold text-gray-800">Poketto</span>
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-lavender to-lavender-dark shadow-sm flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-[#1E1B4B]">Poketto</span>
     </div>
 
     <nav class="flex-1 space-y-1">
-      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="home" class="w-5 h-5"></i>
         <span>Home</span>
       </a>
-      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="wallet" class="w-5 h-5"></i>
         <span>Akun</span>
       </a>
-      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="list" class="w-5 h-5"></i>
         <span>Transaksi</span>
       </a>
-      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="pie-chart" class="w-5 h-5"></i>
         <span>Budget</span>
       </a>
-      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold bg-lavender-dark text-white shadow-sm">
         <i data-lucide="line-chart" class="w-5 h-5"></i>
         <span>Charts</span>
       </a>
-      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="file-text" class="w-5 h-5"></i>
         <span>Reports</span>
       </a>
-      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="target" class="w-5 h-5"></i>
         <span>Goals</span>
       </a>
-      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="calendar-clock" class="w-5 h-5"></i>
         <span>Tagihan</span>
       </a>
-      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="trending-up" class="w-5 h-5"></i>
         <span>Portfolio</span>
       </a>
-      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="user" class="w-5 h-5"></i>
         <span>Profile</span>
       </a>
     </nav>
 
-    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender-dark hover:bg-[#7C3AED] shadow-sm shadow-lavender-dark/20 text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
       <i data-lucide="plus" class="w-5 h-5"></i>
       <span>Tambah Transaksi</span>
     </a>
@@ -88,10 +91,10 @@
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
     <main class="p-6 md:p-10 max-w-5xl mx-auto">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">Charts</h1>
+      <h1 class="text-2xl font-bold text-[#1E1B4B] mb-6">Charts</h1>
 
       <!-- Filter -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
+      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 mb-6">
         <div id="preset-tabs" class="flex gap-2 flex-wrap mb-3"></div>
         <div class="flex flex-wrap gap-3 items-end">
           <div>
@@ -112,34 +115,34 @@
 
       <!-- Summary stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <p class="text-xs text-gray-400 mb-1">Total Pemasukan</p>
-          <p id="stat-income" class="text-lg font-bold text-emerald-600">Rp0</p>
+        <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-semibold text-sky-600 uppercase tracking-wide mb-1">Pemasukan</p>
+          <p id="stat-income" class="text-lg font-bold text-sky-600">Rp0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <p class="text-xs text-gray-400 mb-1">Total Pengeluaran</p>
-          <p id="stat-expense" class="text-lg font-bold text-red-500">Rp0</p>
+        <div class="bg-peach-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-semibold text-peach uppercase tracking-wide mb-1">Pengeluaran</p>
+          <p id="stat-expense" class="text-lg font-bold text-peach">Rp0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <p class="text-xs text-gray-400 mb-1">Selisih</p>
-          <p id="stat-diff" class="text-lg font-bold text-gray-800">Rp0</p>
+        <div class="bg-mint-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-semibold text-mint uppercase tracking-wide mb-1">Selisih</p>
+          <p id="stat-diff" class="text-lg font-bold text-[#1E1B4B]">Rp0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <p class="text-xs text-gray-400 mb-1">Jumlah Transaksi</p>
-          <p id="stat-count" class="text-lg font-bold text-gray-800">0</p>
+        <div class="bg-lavender-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-semibold text-lavender-dark uppercase tracking-wide mb-1">Transaksi</p>
+          <p id="stat-count" class="text-lg font-bold text-lavender-dark">0</p>
         </div>
       </div>
 
       <!-- Chart 1: Cashflow line -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-6">
         <h2 class="text-base font-semibold text-gray-700 mb-1">Arus Kas</h2>
         <div class="flex gap-4 mb-3">
           <div class="flex items-center gap-1.5">
-            <span class="w-3 h-3 rounded-full" style="background:#86efac"></span>
+            <span class="w-3 h-3 rounded-full" style="background:#38BDF8"></span>
             <span class="text-xs text-gray-500">Pemasukan</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <span class="w-3 h-3 rounded-full" style="background:#fdba74"></span>
+            <span class="w-3 h-3 rounded-full" style="background:#FB923C"></span>
             <span class="text-xs text-gray-500">Pengeluaran</span>
           </div>
         </div>
@@ -152,13 +155,13 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
         <!-- Doughnut -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
           <h2 class="text-base font-semibold text-gray-700 mb-4">Pengeluaran per Kategori</h2>
           <div id="doughnut-canvas-wrap" class="relative max-w-xs mx-auto" style="height:200px;">
             <canvas id="category-doughnut"></canvas>
             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <p class="text-xs text-gray-400">Total</p>
-              <p id="doughnut-total" class="text-sm font-bold text-gray-800">Rp0</p>
+              <p id="doughnut-total" class="text-sm font-bold text-[#1E1B4B]">Rp0</p>
             </div>
           </div>
           <div id="doughnut-empty" class="flex items-center justify-center text-gray-400 text-sm max-w-xs mx-auto" style="display:none;height:200px;">
@@ -168,7 +171,7 @@
         </div>
 
         <!-- Top 5 bar -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
           <h2 class="text-base font-semibold text-gray-700 mb-4">Top Kategori Pengeluaran</h2>
           <div class="relative" style="height:200px;">
             <canvas id="top-category-bar"></canvas>
@@ -182,14 +185,14 @@
       <!-- Transaction list -->
       <h2 class="text-base font-semibold text-gray-700 mb-3">Transaksi</h2>
       <div id="tx-list" class="space-y-4"></div>
-      <div id="tx-empty" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400 text-sm">
+      <div id="tx-empty" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-8 text-center text-gray-400 text-sm">
         Tidak ada transaksi dalam rentang ini
       </div>
     </main>
   </div>
 
   <!-- Bottom nav (mobile, <=768px) -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-[#EDE9FE] flex items-center justify-around px-2 py-2 z-40">
     <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
       <i data-lucide="home" class="w-5 h-5"></i>
       <span class="text-xs">Home</span>
@@ -263,7 +266,7 @@
       document.getElementById('stat-expense').textContent = formatCurrency(expense, currency);
       const diffEl = document.getElementById('stat-diff');
       diffEl.textContent = formatCurrency(diff, currency);
-      diffEl.className = `text-lg font-bold ${diff < 0 ? 'text-red-500' : 'text-gray-800'}`;
+      diffEl.className = `text-lg font-bold ${diff < 0 ? 'text-peach' : 'text-mint'}`;
       document.getElementById('stat-count').textContent = txs.length;
     }
 
@@ -281,40 +284,40 @@
             {
               label: 'Pemasukan',
               data: income,
-              borderColor: '#86efac',
+              borderColor: '#38BDF8',
               borderWidth: 2,
               tension: 0.4,
               fill: true,
               backgroundColor(ctx) {
                 const { chart } = ctx;
                 const { ctx: c, chartArea } = chart;
-                if (!chartArea) return 'rgba(134,239,172,0)';
+                if (!chartArea) return 'rgba(56,189,248,0)';
                 const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                g.addColorStop(0, 'rgba(134,239,172,0.35)');
-                g.addColorStop(1, 'rgba(134,239,172,0)');
+                g.addColorStop(0, 'rgba(56,189,248,0.30)');
+                g.addColorStop(1, 'rgba(56,189,248,0)');
                 return g;
               },
               pointRadius: labels.length <= 14 ? 4 : 2,
-              pointBackgroundColor: '#86efac',
+              pointBackgroundColor: '#38BDF8',
             },
             {
               label: 'Pengeluaran',
               data: expense,
-              borderColor: '#fdba74',
+              borderColor: '#FB923C',
               borderWidth: 2,
               tension: 0.4,
               fill: true,
               backgroundColor(ctx) {
                 const { chart } = ctx;
                 const { ctx: c, chartArea } = chart;
-                if (!chartArea) return 'rgba(253,186,116,0)';
+                if (!chartArea) return 'rgba(251,146,60,0)';
                 const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                g.addColorStop(0, 'rgba(253,186,116,0.35)');
-                g.addColorStop(1, 'rgba(253,186,116,0)');
+                g.addColorStop(0, 'rgba(251,146,60,0.28)');
+                g.addColorStop(1, 'rgba(251,146,60,0)');
                 return g;
               },
               pointRadius: labels.length <= 14 ? 4 : 2,
-              pointBackgroundColor: '#fdba74',
+              pointBackgroundColor: '#FB923C',
             },
           ],
         },
@@ -500,9 +503,9 @@
         colorClasses = getCategoryColorClasses(cat?.color || 'slate');
         title = cat?.name || 'Lainnya';
       }
-      let amountClass = 'text-sky-600', amountPrefix = '';
-      if (tx.type === 'income') { amountClass = 'text-emerald-600'; amountPrefix = '+'; }
-      else if (tx.type === 'expense') { amountClass = 'text-red-500'; amountPrefix = '-'; }
+      let amountClass = 'text-lavender-dark', amountPrefix = '';
+      if (tx.type === 'income') { amountClass = 'text-sky-600'; amountPrefix = '+'; }
+      else if (tx.type === 'expense') { amountClass = 'text-peach'; amountPrefix = '-'; }
 
       const acc = getAccountById(tx.account_id);
       const amountText = formatCurrency(Number(tx.amount), acc?.currency || currency);
@@ -542,7 +545,7 @@
       listEl.innerHTML = groups.map((g) => `
         <div>
           <p class="text-sm font-semibold text-gray-400 mb-2">${formatDateWithDay(g.date)}</p>
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm divide-y divide-gray-50">
             ${g.items.map((tx) => renderTxRow(tx)).join('')}
           </div>
         </div>

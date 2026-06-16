@@ -57,7 +57,7 @@ const COLOR_HEX = {
   red: '#fca5a5', orange: '#fdba74', amber: '#fcd34d', yellow: '#fde047', lime: '#bef264',
   green: '#86efac', emerald: '#6ee7b7', teal: '#5eead4', cyan: '#67e8f9', sky: '#7dd3fc',
   blue: '#93c5fd', indigo: '#a5b4fc', violet: '#c4b5fd', purple: '#d8b4fe', fuchsia: '#f0abfc',
-  pink: '#f9a8d4', rose: '#fda4af', lavender: '#c4b5fd',
+  pink: '#f9a8d4', rose: '#fda4af', lavender: '#A78BFA',
 };
 
 export function getCategoryHexColor(color) {

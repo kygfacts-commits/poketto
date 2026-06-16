@@ -3,18 +3,435 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poketto</title>
+  <title>Poketto — Kelola Keuangan Pribadi, Lebih Cerdas</title>
+  <meta name="description" content="Catat transaksi, pantau budget, lacak investasi — semua dalam satu aplikasi gratis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'] },
+          colors: {
+            lavender: { DEFAULT: '#A78BFA', light: '#EDE9FE', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach:    { DEFAULT: '#FB923C', light: '#FED7AA' },
+            sky:      { DEFAULT: '#38BDF8', light: '#BAE6FD' },
+            mint:     { DEFAULT: '#34D399', light: '#A7F3D0' },
+            poketto:  { bg: '#F8F7FF', surface: '#FFFFFF', border: '#DDD6FE', text: '#1E1B4B', muted: '#6B7280' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; background-color: #F8F7FF; color: #1E1B4B; -webkit-font-smoothing: antialiased; }
+
+    /* Navbar */
+    .navbar-blur { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+    /* Hero gradient */
+    .hero-gradient { background: linear-gradient(135deg, #F8F7FF 0%, #EDE9FE 60%, #F0FDF4 100%); }
+
+    /* Dashboard mock */
+    .mock-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(167,139,250,0.12); border: 1px solid #EDE9FE; }
+    .mock-bar { border-radius: 6px; }
+
+    /* Feature card hover */
+    .feature-card { transition: transform .2s ease, box-shadow .2s ease; }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(167,139,250,0.16); }
+
+    /* Stats gradient */
+    .stats-gradient { background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%); }
+
+    /* CTA gradient */
+    .cta-gradient { background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 60%, #7C3AED 100%); }
+
+    /* Mobile nav */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+
+    /* Smooth underline nav */
+    .nav-link { position: relative; }
+    .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: #A78BFA; border-radius: 2px; transition: width .2s; }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #F8F7FF; }
+    ::-webkit-scrollbar-thumb { background: #DDD6FE; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #A78BFA; }
+  </style>
 </head>
-<body class="min-h-screen flex items-center justify-center bg-gray-50">
-  <div class="text-center p-8">
-    <h1 class="text-4xl font-bold text-violet-400 mb-2">Poketto</h1>
-    <p class="text-gray-500 mb-6">Personal finance tracker — coming soon.</p>
-    <div class="flex items-center justify-center gap-3">
-      <a href="pages/login.html" class="px-5 py-2.5 rounded-xl bg-violet-400 hover:bg-violet-500 text-white font-semibold transition-colors">Masuk</a>
-      <a href="pages/register.html" class="px-5 py-2.5 rounded-xl border border-violet-200 text-violet-500 hover:bg-violet-50 font-semibold transition-colors">Daftar</a>
+<body class="min-h-screen">
+
+  <!-- ═══════════════════════════════════════ NAVBAR ═══════════════════════════════════════ -->
+  <nav class="fixed top-0 left-0 right-0 z-50 navbar-blur bg-white/80 border-b border-[#EDE9FE]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="flex items-center gap-2 focus:outline-none">
+          <div class="w-8 h-8 rounded-xl bg-[#A78BFA] flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 22V12h6v10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold text-[#1E1B4B]">Poketto</span>
+        </button>
+
+        <!-- Desktop nav links -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#features" class="nav-link text-sm font-medium text-[#6B7280] hover:text-[#1E1B4B] transition-colors">Fitur</a>
+          <a href="#stats" class="nav-link text-sm font-medium text-[#6B7280] hover:text-[#1E1B4B] transition-colors">Keunggulan</a>
+        </div>
+
+        <!-- Desktop CTA -->
+        <div class="hidden md:flex items-center gap-3">
+          <button onclick="window.location.href='pages/login.html'" class="px-4 py-2 rounded-xl border border-[#A78BFA] text-[#A78BFA] text-sm font-semibold hover:bg-[#EDE9FE] transition-colors">
+            Masuk
+          </button>
+          <button onclick="window.location.href='pages/register.html'" class="px-4 py-2 rounded-xl bg-[#A78BFA] hover:bg-[#8B5CF6] text-white text-sm font-semibold transition-colors shadow-sm shadow-violet-200">
+            Mulai Gratis
+          </button>
+        </div>
+
+        <!-- Hamburger -->
+        <button id="hamburger" onclick="toggleMenu()" class="md:hidden p-2 rounded-lg hover:bg-[#EDE9FE] transition-colors" aria-label="Menu">
+          <svg id="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="2.2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+          <svg id="icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="2.2" stroke-linecap="round" class="hidden">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
     </div>
-  </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden border-t border-[#EDE9FE] bg-white/95 navbar-blur">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-3">
+        <a href="#features" onclick="toggleMenu()" class="text-sm font-medium text-[#6B7280] hover:text-[#1E1B4B] py-2 transition-colors">Fitur</a>
+        <a href="#stats" onclick="toggleMenu()" class="text-sm font-medium text-[#6B7280] hover:text-[#1E1B4B] py-2 transition-colors">Keunggulan</a>
+        <div class="flex gap-3 pt-2 border-t border-[#EDE9FE]">
+          <button onclick="window.location.href='pages/login.html'" class="flex-1 py-2.5 rounded-xl border border-[#A78BFA] text-[#A78BFA] text-sm font-semibold hover:bg-[#EDE9FE] transition-colors">
+            Masuk
+          </button>
+          <button onclick="window.location.href='pages/register.html'" class="flex-1 py-2.5 rounded-xl bg-[#A78BFA] hover:bg-[#8B5CF6] text-white text-sm font-semibold transition-colors">
+            Mulai Gratis
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
+  <section class="hero-gradient pt-24 pb-16 sm:pt-32 sm:pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+
+        <!-- Text side -->
+        <div class="flex-1 text-center lg:text-left">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EDE9FE] border border-[#DDD6FE] mb-6">
+            <span class="w-2 h-2 rounded-full bg-[#A78BFA] animate-pulse"></span>
+            <span class="text-xs font-semibold text-[#8B5CF6]">100% Gratis · Tanpa Iklan</span>
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#1E1B4B] leading-tight tracking-tight mb-5">
+            Kelola Keuangan<br class="hidden sm:block"> Pribadi,<br>
+            <span class="text-[#A78BFA]">Lebih Cerdas.</span>
+          </h1>
+          <p class="text-base sm:text-lg text-[#6B7280] leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
+            Catat transaksi, pantau budget, lacak investasi — semua dalam satu aplikasi yang simpel dan gratis.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+            <button onclick="window.location.href='pages/register.html'" class="px-6 py-3.5 rounded-2xl bg-[#A78BFA] hover:bg-[#8B5CF6] text-white font-semibold text-base transition-all shadow-lg shadow-violet-200 hover:shadow-violet-300 hover:-translate-y-0.5">
+              Mulai Gratis Sekarang
+            </button>
+            <button onclick="window.location.href='pages/login.html'" class="px-6 py-3.5 rounded-2xl border border-[#DDD6FE] bg-white hover:bg-[#EDE9FE] text-[#1E1B4B] font-semibold text-base transition-all">
+              Lihat Demo →
+            </button>
+          </div>
+          <p class="mt-4 text-xs text-[#6B7280]">Tidak perlu kartu kredit · Daftar dalam 30 detik</p>
+        </div>
+
+        <!-- Dashboard Mockup SVG -->
+        <div class="flex-1 w-full max-w-lg lg:max-w-none">
+          <div class="mock-card p-5 w-full max-w-lg mx-auto">
+            <!-- Mock header -->
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <p class="text-xs text-[#6B7280] font-medium">Total Saldo</p>
+                <p class="text-2xl font-bold text-[#1E1B4B]">Rp 24.580.000</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-[#EDE9FE] flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Mock income/expense cards -->
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <div class="p-3 rounded-xl bg-[#F0FDF4] border border-[#A7F3D0]">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                  <span class="text-xs text-[#34D399] font-semibold">Pemasukan</span>
+                </div>
+                <p class="text-sm font-bold text-[#1E1B4B]">Rp 8.500.000</p>
+                <p class="text-xs text-[#6B7280] mt-0.5">Juni 2026</p>
+              </div>
+              <div class="p-3 rounded-xl bg-[#FFF7ED] border border-[#FED7AA]">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                  <span class="text-xs text-[#FB923C] font-semibold">Pengeluaran</span>
+                </div>
+                <p class="text-sm font-bold text-[#1E1B4B]">Rp 3.240.000</p>
+                <p class="text-xs text-[#6B7280] mt-0.5">Juni 2026</p>
+              </div>
+            </div>
+
+            <!-- Mock bar chart -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-[#1E1B4B]">Pengeluaran 6 Bulan</span>
+                <span class="text-xs text-[#6B7280]">2026</span>
+              </div>
+              <div class="flex items-end gap-2 h-20">
+                <div class="flex-1 flex flex-col items-center gap-1">
+                  <div class="mock-bar w-full bg-[#EDE9FE]" style="height:45%"></div>
+                  <span class="text-[10px] text-[#6B7280]">Jan</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1">
+                  <div class="mock-bar w-full bg-[#EDE9FE]" style="height:65%"></div>
+                  <span class="text-[10px] text-[#6B7280]">Feb</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1">
+                  <div class="mock-bar w-full bg-[#EDE9FE]" style="height:35%"></div>
+                  <span class="text-[10px] text-[#6B7280]">Mar</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1">
+                  <div class="mock-bar w-full bg-[#EDE9FE]" style="height:80%"></div>
+                  <span class="text-[10px] text-[#6B7280]">Apr</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1">
+                  <div class="mock-bar w-full bg-[#EDE9FE]" style="height:55%"></div>
+                  <span class="text-[10px] text-[#6B7280]">Mei</span>
+                </div>
+                <div class="flex-1 flex flex-col items-center gap-1">
+                  <div class="mock-bar w-full bg-[#A78BFA]" style="height:42%"></div>
+                  <span class="text-[10px] text-[#A78BFA] font-semibold">Jun</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mock recent transactions -->
+            <div>
+              <p class="text-xs font-semibold text-[#1E1B4B] mb-2">Transaksi Terbaru</p>
+              <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                  <div class="w-7 h-7 rounded-lg bg-[#FED7AA] flex items-center justify-center text-sm">🍱</div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-[#1E1B4B] truncate">Makan Siang</p>
+                    <p class="text-[10px] text-[#6B7280]">Makanan</p>
+                  </div>
+                  <span class="text-xs font-semibold text-[#FB923C]">-45K</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-7 h-7 rounded-lg bg-[#A7F3D0] flex items-center justify-center text-sm">💰</div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-[#1E1B4B] truncate">Gaji Bulanan</p>
+                    <p class="text-[10px] text-[#6B7280]">Gaji</p>
+                  </div>
+                  <span class="text-xs font-semibold text-[#34D399]">+8.5Jt</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-7 h-7 rounded-lg bg-[#BAE6FD] flex items-center justify-center text-sm">🚌</div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-[#1E1B4B] truncate">Transportasi</p>
+                    <p class="text-[10px] text-[#6B7280]">Transport</p>
+                  </div>
+                  <span class="text-xs font-semibold text-[#FB923C]">-25K</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ FEATURES ═══════════════════════════════════════ -->
+  <section id="features" class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <p class="text-sm font-semibold text-[#A78BFA] uppercase tracking-widest mb-3">Fitur Lengkap</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-[#1E1B4B]">Semua yang kamu butuhkan,<br class="hidden sm:block"> dalam satu tempat</h2>
+        <p class="mt-4 text-[#6B7280] max-w-xl mx-auto">Dirancang untuk membuat pengelolaan keuangan terasa mudah dan menyenangkan.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Card 1 — Transaksi -->
+        <div class="feature-card p-6 rounded-2xl border border-[#EDE9FE] bg-[#F8F7FF]">
+          <div class="w-12 h-12 rounded-2xl bg-[#EDE9FE] flex items-center justify-center mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Pencatatan Transaksi</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Income, expense, transfer antar akun — catat semua dalam hitungan detik dengan kategori otomatis.</p>
+        </div>
+
+        <!-- Card 2 — Budget -->
+        <div class="feature-card p-6 rounded-2xl border border-[#FED7AA] bg-[#FFF7ED]">
+          <div class="w-12 h-12 rounded-2xl bg-[#FED7AA] flex items-center justify-center mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Budgeting Real-time</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Pantau pengeluaran vs anggaran per kategori secara real-time. Tahu kapan harus rem pengeluaran.</p>
+        </div>
+
+        <!-- Card 3 — Charts -->
+        <div class="feature-card p-6 rounded-2xl border border-[#BAE6FD] bg-[#F0F9FF]">
+          <div class="w-12 h-12 rounded-2xl bg-[#BAE6FD] flex items-center justify-center mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Laporan & Charts</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Visualisasi keuangan bulanan dengan grafik interaktif. Pahami pola pengeluaranmu dengan mudah.</p>
+        </div>
+
+        <!-- Card 4 — Goals -->
+        <div class="feature-card p-6 rounded-2xl border border-[#DDD6FE] bg-[#F5F3FF]">
+          <div class="w-12 h-12 rounded-2xl bg-[#DDD6FE] flex items-center justify-center mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Goals Tabungan</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Buat target dana dengan progress tracker visual. Dari dana darurat hingga liburan impian.</p>
+        </div>
+
+        <!-- Card 5 — Bills -->
+        <div class="feature-card p-6 rounded-2xl border border-[#A7F3D0] bg-[#F0FDF9]">
+          <div class="w-12 h-12 rounded-2xl bg-[#A7F3D0] flex items-center justify-center mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Tagihan Terjadwal</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Auto-reminder tagihan rutin — listrik, internet, langganan streaming — tidak ada yang terlewat lagi.</p>
+        </div>
+
+        <!-- Card 6 — Portfolio -->
+        <div class="feature-card p-6 rounded-2xl border border-[#FDE68A] bg-[#FEFCE8]">
+          <div class="w-12 h-12 rounded-2xl bg-[#FDE68A] flex items-center justify-center mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Portfolio Investasi</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Pantau saham, crypto, reksa dana, emas, dan obligasi dalam satu dashboard terintegrasi.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ STATS ═══════════════════════════════════════ -->
+  <section id="stats" class="py-20">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="stats-gradient rounded-3xl p-10 sm:p-14">
+        <div class="text-center mb-10">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#1E1B4B]">Kenapa pilih Poketto?</h2>
+          <p class="mt-2 text-[#6B7280]">Dirancang untuk kehidupan keuangan Indonesia</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div class="text-center">
+            <div class="text-4xl sm:text-5xl font-extrabold text-[#7C3AED] mb-2">10+</div>
+            <div class="font-semibold text-[#1E1B4B] mb-1">Kategori Siap Pakai</div>
+            <div class="text-sm text-[#6B7280]">Makanan, transport, belanja, tagihan, dan lebih banyak lagi</div>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl sm:text-5xl font-extrabold text-[#7C3AED] mb-2">5</div>
+            <div class="font-semibold text-[#1E1B4B] mb-1">Tipe Investasi</div>
+            <div class="text-sm text-[#6B7280]">Saham, crypto, reksa dana, emas, obligasi</div>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl sm:text-5xl font-extrabold text-[#7C3AED] mb-2">100%</div>
+            <div class="font-semibold text-[#1E1B4B] mb-1">Gratis Selamanya</div>
+            <div class="text-sm text-[#6B7280]">Tidak ada biaya tersembunyi, tidak ada iklan mengganggu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ CTA BANNER ═══════════════════════════════════════ -->
+  <section class="py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="cta-gradient rounded-3xl p-10 sm:p-14 text-center">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white mb-3">
+          Siap mulai kelola keuanganmu?
+        </h2>
+        <p class="text-violet-200 mb-8 text-base">Bergabung sekarang dan ambil kendali atas keuangan pribadimu.</p>
+        <button onclick="window.location.href='pages/register.html'" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-white text-[#7C3AED] font-bold text-base hover:bg-[#EDE9FE] transition-all shadow-lg hover:-translate-y-0.5">
+          Daftar Gratis Sekarang
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+        <p class="mt-4 text-violet-300 text-xs">Tidak perlu kartu kredit · Daftar dalam 30 detik</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ FOOTER ═══════════════════════════════════════ -->
+  <footer class="bg-[#F8F7FF] border-t border-[#EDE9FE] py-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-xl bg-[#A78BFA] flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 22V12h6v10" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="font-bold text-[#1E1B4B]">Poketto</span>
+          <span class="text-[#6B7280] text-sm">— Kelola lebih cerdas.</span>
+        </div>
+        <p class="text-xs text-[#6B7280]">© 2026 Poketto. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const iconOpen = document.getElementById('icon-open');
+      const iconClose = document.getElementById('icon-close');
+      menu.classList.toggle('open');
+      iconOpen.classList.toggle('hidden');
+      iconClose.classList.toggle('hidden');
+    }
+
+    // Close mobile menu on resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768) {
+        const menu = document.getElementById('mobile-menu');
+        const iconOpen = document.getElementById('icon-open');
+        const iconClose = document.getElementById('icon-close');
+        menu.classList.remove('open');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+      }
+    });
+  </script>
 </body>
 </html>

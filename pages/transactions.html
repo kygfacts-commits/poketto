@@ -9,11 +9,14 @@
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
           colors: {
-            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
-            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
-            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
-            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
           }
         }
       }
@@ -21,47 +24,47 @@
   </script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
 
   <!-- Sidebar -->
-  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-[#F3F0FF] border-r border-[#DDD6FE] p-6 z-30">
     <div class="flex items-center gap-2 mb-10">
-      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
-      <span class="text-xl font-bold text-gray-800">Poketto</span>
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-lavender to-lavender-dark shadow-sm flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-[#1E1B4B]">Poketto</span>
     </div>
     <nav class="flex-1 space-y-1 overflow-y-auto">
-      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="home" class="w-5 h-5"></i><span>Home</span>
       </a>
-      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="wallet" class="w-5 h-5"></i><span>Akun</span>
       </a>
-      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold bg-lavender-dark text-white shadow-sm">
         <i data-lucide="list" class="w-5 h-5"></i><span>Transaksi</span>
       </a>
-      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="pie-chart" class="w-5 h-5"></i><span>Budget</span>
       </a>
-      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="line-chart" class="w-5 h-5"></i><span>Charts</span>
       </a>
-      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="file-text" class="w-5 h-5"></i><span>Reports</span>
       </a>
-      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="target" class="w-5 h-5"></i><span>Goals</span>
       </a>
-      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="calendar-clock" class="w-5 h-5"></i><span>Tagihan</span>
       </a>
-      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="trending-up" class="w-5 h-5"></i><span>Portfolio</span>
       </a>
-      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="user" class="w-5 h-5"></i><span>Profile</span>
       </a>
     </nav>
-    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender-dark hover:bg-[#7C3AED] shadow-sm shadow-lavender-dark/20 text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
       <i data-lucide="plus" class="w-5 h-5"></i><span>Tambah Transaksi</span>
     </a>
     <button id="logout-btn" class="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500 font-medium rounded-xl py-2.5 transition-colors">
@@ -76,7 +79,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-gray-800">Transaksi</h1>
+          <h1 class="text-2xl font-bold text-[#1E1B4B]">Transaksi</h1>
           <p class="text-sm text-gray-400 mt-0.5">Semua transaksi kamu</p>
         </div>
         <button id="export-btn" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
@@ -87,7 +90,7 @@
       </div>
 
       <!-- Month nav -->
-      <div class="flex items-center justify-between bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 mb-4">
+      <div class="flex items-center justify-between bg-white rounded-2xl border border-[#EDE9FE] shadow-sm px-5 py-3 mb-4">
         <button id="prev-month" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
           <i data-lucide="chevron-left" class="w-5 h-5"></i>
         </button>
@@ -99,7 +102,7 @@
 
       <!-- Filters -->
       <div class="flex flex-wrap gap-3 mb-4 items-center">
-        <div id="type-tabs" class="flex gap-1 bg-white rounded-xl border border-gray-100 shadow-sm p-1">
+        <div id="type-tabs" class="flex gap-1 bg-white rounded-xl border border-[#EDE9FE] shadow-sm p-1">
           <button data-type="all" class="type-tab px-3 py-1.5 rounded-lg text-xs font-medium bg-lavender text-white transition-colors">Semua</button>
           <button data-type="income" class="type-tab px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors">Pemasukan</button>
           <button data-type="expense" class="type-tab px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100 transition-colors">Pengeluaran</button>
@@ -112,26 +115,26 @@
 
       <!-- Summary cards -->
       <div class="grid grid-cols-3 gap-3 mb-4">
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <p class="text-xs text-gray-400 mb-1">Total Pemasukan</p>
-          <p id="sum-income" class="text-base font-bold text-emerald-600">–</p>
+        <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-semibold text-sky-600 uppercase tracking-wide mb-1">Pemasukan</p>
+          <p id="sum-income" class="text-base font-bold text-sky-600">–</p>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <p class="text-xs text-gray-400 mb-1">Total Pengeluaran</p>
-          <p id="sum-expense" class="text-base font-bold text-red-500">–</p>
+        <div class="bg-peach-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-semibold text-peach uppercase tracking-wide mb-1">Pengeluaran</p>
+          <p id="sum-expense" class="text-base font-bold text-peach">–</p>
         </div>
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-          <p class="text-xs text-gray-400 mb-1">Selisih</p>
-          <p id="sum-diff" class="text-base font-bold text-gray-800">–</p>
+        <div class="bg-mint-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-semibold text-mint uppercase tracking-wide mb-1">Selisih</p>
+          <p id="sum-diff" class="text-base font-bold text-[#1E1B4B]">–</p>
         </div>
       </div>
 
       <!-- Table -->
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-sm" style="min-width:640px">
             <thead>
-              <tr class="border-b border-gray-100 bg-gray-50/80">
+              <tr class="border-b border-[#EDE9FE] bg-[#F3F0FF]">
                 <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
                 <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Akun</th>
                 <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kategori</th>
@@ -165,7 +168,7 @@
   </div>
 
   <!-- Bottom nav -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-[#EDE9FE] flex items-center justify-around px-2 py-2 z-40">
     <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 text-gray-400">
       <i data-lucide="home" class="w-5 h-5"></i><span class="text-xs">Home</span>
     </a>
@@ -187,7 +190,7 @@
   <div id="edit-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="text-lg font-bold text-gray-800">Edit Transaksi</h2>
+        <h2 class="text-lg font-bold text-[#1E1B4B]">Edit Transaksi</h2>
         <button id="edit-modal-close" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -236,7 +239,7 @@
       <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <i data-lucide="trash-2" class="w-7 h-7 text-red-500"></i>
       </div>
-      <h2 class="text-lg font-bold text-gray-800 mb-1">Hapus Transaksi?</h2>
+      <h2 class="text-lg font-bold text-[#1E1B4B] mb-1">Hapus Transaksi?</h2>
       <p class="text-sm text-gray-400 mb-5">Tindakan ini tidak bisa dibatalkan.</p>
       <div class="flex gap-3">
         <button id="delete-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
@@ -342,7 +345,7 @@
       document.getElementById('sum-expense').textContent = formatCurrency(expense, currency);
       const diffEl = document.getElementById('sum-diff');
       diffEl.textContent = (diff >= 0 ? '+' : '') + formatCurrency(Math.abs(diff), currency);
-      diffEl.className = `text-base font-bold ${diff >= 0 ? 'text-emerald-600' : 'text-red-500'}`;
+      diffEl.className = `text-base font-bold ${diff >= 0 ? 'text-mint' : 'text-peach'}`;
     }
 
     function renderTable() {
@@ -376,14 +379,14 @@
 
         let typeBadge, amountClass, prefix;
         if (tx.type === 'income') {
-          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-mint-light/50 text-emerald-700">Pemasukan</span>';
-          amountClass = 'text-emerald-600'; prefix = '+';
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-light/50 text-sky-600">Pemasukan</span>';
+          amountClass = 'text-sky-600'; prefix = '+';
         } else if (tx.type === 'expense') {
-          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-500">Pengeluaran</span>';
-          amountClass = 'text-red-500'; prefix = '-';
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-peach-light/50 text-peach">Pengeluaran</span>';
+          amountClass = 'text-peach'; prefix = '-';
         } else {
-          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-light/50 text-sky-600">Transfer</span>';
-          amountClass = 'text-sky-600'; prefix = '';
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-lavender-light/50 text-lavender-dark">Transfer</span>';
+          amountClass = 'text-lavender-dark'; prefix = '';
         }
 
         const catName = cat?.name || (tx.type === 'transfer' ? (toAcct ? `→ ${toAcct.name}` : 'Transfer') : '–');

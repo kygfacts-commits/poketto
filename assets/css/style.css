@@ -1,36 +1,46 @@
-/* Poketto - Pastel palette CSS variables
-   Digunakan di seluruh halaman sebagai sumber warna konsisten.
-   Tailwind (CDN) tetap dipakai untuk utility classes; variabel ini
-   untuk warna custom / non-Tailwind dan referensi desain. */
+/* Poketto — Modern Pastel Design System */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Primary - Lavender */
+  /* Primary — Lavender */
   --color-lavender: #A78BFA;
-  --color-lavender-light: #C4B5FD;
+  --color-lavender-light: #EDE9FE;
   --color-lavender-dark: #8B5CF6;
+  --color-lavender-darker: #7C3AED;
 
-  /* Accent 1 - Peach */
-  --color-peach: #FDBA8C;
+  /* Accent 1 — Peach */
+  --color-peach: #FB923C;
   --color-peach-light: #FED7AA;
 
-  /* Accent 2 - Sky Blue */
-  --color-sky: #93C5FD;
-  --color-sky-light: #BFDBFE;
+  /* Accent 2 — Sky */
+  --color-sky: #38BDF8;
+  --color-sky-light: #BAE6FD;
 
-  /* Accent 3 - Mint (gunakan tipis/jarang) */
-  --color-mint: #86EFAC;
-  --color-mint-light: #BBF7D0;
+  /* Accent 3 — Mint */
+  --color-mint: #34D399;
+  --color-mint-light: #A7F3D0;
 
-  /* Neutral / background */
-  --color-bg: #FAFAFA;
+  /* Background & surface */
+  --color-bg: #F8F7FF;
   --color-surface: #FFFFFF;
-  --color-text: #1F2937;
+  --color-sidebar: #F3F0FF;
+  --color-border: #DDD6FE;
+  --color-border-light: #EDE9FE;
+
+  /* Text */
+  --color-text: #1E1B4B;
   --color-text-muted: #6B7280;
-  --color-border: #E5E7EB;
 }
 
 body {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   background-color: var(--color-bg);
   color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
 }
+
+/* Scrollbar pastel */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-lavender); }

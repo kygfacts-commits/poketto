@@ -9,11 +9,14 @@
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
           colors: {
-            lavender: { light: '#C4B5FD', DEFAULT: '#A78BFA', dark: '#8B5CF6' },
-            peach: { light: '#FED7AA', DEFAULT: '#FDBA8C' },
-            sky: { light: '#BFDBFE', DEFAULT: '#93C5FD' },
-            mint: { light: '#BBF7D0', DEFAULT: '#86EFAC' },
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
           }
         }
       }
@@ -22,59 +25,59 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
 
   <!-- Sidebar (desktop, >768px) -->
-  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-white border-r border-gray-100 p-6 z-30">
+  <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:left-0 bg-[#F3F0FF] border-r border-[#DDD6FE] p-6 z-30">
     <div class="flex items-center gap-2 mb-10">
-      <div class="w-9 h-9 rounded-xl bg-lavender flex items-center justify-center text-white font-bold">P</div>
-      <span class="text-xl font-bold text-gray-800">Poketto</span>
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-lavender to-lavender-dark shadow-sm flex items-center justify-center text-white font-bold">P</div>
+      <span class="text-xl font-bold text-[#1E1B4B]">Poketto</span>
     </div>
 
     <nav class="flex-1 space-y-1">
-      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="home.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="home" class="w-5 h-5"></i>
         <span>Home</span>
       </a>
-      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="accounts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="wallet" class="w-5 h-5"></i>
         <span>Akun</span>
       </a>
-      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="transactions.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="list" class="w-5 h-5"></i>
         <span>Transaksi</span>
       </a>
-      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="budget.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="pie-chart" class="w-5 h-5"></i>
         <span>Budget</span>
       </a>
-      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="charts.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="line-chart" class="w-5 h-5"></i>
         <span>Charts</span>
       </a>
-      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium bg-lavender-light/50 text-lavender-dark">
+      <a href="reports.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold bg-lavender-dark text-white shadow-sm">
         <i data-lucide="file-text" class="w-5 h-5"></i>
         <span>Reports</span>
       </a>
-      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="goals.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="target" class="w-5 h-5"></i>
         <span>Goals</span>
       </a>
-      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="bills.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="calendar-clock" class="w-5 h-5"></i>
         <span>Tagihan</span>
       </a>
-      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="portfolio.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="trending-up" class="w-5 h-5"></i>
         <span>Portfolio</span>
       </a>
-      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors">
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-[#6B7280] hover:bg-white/70 hover:text-[#1E1B4B] transition-colors">
         <i data-lucide="user" class="w-5 h-5"></i>
         <span>Profile</span>
       </a>
     </nav>
 
-    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
+    <a href="add.html" class="flex items-center justify-center gap-2 bg-lavender-dark hover:bg-[#7C3AED] shadow-sm shadow-lavender-dark/20 text-white font-semibold rounded-xl py-3 mb-3 transition-colors">
       <i data-lucide="plus" class="w-5 h-5"></i>
       <span>Tambah Transaksi</span>
     </a>
@@ -88,10 +91,10 @@
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
     <main class="p-6 md:p-10 max-w-4xl mx-auto">
-      <h1 class="text-2xl font-bold text-gray-800 mb-6">Reports</h1>
+      <h1 class="text-2xl font-bold text-[#1E1B4B] mb-6">Reports</h1>
 
       <!-- Tab switcher -->
-      <div class="flex bg-gray-100 rounded-xl p-1 mb-6">
+      <div class="flex bg-[#F3F0FF] rounded-xl p-1 mb-6">
         <button id="tab-btn-ringkasan" type="button"
           class="flex-1 rounded-lg py-2 text-sm font-semibold bg-white text-lavender-dark shadow-sm transition-colors">
           Ringkasan
@@ -117,16 +120,16 @@
         </div>
 
         <!-- Monthly Statistics -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-4">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Monthly Statistics</p>
           <div class="grid grid-cols-3 gap-3 text-center">
             <div>
               <p class="text-xs text-gray-400 mb-1">Pengeluaran</p>
-              <p id="stat-expense" class="text-sm font-bold text-orange-500 break-all">Rp0</p>
+              <p id="stat-expense" class="text-sm font-bold text-peach break-all">Rp0</p>
             </div>
             <div>
               <p class="text-xs text-gray-400 mb-1">Pemasukan</p>
-              <p id="stat-income" class="text-sm font-bold text-emerald-600 break-all">Rp0</p>
+              <p id="stat-income" class="text-sm font-bold text-sky-600 break-all">Rp0</p>
             </div>
             <div>
               <p class="text-xs text-gray-400 mb-1">Selisih</p>
@@ -136,13 +139,13 @@
         </div>
 
         <!-- Monthly Budget card -->
-        <div id="budget-card" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
+        <div id="budget-card" class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-4">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Monthly Budget</p>
           <div class="flex flex-col sm:flex-row gap-5 items-center">
             <div class="relative flex-shrink-0" style="width:120px;height:120px;">
               <canvas id="budget-donut"></canvas>
               <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p id="budget-pct-label" class="text-xl font-bold text-gray-800">--%</p>
+                <p id="budget-pct-label" class="text-xl font-bold text-[#1E1B4B]">--%</p>
                 <p class="text-xs text-gray-400">Remaining</p>
               </div>
             </div>
@@ -164,7 +167,7 @@
         </div>
 
         <!-- Budget empty state -->
-        <div id="budget-empty" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4 text-center">
+        <div id="budget-empty" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-6 mb-4 text-center">
           <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-lavender-light/50 flex items-center justify-center">
             <i data-lucide="pie-chart" class="w-5 h-5 text-lavender-dark"></i>
           </div>
@@ -176,7 +179,7 @@
         </div>
 
         <!-- Top Pengeluaran -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-4">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Top Pengeluaran</p>
           <div id="top-expense-list" class="space-y-4"></div>
           <p id="top-expense-empty" class="hidden text-sm text-gray-400 text-center py-2">
@@ -185,19 +188,19 @@
         </div>
 
         <!-- Perbandingan bulan ini vs bulan lalu -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-4">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Bulan Ini vs Bulan Lalu</p>
           <div class="grid grid-cols-2 gap-3">
             <div class="bg-mint-light/30 rounded-xl p-4">
               <p class="text-xs text-gray-400 mb-1">Pemasukan</p>
-              <p id="cmp-income-curr" class="text-base font-bold text-gray-800 mb-2 break-all">Rp0</p>
+              <p id="cmp-income-curr" class="text-base font-bold text-[#1E1B4B] mb-2 break-all">Rp0</p>
               <p class="text-xs text-gray-400">Bulan lalu</p>
               <p id="cmp-income-prev" class="text-xs text-gray-500 mb-2">Rp0</p>
               <div id="cmp-income-change" class="flex items-center gap-1"></div>
             </div>
             <div class="bg-peach-light/30 rounded-xl p-4">
               <p class="text-xs text-gray-400 mb-1">Pengeluaran</p>
-              <p id="cmp-expense-curr" class="text-base font-bold text-gray-800 mb-2 break-all">Rp0</p>
+              <p id="cmp-expense-curr" class="text-base font-bold text-[#1E1B4B] mb-2 break-all">Rp0</p>
               <p class="text-xs text-gray-400">Bulan lalu</p>
               <p id="cmp-expense-prev" class="text-xs text-gray-500 mb-2">Rp0</p>
               <div id="cmp-expense-change" class="flex items-center gap-1"></div>
@@ -210,13 +213,13 @@
       <div id="tab-akun" class="hidden">
 
         <!-- Net Worth -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-4">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Net Worth</p>
           <div id="net-worth-display" class="mb-4"></div>
-          <div class="border-t border-gray-100 pt-4 space-y-2">
+          <div class="border-t border-[#EDE9FE] pt-4 space-y-2">
             <div class="flex justify-between text-sm">
               <span class="text-gray-400">Aset</span>
-              <span id="asset-total" class="font-semibold text-emerald-600">Rp0</span>
+              <span id="asset-total" class="font-semibold text-mint">Rp0</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-400">Liabilitas</span>
@@ -229,7 +232,7 @@
         <div id="accounts-by-type" class="space-y-4"></div>
 
         <!-- Empty state: no accounts -->
-        <div id="accounts-empty" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+        <div id="accounts-empty" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center">
           <p class="text-gray-400 text-sm">Belum ada akun.</p>
           <a href="accounts.html" class="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-lavender-dark hover:text-lavender">
             <i data-lucide="plus" class="w-4 h-4"></i>Tambah Akun
@@ -241,7 +244,7 @@
   </div>
 
   <!-- Bottom nav (mobile, <=768px) -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex items-center justify-around px-2 py-2 z-40">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm border-t border-[#EDE9FE] flex items-center justify-around px-2 py-2 z-40">
     <a href="home.html" class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-gray-400">
       <i data-lucide="home" class="w-5 h-5"></i>
       <span class="text-xs">Home</span>
@@ -301,7 +304,7 @@
       if (prev === 0) { el.innerHTML = '<span class="text-xs text-gray-500 font-medium">Baru</span>'; return; }
       const pct = ((curr - prev) / prev) * 100;
       const isGood = higherIsBetter ? pct >= 0 : pct <= 0;
-      const color = isGood ? 'text-emerald-600' : 'text-red-500';
+      const color = isGood ? 'text-mint' : 'text-peach';
       const icon = pct >= 0 ? 'trending-up' : 'trending-down';
       const sign = pct >= 0 ? '+' : '';
       el.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 ${color} flex-shrink-0"></i><span class="${color} text-sm font-semibold">${sign}${Math.abs(pct).toFixed(1)}%</span>`;
@@ -320,7 +323,7 @@
       document.getElementById('stat-income').textContent = formatCurrency(stats.income, currency);
       const diffEl = document.getElementById('stat-diff');
       diffEl.textContent = formatCurrency(stats.diff, currency);
-      diffEl.className = `text-sm font-bold break-all ${stats.diff < 0 ? 'text-red-500' : 'text-lavender-dark'}`;
+      diffEl.className = `text-sm font-bold break-all ${stats.diff < 0 ? 'text-peach' : 'text-lavender-dark'}`;
     }
 
     function renderBudgetCard(start, end) {
@@ -390,7 +393,7 @@
               <span class="text-sm font-medium text-gray-800 truncate">${c.name}</span>
               <span class="text-sm font-semibold text-gray-700 flex-shrink-0 ml-2">${formatCurrency(c.amount, currency)}</span>
             </div>
-            <div class="w-full bg-gray-100 rounded-full h-1.5">
+            <div class="w-full bg-[#EDE9FE] rounded-full h-1.5">
               <div class="bg-peach h-1.5 rounded-full" style="width:${c.pct.toFixed(1)}%"></div>
             </div>
           </div>
@@ -444,7 +447,7 @@
       const accountsByType = document.getElementById('accounts-by-type');
 
       if (accounts.length === 0) {
-        document.getElementById('net-worth-display').innerHTML = '<p class="text-3xl font-bold text-gray-800">Rp0</p>';
+        document.getElementById('net-worth-display').innerHTML = '<p class="text-3xl font-bold text-[#1E1B4B]">Rp0</p>';
         document.getElementById('asset-total').textContent = formatCurrency(0, currency);
         accountsByType.innerHTML = '';
         accountsEmpty.classList.remove('hidden');
@@ -462,7 +465,7 @@
       }
       document.getElementById('net-worth-display').innerHTML =
         Object.entries(byC).map(([cur, total]) =>
-          `<p class="text-3xl font-bold text-gray-800">${formatCurrency(total, cur)}</p>`
+          `<p class="text-3xl font-bold text-[#1E1B4B]">${formatCurrency(total, cur)}</p>`
         ).join('');
       document.getElementById('asset-total').textContent = formatCurrency(byC[currency] || 0, currency);
 
@@ -483,7 +486,7 @@
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">${getAccountTypeLabel(type)}</p>
             <p class="text-sm font-semibold text-gray-700">${formatCurrency(groupTotal, currency)}</p>
           </div>
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm divide-y divide-gray-50">
             ${accs.map((acc) => renderAccountRow(acc)).join('')}
           </div>
         </div>`);
