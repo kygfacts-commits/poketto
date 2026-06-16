@@ -280,12 +280,14 @@
     }
 
     function renderAccountStrip() {
+      const TYPE_ACCENTS = { bank: '#8B5CF6', ewallet: '#FB923C', cash: '#34D399', investment: '#38BDF8', other: '#9CA3AF' };
       accountStrip.innerHTML = accounts.map((acc) => {
         const balance = getAccountBalance(acc.id, accounts, allTransactions);
         const colorClasses = ACCOUNT_COLOR_CLASSES[acc.color] || ACCOUNT_COLOR_CLASSES.lavender;
+        const accent = TYPE_ACCENTS[acc.type] || '#9CA3AF';
 
         return `
-          <div class="flex-shrink-0 w-44 rounded-2xl ${colorClasses.bg} p-4">
+          <div class="flex-shrink-0 w-44 rounded-2xl ${colorClasses.bg} p-4" style="border-bottom: 3px solid ${accent}">
             <div class="flex items-center gap-2 mb-2">
               <div class="w-8 h-8 rounded-lg bg-white/70 flex items-center justify-center">
                 <i data-lucide="${acc.icon || 'wallet'}" class="w-4 h-4 ${colorClasses.icon}"></i>

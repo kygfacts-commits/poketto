@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poketto - Goals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -31,7 +34,7 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
@@ -43,18 +46,18 @@
       </div>
 
       <!-- Summary cards -->
-      <div class="grid grid-cols-3 gap-3 mb-6">
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Goals Aktif</p>
-          <p id="sum-count" class="text-2xl font-bold text-lavender-dark">0</p>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Goals Aktif</p>
+          <p id="sum-count" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Total Target</p>
-          <p id="sum-target" class="text-base font-bold text-[#1E1B4B] break-all">Rp 0</p>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Target</p>
+          <p id="sum-target" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">Rp0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Terkumpul</p>
-          <p id="sum-saved" class="text-base font-bold text-mint break-all">Rp 0</p>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 col-span-2 sm:col-span-1">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Terkumpul</p>
+          <p id="sum-saved" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-mint">Rp0</p>
         </div>
       </div>
 
@@ -270,7 +273,7 @@
 
       const dateBadge = !isCompleted ? renderDateBadge(goal.target_date) : '';
       const completedBadge = isCompleted
-        ? `<span class="inline-flex items-center gap-1 text-xs font-semibold text-mint bg-mint-light/50 px-2 py-0.5 rounded-full mt-0.5">✓ Tercapai</span>`
+        ? `<span class="inline-flex items-center gap-1 text-xs font-semibold text-[#059669] bg-[#A7F3D0] px-2 py-0.5 rounded-full mt-0.5">✓ Tercapai</span>`
         : '';
 
       const actionBtns = isCompleted
@@ -287,7 +290,7 @@
             <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>`;
 
-      return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-3 ${isCompleted ? 'opacity-60' : ''}">
+      return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 mb-3 ${isCompleted ? 'opacity-60' : ''}">
         <div class="flex items-start gap-3 mb-4">
           <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${palette.bg}">
             <i data-lucide="${goal.icon || 'target'}" class="w-5 h-5 ${palette.icon}"></i>

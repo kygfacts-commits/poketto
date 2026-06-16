@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poketto - Tambah Transaksi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -31,7 +34,7 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-2xl mx-auto">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-2xl mx-auto">
       <div class="flex items-center gap-3 mb-6">
         <a href="home.html" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
           <i data-lucide="arrow-left" class="w-5 h-5"></i>
@@ -40,10 +43,10 @@
       </div>
 
       <!-- Tabs -->
-      <div class="grid grid-cols-3 gap-2 mb-6">
-        <button type="button" data-tab="income" class="tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors">Pemasukan</button>
-        <button type="button" data-tab="expense" class="tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors">Pengeluaran</button>
-        <button type="button" data-tab="transfer" class="tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors">Transfer</button>
+      <div class="flex gap-2 mb-6">
+        <button type="button" data-tab="income" class="tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors whitespace-nowrap">Pemasukan</button>
+        <button type="button" data-tab="expense" class="tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors whitespace-nowrap">Pengeluaran</button>
+        <button type="button" data-tab="transfer" class="tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors whitespace-nowrap">Transfer</button>
       </div>
 
       <!-- Form: Pemasukan / Pengeluaran -->
@@ -51,7 +54,7 @@
         <div>
           <label for="ie-account" class="block text-sm font-medium text-gray-700 mb-1">Akun</label>
           <select id="ie-account"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]"></select>
         </div>
 
         <div>
@@ -62,25 +65,25 @@
         <div>
           <label for="ie-amount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
           <input type="text" inputmode="numeric" id="ie-amount" placeholder="0"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            class="w-full border-b-2 border-[#DDD6FE] focus:border-[#8B5CF6] focus:outline-none py-2 text-2xl font-bold text-[#1E1B4B] bg-transparent">
         </div>
 
         <div>
           <label for="ie-description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi (opsional)</label>
           <input type="text" id="ie-description" placeholder="Contoh: Makan siang"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
 
         <div>
           <label for="ie-date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
           <input type="date" id="ie-date"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
 
         <p id="ie-error" class="hidden text-sm text-red-500"></p>
 
         <button type="submit" id="ie-submit"
-          class="w-full bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-2.5 transition-colors">
+          class="w-full bg-[#8B5CF6] hover:bg-lavender-dark text-white font-bold rounded-2xl py-4 text-lg transition-colors">
           Simpan
         </button>
       </form>
@@ -90,37 +93,37 @@
         <div>
           <label for="tr-from-account" class="block text-sm font-medium text-gray-700 mb-1">Dari Akun</label>
           <select id="tr-from-account"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]"></select>
         </div>
 
         <div>
           <label for="tr-to-account" class="block text-sm font-medium text-gray-700 mb-1">Ke Akun</label>
           <select id="tr-to-account"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender"></select>
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]"></select>
         </div>
 
         <div>
           <label for="tr-amount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
           <input type="text" inputmode="numeric" id="tr-amount" placeholder="0"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            class="w-full border-b-2 border-[#DDD6FE] focus:border-[#8B5CF6] focus:outline-none py-2 text-2xl font-bold text-[#1E1B4B] bg-transparent">
         </div>
 
         <div>
           <label for="tr-description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi (opsional)</label>
           <input type="text" id="tr-description" placeholder="Contoh: Tarik tunai"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
 
         <div>
           <label for="tr-date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
           <input type="date" id="tr-date"
-            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
         </div>
 
         <p id="tr-error" class="hidden text-sm text-red-500"></p>
 
         <button type="submit" id="tr-submit"
-          class="w-full bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl py-2.5 transition-colors">
+          class="w-full bg-[#8B5CF6] hover:bg-lavender-dark text-white font-bold rounded-2xl py-4 text-lg transition-colors">
           Simpan
         </button>
       </form>
@@ -161,12 +164,12 @@
     const trError = document.getElementById('tr-error');
     const trSubmitBtn = document.getElementById('tr-submit');
 
-    const TAB_BASE_CLASSES = 'tab-btn rounded-xl py-2.5 font-semibold text-sm transition-colors';
+    const TAB_BASE_CLASSES = 'tab-btn px-4 py-2 rounded-full font-semibold text-sm transition-colors whitespace-nowrap';
     const TAB_INACTIVE_CLASSES = 'bg-gray-100 text-gray-500 hover:bg-gray-200';
     const TAB_ACTIVE_CLASSES = {
-      income: 'bg-mint text-emerald-800',
-      expense: 'bg-peach text-orange-800',
-      transfer: 'bg-sky text-blue-800',
+      income: 'bg-[#8B5CF6] text-white',
+      expense: 'bg-[#8B5CF6] text-white',
+      transfer: 'bg-[#8B5CF6] text-white',
     };
 
     let currentUser = null;
@@ -215,11 +218,11 @@
         const colorClasses = getCategoryColorClasses(cat.color);
         const isSelected = cat.id === selectedCategoryId;
         return `
-          <button type="button" class="category-option flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${isSelected ? 'border-lavender bg-lavender-light/30' : 'border-transparent hover:bg-gray-50'}" data-id="${cat.id}">
-            <div class="w-10 h-10 rounded-full flex items-center justify-center ${colorClasses.bg}">
-              <i data-lucide="${cat.icon}" class="w-5 h-5 ${colorClasses.icon}"></i>
+          <button type="button" class="category-option flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${isSelected ? 'border-[#8B5CF6] bg-lavender-light/30' : 'border-transparent hover:bg-gray-50'}" data-id="${cat.id}">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center ${colorClasses.bg}">
+              <i data-lucide="${cat.icon}" class="w-6 h-6 ${colorClasses.icon}"></i>
             </div>
-            <span class="text-xs text-center text-gray-600 leading-tight">${cat.name}</span>
+            <span class="text-xs text-center text-gray-600 leading-tight line-clamp-2">${cat.name}</span>
           </button>
         `;
       }).join('');

@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poketto - Tagihan Terjadwal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -31,7 +34,7 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
@@ -43,18 +46,15 @@
       </div>
 
       <!-- Summary cards -->
-      <div class="grid grid-cols-3 gap-3 mb-6">
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Tagihan Aktif</p>
-          <p id="sum-active" class="text-2xl font-bold text-lavender-dark">0</p>
+      <p id="sum-active" class="hidden">0</p>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Nominal</p>
+          <p id="sum-total" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">Rp0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Total Nominal</p>
-          <p id="sum-total" class="text-base font-bold text-[#1E1B4B] break-all">Rp 0</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 text-center">
-          <p class="text-xs text-gray-400 mb-1">Dibayar Bulan Ini</p>
-          <p id="sum-paid" class="text-2xl font-bold text-mint">0</p>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Dibayar Bulan Ini</p>
+          <p id="sum-paid" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-mint">0</p>
         </div>
       </div>
 
@@ -194,6 +194,12 @@
 
     // --- Constants ---
     const FREQUENCY_LABELS = { monthly: 'Bulanan', weekly: 'Mingguan', yearly: 'Tahunan' };
+
+    function getBillStatusBadge(bill) {
+      return bill.is_active
+        ? `<span class="text-xs font-semibold bg-lavender-light/50 text-lavender-dark px-2 py-0.5 rounded-full">Aktif</span>`
+        : `<span class="text-xs font-semibold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Nonaktif</span>`;
+    }
     const MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
     // --- State ---
@@ -249,41 +255,37 @@
     function renderBillCard(bill) {
       const cat = categoriesById.get(bill.category_id);
       const cc = getCategoryColorClasses(cat?.color || 'slate');
-      const acct = accounts.find(a => a.id === bill.account_id);
       const freqLabel = FREQUENCY_LABELS[bill.frequency] || bill.frequency;
-      const activeBadge = bill.is_active
-        ? `<span class="text-xs font-semibold bg-lavender-light/50 text-lavender-dark px-2 py-0.5 rounded-full">Aktif</span>`
-        : `<span class="text-xs font-semibold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Nonaktif</span>`;
       const toggleIcon = bill.is_active ? 'pause-circle' : 'play-circle';
       const toggleTitle = bill.is_active ? 'Nonaktifkan' : 'Aktifkan';
 
-      return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-3 ${!bill.is_active ? 'opacity-60' : ''}">
-        <div class="flex items-start gap-3">
+      return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 mb-3 ${!bill.is_active ? 'opacity-60' : ''}">
+        <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${cc.bg}">
             <i data-lucide="${cat?.icon || 'circle'}" class="w-5 h-5 ${cc.icon}"></i>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap mb-0.5">
-              <p class="font-semibold text-gray-800">${bill.name}</p>
-              ${activeBadge}
+            <div class="flex items-center gap-2 mb-0.5">
+              <p class="font-semibold text-gray-800 truncate">${bill.name}</p>
+              ${getBillStatusBadge(bill)}
             </div>
-            <p class="text-gray-700 font-semibold">${formatCurrency(Number(bill.amount), currency)}</p>
-            <p class="text-xs text-gray-400 mt-0.5">${freqLabel} · Setiap tgl ${bill.day_of_month} · ${acct?.name || '–'}</p>
-            <p class="text-xs mt-1">${renderDueBadge(bill.next_due_date)}</p>
+            <p class="text-xs text-gray-500">${freqLabel} · Tgl ${bill.day_of_month}</p>
+            <p class="text-xs mt-0.5">${renderDueBadge(bill.next_due_date)}</p>
           </div>
-          <div class="flex items-center gap-1 flex-shrink-0">
-            ${bill.is_active ? `<button type="button" data-bill-id="${bill.id}" class="pay-bill-btn flex items-center gap-1 bg-lavender-light/50 hover:bg-lavender-light text-lavender-dark text-xs font-semibold px-2 py-1.5 rounded-lg transition-colors">
-              <i data-lucide="credit-card" class="w-3 h-3"></i>Bayar
-            </button>` : ''}
-            <button type="button" data-bill-id="${bill.id}" class="toggle-bill-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="${toggleTitle}">
-              <i data-lucide="${toggleIcon}" class="w-4 h-4"></i>
-            </button>
-            <button type="button" data-bill-id="${bill.id}" class="edit-bill-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-              <i data-lucide="edit-2" class="w-4 h-4"></i>
-            </button>
-            <button type="button" data-bill-id="${bill.id}" class="delete-bill-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
+          <div class="flex-shrink-0 flex flex-col items-end gap-1.5">
+            <p class="font-bold text-[#1E1B4B] text-sm">${formatCurrency(Number(bill.amount), currency)}</p>
+            <div class="flex items-center gap-1">
+              ${bill.is_active ? `<button type="button" data-bill-id="${bill.id}" class="pay-bill-btn text-xs font-semibold border border-[#8B5CF6] text-[#8B5CF6] px-2 py-1 rounded-lg hover:bg-lavender-light/50 transition-colors">Bayar</button>` : ''}
+              <button type="button" data-bill-id="${bill.id}" class="toggle-bill-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="${toggleTitle}">
+                <i data-lucide="${toggleIcon}" class="w-4 h-4"></i>
+              </button>
+              <button type="button" data-bill-id="${bill.id}" class="edit-bill-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <i data-lucide="edit-2" class="w-4 h-4"></i>
+              </button>
+              <button type="button" data-bill-id="${bill.id}" class="delete-bill-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>`;

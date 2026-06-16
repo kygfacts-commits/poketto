@@ -61,11 +61,11 @@
 
       <!-- Filters -->
       <div class="flex flex-wrap gap-3 mb-4 items-center">
-        <div id="type-tabs" class="flex gap-2 flex-wrap">
-          <button data-type="all" class="type-tab px-4 py-1.5 rounded-full text-xs font-semibold bg-[#8B5CF6] text-white transition-colors">Semua</button>
-          <button data-type="income" class="type-tab px-4 py-1.5 rounded-full text-xs font-medium text-gray-500 bg-white border border-gray-200 transition-colors">Pemasukan</button>
-          <button data-type="expense" class="type-tab px-4 py-1.5 rounded-full text-xs font-medium text-gray-500 bg-white border border-gray-200 transition-colors">Pengeluaran</button>
-          <button data-type="transfer" class="type-tab px-4 py-1.5 rounded-full text-xs font-medium text-gray-500 bg-white border border-gray-200 transition-colors">Transfer</button>
+        <div id="type-tabs" class="flex gap-2 flex-nowrap overflow-x-auto scrollbar-hide pb-0.5">
+          <button data-type="all" class="type-tab px-3 py-1.5 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors whitespace-nowrap">Semua</button>
+          <button data-type="income" class="type-tab px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 bg-white border border-gray-200 transition-colors whitespace-nowrap">Pemasukan</button>
+          <button data-type="expense" class="type-tab px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 bg-white border border-gray-200 transition-colors whitespace-nowrap">Pengeluaran</button>
+          <button data-type="transfer" class="type-tab px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 bg-white border border-gray-200 transition-colors whitespace-nowrap">Transfer</button>
         </div>
         <select id="cat-filter" class="rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-lavender">
           <option value="">Semua Kategori</option>
@@ -394,8 +394,8 @@
       filterType = btn.dataset.type;
       document.querySelectorAll('.type-tab').forEach(b => {
         b.className = b === btn
-          ? 'type-tab px-4 py-1.5 rounded-full text-xs font-semibold bg-[#8B5CF6] text-white transition-colors'
-          : 'type-tab px-4 py-1.5 rounded-full text-xs font-medium text-gray-500 bg-white border border-gray-200 transition-colors';
+          ? 'type-tab px-3 py-1.5 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors whitespace-nowrap'
+          : 'type-tab px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 bg-white border border-gray-200 transition-colors whitespace-nowrap';
       });
       applyFilters();
     });

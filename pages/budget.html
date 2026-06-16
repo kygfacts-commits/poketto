@@ -10,7 +10,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           colors: {
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
@@ -22,6 +22,8 @@
       }
     }
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="min-h-screen bg-[#F8F7FF] font-sans">
@@ -31,7 +33,7 @@
 
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
-    <main class="p-6 md:p-10 max-w-4xl mx-auto">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-[#1E1B4B]">Budget</h1>
         <button id="add-budget-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors">
@@ -52,18 +54,18 @@
       </div>
 
       <!-- Summary cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
-          <p class="text-sm text-gray-400 mb-1">Total Budget</p>
-          <p id="summary-total" class="text-xl font-bold text-[#1E1B4B]">Rp0</p>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Budget</p>
+          <p id="summary-total" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">Rp0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
-          <p class="text-sm text-gray-400 mb-1">Total Terpakai</p>
-          <p id="summary-used" class="text-xl font-bold text-[#1E1B4B]">Rp0</p>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Terpakai</p>
+          <p id="summary-used" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-peach">Rp0</p>
         </div>
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
-          <p class="text-sm text-gray-400 mb-1">Sisa Budget</p>
-          <p id="summary-remaining" class="text-xl font-bold text-[#1E1B4B]">Rp0</p>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 col-span-2 sm:col-span-1">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Sisa Budget</p>
+          <p id="summary-remaining" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-mint">Rp0</p>
         </div>
       </div>
 
@@ -227,7 +229,7 @@
       summaryTotal.textContent = formatCurrency(totalBudget, currency);
       summaryUsed.textContent = formatCurrency(totalUsed, currency);
       summaryRemaining.textContent = formatCurrency(remaining, currency);
-      summaryRemaining.className = `text-xl font-bold ${remaining < 0 ? 'text-peach' : 'text-mint'}`;
+      summaryRemaining.className = `text-xl md:text-2xl font-extrabold tracking-tight truncate ${remaining < 0 ? 'text-peach' : 'text-mint'}`;
     }
 
     function renderBudgetList() {
@@ -248,18 +250,18 @@
         const barWidth = Math.min(percent, 100);
         const barColor = getBudgetBarColor(percent);
         const overBadge = percent >= 100
-          ? '<span class="ml-2 text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">Over Budget!</span>'
+          ? '<span class="ml-2 text-xs font-semibold text-red-500 bg-red-100 px-2 py-0.5 rounded-full">Over Budget!</span>'
           : '';
 
         return `
-          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
             <div class="flex items-center gap-3 mb-3">
               <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}">
                 <i data-lucide="${cat?.icon || 'circle'}" class="w-5 h-5 ${colorClasses.icon}"></i>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="font-semibold text-gray-800 truncate">${cat?.name || 'Lainnya'}</p>
-                <p class="text-xs text-gray-400">
+                <p class="text-xs text-gray-500">
                   ${formatCurrency(used, currency)} / ${formatCurrency(limit, currency)} (${percent}%)${overBadge}
                 </p>
               </div>

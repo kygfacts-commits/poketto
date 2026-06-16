@@ -45,6 +45,10 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-lavender); }
 
+/* Scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* ── Mobile nav & drawer ─────────────────────────────────────────────────────── */
 #pkn-bottom-nav {
   display: none;
