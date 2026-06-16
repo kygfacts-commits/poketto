@@ -17,7 +17,7 @@ export async function fetchCategories(type, userId = null, includeInactive = fal
 export async function createCategory({ name, type, icon, color, userId }) {
   const { data, error } = await supabase
     .from('categories')
-    .insert({ name, type, icon, color, user_id: userId })
+    .insert({ name, type, icon, color, user_id: userId, is_active: true })
     .select()
     .single();
   if (error) throw error;

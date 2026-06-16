@@ -260,21 +260,19 @@
       const toggleTitle = bill.is_active ? 'Nonaktifkan' : 'Aktifkan';
 
       return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 mb-3 ${!bill.is_active ? 'opacity-60' : ''}">
-        <div class="flex items-center gap-3">
+        <div class="flex items-start gap-3">
           <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ${cc.bg}">
             <i data-lucide="${cat?.icon || 'circle'}" class="w-5 h-5 ${cc.icon}"></i>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-0.5 min-w-0">
-              <p class="flex-1 min-w-0 font-semibold text-gray-800 truncate">${bill.name}</p>
-              <span class="flex-shrink-0">${getBillStatusBadge(bill)}</span>
-            </div>
-            <p class="text-xs text-gray-500">${freqLabel} · Tgl ${bill.day_of_month}</p>
-            <p class="text-xs mt-0.5">${renderDueBadge(bill.next_due_date)}</p>
+            <p class="font-semibold text-gray-800 truncate block">${bill.name}</p>
+            <p class="text-xs text-gray-400 truncate">${freqLabel} · Tgl ${bill.day_of_month}</p>
+            <p class="text-xs mt-0.5 truncate">${renderDueBadge(bill.next_due_date)}</p>
           </div>
-          <div class="flex-shrink-0 flex flex-col items-end gap-1.5">
-            <p class="font-bold text-[#1E1B4B] text-sm">${formatCurrency(Number(bill.amount), currency)}</p>
-            <div class="flex items-center gap-1">
+          <div class="flex-shrink-0 text-right">
+            <p class="font-bold text-[#1E1B4B] text-sm whitespace-nowrap">${formatCurrency(Number(bill.amount), currency)}</p>
+            <div class="mt-0.5">${getBillStatusBadge(bill)}</div>
+            <div class="flex items-center gap-1 mt-1.5 justify-end">
               ${bill.is_active ? `<button type="button" data-bill-id="${bill.id}" class="pay-bill-btn text-xs font-semibold border border-[#8B5CF6] text-[#8B5CF6] px-2 py-1 rounded-lg hover:bg-lavender-light/50 transition-colors">Bayar</button>` : ''}
               <button type="button" data-bill-id="${bill.id}" class="toggle-bill-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="${toggleTitle}">
                 <i data-lucide="${toggleIcon}" class="w-4 h-4"></i>
