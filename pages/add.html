@@ -212,6 +212,15 @@
       transfer: 'bg-[#8B5CF6] text-white',
     };
 
+    const CATEGORY_SHORT_NAMES = {
+      'Makanan & Minuman': 'Makanan',
+      'Tagihan & Utilitas': 'Tagihan',
+      'Cicilan/Hutang': 'Cicilan',
+      'Freelance/Side Income': 'Freelance',
+      'Hasil Investasi': 'Investasi',
+      'Hadiah & Donasi': 'Hadiah',
+    };
+
     let currentUser = null;
     let currentTab = 'income';
     let accounts = [];
@@ -262,7 +271,7 @@
             <div class="w-12 h-12 rounded-full flex items-center justify-center ${colorClasses.bg}">
               <i data-lucide="${cat.icon}" class="w-6 h-6 ${colorClasses.icon}"></i>
             </div>
-            <span class="text-xs text-center text-gray-600 leading-tight line-clamp-2">${cat.name}</span>
+            <span class="text-xs text-center text-gray-600 leading-tight line-clamp-2">${CATEGORY_SHORT_NAMES[cat.name] || cat.name}</span>
           </button>
         `;
       }).join('');
@@ -330,9 +339,9 @@
       container.innerHTML = ICON_GROUPS.map(group =>
         `<div>
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">${group.label}</p>
-          <div class="grid grid-cols-8 gap-1">
+          <div class="grid grid-cols-5 gap-1">
             ${group.icons.map(icon =>
-              `<button type="button" data-icon="${icon}" class="picker-icon-btn w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${icon === newCatIcon ? 'bg-lavender-light text-lavender-dark' : 'text-gray-400 hover:bg-gray-100'}">
+              `<button type="button" data-icon="${icon}" class="picker-icon-btn w-full aspect-square rounded-xl flex items-center justify-center transition-colors ${icon === newCatIcon ? 'bg-lavender-light text-lavender-dark' : 'text-gray-400 hover:bg-gray-100'}">
                 <i data-lucide="${icon}" class="w-5 h-5 pointer-events-none"></i>
               </button>`
             ).join('')}

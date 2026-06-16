@@ -1,12 +1,13 @@
 // Poketto - Category helpers
-// Diimpor sebagai ES module dari pages/add.html, pages/home.html, pages/categories.html
-
 import { supabase } from './supabase-client.js';
 
-export async function fetchCategories(type, userId = null) {
+export async function fetchCategories(type, userId = null, includeInactive = false) {
   let query = supabase.from('categories').select('*').eq('type', type);
   if (userId) {
     query = query.or(`user_id.is.null,user_id.eq.${userId}`);
+  }
+  if (!includeInactive) {
+    query = query.eq('is_active', true);
   }
   const { data, error } = await query.order('name', { ascending: true });
   if (error) throw error;
@@ -34,13 +35,33 @@ export async function updateCategory(id, { name, icon, color }) {
   return data;
 }
 
+export async function updateCategoryColor(id, color) {
+  const { data, error } = await supabase
+    .from('categories')
+    .update({ color })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function setCategoryActive(id, isActive) {
+  const { data, error } = await supabase
+    .from('categories')
+    .update({ is_active: isActive })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteCategory(id) {
   const { error } = await supabase.from('categories').delete().eq('id', id);
   if (error) throw error;
 }
 
-// Warna kategori memakai nama warna Tailwind standar (pink, amber, teal, dll)
-// plus 'lavender' (warna kustom Poketto) untuk beberapa kategori.
 export function getCategoryColorClasses(color) {
   if (color === 'lavender') {
     return { bg: 'bg-lavender-light/50', icon: 'text-lavender-dark' };
@@ -48,7 +69,6 @@ export function getCategoryColorClasses(color) {
   return { bg: `bg-${color}-100`, icon: `text-${color}-500` };
 }
 
-// Dipakai untuk transaksi transfer, yang tidak punya category_id.
 export const TRANSFER_COLOR_CLASSES = { bg: 'bg-sky-light/60', icon: 'text-sky-600' };
 
 export const CATEGORY_COLORS = [
@@ -67,18 +87,18 @@ export const CATEGORY_COLORS = [
 ];
 
 export const ICON_GROUPS = [
-  { label: 'Makanan', icons: ['utensils', 'coffee', 'pizza', 'cake', 'apple', 'cookie', 'wine', 'sandwich'] },
-  { label: 'Transportasi', icons: ['car', 'bus', 'plane', 'train', 'bike', 'fuel', 'map-pin', 'navigation'] },
-  { label: 'Belanja', icons: ['shopping-bag', 'gift', 'tag', 'scissors', 'sparkles', 'package', 'shopping-cart', 'star'] },
-  { label: 'Hiburan', icons: ['film', 'music', 'gamepad-2', 'tv', 'ticket', 'camera', 'headphones', 'mic'] },
-  { label: 'Kesehatan', icons: ['heart-pulse', 'stethoscope', 'pill', 'activity', 'thermometer', 'baby', 'dumbbell', 'cross'] },
-  { label: 'Pendidikan', icons: ['book-open', 'graduation-cap', 'pencil', 'library', 'brain', 'telescope', 'school', 'pen'] },
-  { label: 'Keuangan', icons: ['wallet', 'credit-card', 'landmark', 'banknote', 'coins', 'trending-up', 'bar-chart-2', 'receipt'] },
-  { label: 'Rumah', icons: ['home', 'sofa', 'lamp', 'bed', 'tool', 'hammer', 'door-open', 'armchair'] },
-  { label: 'Utilitas', icons: ['zap', 'wifi', 'droplets', 'flame', 'trash-2', 'phone', 'laptop', 'monitor'] },
-  { label: 'Sosial', icons: ['users', 'heart-handshake', 'party-popper', 'handshake', 'user', 'share-2', 'message-circle', 'bell'] },
-  { label: 'Perjalanan', icons: ['globe', 'compass', 'suitcase', 'map', 'tent', 'mountain', 'sunrise', 'anchor'] },
-  { label: 'Bisnis', icons: ['briefcase', 'building', 'file-text', 'calendar', 'clock', 'mail', 'send', 'folder'] },
-  { label: 'Alam', icons: ['leaf', 'flower-2', 'sun', 'cloud', 'snowflake', 'tree-pine', 'rainbow', 'wind'] },
-  { label: 'Lainnya', icons: ['circle', 'square', 'star', 'diamond', 'hexagon', 'infinity', 'bookmark', 'flag'] },
+  { label: 'Makanan & Minuman', icons: ['utensils','coffee','pizza','wine','beer','cake','sandwich','milk','carrot','cookie'] },
+  { label: 'Belanja', icons: ['shopping-bag','shopping-cart','package','gift','tag','store','shirt','gem','watch','barcode'] },
+  { label: 'Hiburan', icons: ['gamepad-2','tv','music','film','mic','headphones','camera','ticket','popcorn','radio'] },
+  { label: 'Transportasi', icons: ['car','bus','train','plane','bike','ship','fuel','map-pin','truck','navigation'] },
+  { label: 'Kesehatan', icons: ['heart-pulse','pill','stethoscope','activity','dumbbell','brain','eye','thermometer','baby','apple'] },
+  { label: 'Pendidikan', icons: ['graduation-cap','book-open','pencil','calculator','microscope','globe','library','pen','ruler','school'] },
+  { label: 'Perjalanan', icons: ['map','compass','tent','backpack','luggage','mountain','sun','umbrella','anchor','flag'] },
+  { label: 'Olahraga', icons: ['trophy','target','medal','dumbbell','bike','timer','zap','shield','flame','wind'] },
+  { label: 'Keuangan', icons: ['wallet','credit-card','banknote','trending-up','trending-down','piggy-bank','landmark','coins','bar-chart-2','receipt'] },
+  { label: 'Perawatan Diri', icons: ['sparkles','scissors','heart','smile','star','moon','flower-2','droplets','feather','sun'] },
+  { label: 'Rumah & Kehidupan', icons: ['home','sofa','bed','lamp','wrench','hammer','plug','wifi','key','door-open'] },
+  { label: 'Pekerjaan', icons: ['briefcase','laptop','printer','phone','mail','calendar','clock','folder','send','file-text'] },
+  { label: 'Festival', icons: ['party-popper','cake','gift','star','sparkles','music','bell','heart','flag','sun'] },
+  { label: 'Lainnya', icons: ['circle','square','triangle','minus','plus','hash','at-sign','bookmark','flag','more-horizontal'] },
 ];

@@ -54,22 +54,17 @@
       <!-- Category list -->
       <div id="cat-list" class="space-y-2"></div>
 
-      <!-- Empty custom state -->
-      <div id="cat-custom-empty" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-8 text-center mt-2">
-        <p class="text-gray-400 text-sm">Belum ada kategori kustom. Tambahkan di bawah.</p>
-      </div>
-
-      <!-- Add button -->
+      <!-- Add button (only for custom categories) -->
       <button type="button" id="add-cat-btn" class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-lavender-dark/30 hover:border-lavender-dark text-lavender-dark font-semibold rounded-2xl py-3 mt-4 hover:bg-lavender-light/20 transition-colors">
         <i data-lucide="plus" class="w-5 h-5"></i>
-        Tambah Kategori
+        Tambah Kategori Kustom
       </button>
     </main>
   </div>
 
   <div id="mobile-nav-container" class="opacity-0 transition-opacity duration-300"></div>
 
-  <!-- Category Picker Modal (add / edit) -->
+  <!-- Full Category Modal (add / edit custom) -->
   <div id="cat-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
     <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md max-h-[92vh] flex flex-col shadow-xl">
       <div class="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100 flex-shrink-0">
@@ -84,7 +79,7 @@
           <input type="text" id="modal-name" placeholder="Contoh: Gaji" maxlength="30"
             class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6] text-sm">
         </div>
-        <div>
+        <div id="modal-type-section">
           <label class="block text-sm font-medium text-gray-700 mb-2">Tipe</label>
           <div class="flex gap-2">
             <button type="button" data-type-btn="income" class="type-pick-btn px-4 py-2 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors">Pemasukan</button>
@@ -109,14 +104,45 @@
     </div>
   </div>
 
-  <!-- Delete confirm modal -->
+  <!-- Color-only modal (for default category color edit) -->
+  <div id="color-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-base text-[#1E1B4B]">Ubah Warna</h3>
+        <button type="button" id="color-modal-close" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="color-modal-grid" class="grid grid-cols-6 gap-2 mb-4"></div>
+      <button type="button" id="color-modal-save" class="w-full bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold rounded-2xl py-3 transition-colors">
+        Simpan
+      </button>
+    </div>
+  </div>
+
+  <!-- Toggle (deactivate) confirmation modal -->
+  <div id="toggle-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 text-center">
+      <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="eye-off" class="w-7 h-7 text-amber-500"></i>
+      </div>
+      <h2 class="text-base font-bold text-[#1E1B4B] mb-2">Nonaktifkan Kategori?</h2>
+      <p class="text-sm text-gray-400 mb-5">Kategori tidak akan muncul saat menambah transaksi baru, tapi transaksi lama tetap aman.</p>
+      <div class="flex gap-3">
+        <button id="toggle-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button id="toggle-confirm" class="flex-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white py-2.5 text-sm font-semibold transition-colors">Nonaktifkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
   <div id="delete-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 text-center">
       <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <i data-lucide="trash-2" class="w-7 h-7 text-red-500"></i>
       </div>
-      <h2 class="text-lg font-bold text-[#1E1B4B] mb-1">Hapus Kategori?</h2>
-      <p class="text-sm text-gray-400 mb-5">Transaksi yang menggunakan kategori ini tidak akan terpengaruh.</p>
+      <h2 class="text-base font-bold text-[#1E1B4B] mb-2">Hapus Kategori?</h2>
+      <p class="text-sm text-gray-400 mb-5">Tindakan ini tidak bisa dibatalkan.</p>
       <div class="flex gap-3">
         <button id="delete-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
         <button id="delete-confirm" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white py-2.5 text-sm font-semibold transition-colors">Hapus</button>
@@ -126,7 +152,7 @@
 
   <script type="module">
     import '../assets/js/auth-guard.js';
-    import { fetchCategories, getCategoryColorClasses, createCategory, updateCategory, deleteCategory, CATEGORY_COLORS, ICON_GROUPS } from '../assets/js/categories.js';
+    import { fetchCategories, getCategoryColorClasses, createCategory, updateCategory, updateCategoryColor, setCategoryActive, deleteCategory, CATEGORY_COLORS, ICON_GROUPS } from '../assets/js/categories.js';
 
     let currentUser = null;
     let currentType = 'income';
@@ -135,7 +161,13 @@
     let modalIcon = 'circle';
     let modalSelectedType = 'income';
     let editingCatId = null;
+    let colorOnlyCatId = null;
+    let colorOnlySelected = 'lavender';
+    let pendingToggleId = null;
     let pendingDeleteId = null;
+
+    const TAB_ACTIVE = 'px-4 py-2 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors';
+    const TAB_INACTIVE = 'px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors';
 
     // ---------- Tab switching ----------
 
@@ -144,8 +176,6 @@
 
     async function setTab(type) {
       currentType = type;
-      const TAB_ACTIVE = 'px-4 py-2 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors';
-      const TAB_INACTIVE = 'px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors';
       document.getElementById('tab-income').className = type === 'income' ? TAB_ACTIVE : TAB_INACTIVE;
       document.getElementById('tab-expense').className = type === 'expense' ? TAB_ACTIVE : TAB_INACTIVE;
       if (currentUser) await loadCategories();
@@ -155,35 +185,37 @@
 
     function renderList() {
       const list = document.getElementById('cat-list');
-      const emptyEl = document.getElementById('cat-custom-empty');
-
-      const typed = categories.filter(c => c.type === currentType);
-      const seeds = typed.filter(c => !c.user_id);
-      const custom = typed.filter(c => !!c.user_id);
-
-      if (typed.length === 0) {
-        list.innerHTML = '';
-        emptyEl.classList.remove('hidden');
-        return;
-      }
-      emptyEl.classList.add('hidden');
-
-      list.innerHTML = typed.map(cat => {
+      list.innerHTML = categories.map(cat => {
         const cc = getCategoryColorClasses(cat.color || 'slate');
         const isCustom = !!cat.user_id;
-        return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-3 flex items-center gap-3">
+        const isActive = cat.is_active !== false;
+
+        return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-3 flex items-center gap-3 ${!isActive ? 'opacity-50' : ''}">
           <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${cc.bg}">
             <i data-lucide="${cat.icon || 'circle'}" class="w-5 h-5 ${cc.icon}"></i>
           </div>
-          <span class="flex-1 font-medium text-gray-800">${cat.name}</span>
+          <div class="flex-1 min-w-0">
+            <span class="font-medium text-gray-800 truncate block">${cat.name}</span>
+            ${!isActive ? '<span class="text-xs font-semibold text-red-500">Nonaktif</span>' : ''}
+          </div>
           ${isCustom
-            ? `<button data-id="${cat.id}" class="edit-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            ? `<button data-id="${cat.id}" class="edit-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Edit">
                 <i data-lucide="edit-2" class="w-4 h-4"></i>
               </button>
-              <button data-id="${cat.id}" class="delete-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+              <button data-id="${cat.id}" class="delete-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>`
-            : `<span class="text-xs font-medium px-2 py-0.5 rounded-full bg-lavender-light text-lavender-dark flex-shrink-0">Default</span>`
+            : `<button data-id="${cat.id}" class="edit-color-btn p-1.5 rounded-lg text-gray-400 hover:text-lavender-dark hover:bg-lavender-light/30 transition-colors" title="Ubah warna">
+                <i data-lucide="palette" class="w-4 h-4"></i>
+              </button>
+              ${isActive
+                ? `<button data-id="${cat.id}" class="toggle-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors" title="Nonaktifkan">
+                    <i data-lucide="eye-off" class="w-4 h-4"></i>
+                  </button>`
+                : `<button data-id="${cat.id}" class="activate-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-green-500 hover:bg-green-50 transition-colors" title="Aktifkan">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>`
+              }`
           }
         </div>`;
       }).join('');
@@ -196,9 +228,99 @@
       list.querySelectorAll('.delete-cat-btn').forEach(btn => {
         btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
       });
+      list.querySelectorAll('.edit-color-btn').forEach(btn => {
+        btn.addEventListener('click', () => openColorModal(btn.dataset.id));
+      });
+      list.querySelectorAll('.toggle-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => openToggleModal(btn.dataset.id));
+      });
+      list.querySelectorAll('.activate-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => activateCategory(btn.dataset.id));
+      });
     }
 
-    // ---------- Modal helpers ----------
+    // ---------- Color-only modal ----------
+
+    function openColorModal(id) {
+      const cat = categories.find(c => c.id === id);
+      if (!cat) return;
+      colorOnlyCatId = id;
+      colorOnlySelected = cat.color || 'lavender';
+      renderColorModalGrid();
+      document.getElementById('color-modal').classList.remove('hidden');
+    }
+
+    function renderColorModalGrid() {
+      const grid = document.getElementById('color-modal-grid');
+      grid.innerHTML = CATEGORY_COLORS.map(c =>
+        `<button type="button" data-color="${c.name}" class="color-dot w-8 h-8 rounded-full border-2 transition-all ${c.name === colorOnlySelected ? 'border-gray-700 scale-110' : 'border-transparent hover:scale-105'}" style="background-color:${c.hex}"></button>`
+      ).join('');
+      grid.querySelectorAll('.color-dot').forEach(btn => {
+        btn.addEventListener('click', () => { colorOnlySelected = btn.dataset.color; renderColorModalGrid(); });
+      });
+    }
+
+    document.getElementById('color-modal-close').addEventListener('click', () => {
+      document.getElementById('color-modal').classList.add('hidden');
+      colorOnlyCatId = null;
+    });
+
+    document.getElementById('color-modal-save').addEventListener('click', async () => {
+      if (!colorOnlyCatId) return;
+      const saveBtn = document.getElementById('color-modal-save');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+      try {
+        await updateCategoryColor(colorOnlyCatId, colorOnlySelected);
+        categories = await fetchCategories(currentType, currentUser.id, true);
+        document.getElementById('color-modal').classList.add('hidden');
+        colorOnlyCatId = null;
+        renderList();
+      } catch (err) {
+        console.error(err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan';
+      }
+    });
+
+    // ---------- Toggle modal (deactivate) ----------
+
+    function openToggleModal(id) {
+      pendingToggleId = id;
+      document.getElementById('toggle-modal').classList.remove('hidden');
+    }
+
+    async function activateCategory(id) {
+      try {
+        await setCategoryActive(id, true);
+        categories = await fetchCategories(currentType, currentUser.id, true);
+        renderList();
+      } catch (err) {
+        console.error(err.message);
+      }
+    }
+
+    document.getElementById('toggle-cancel').addEventListener('click', () => {
+      document.getElementById('toggle-modal').classList.add('hidden');
+      pendingToggleId = null;
+    });
+
+    document.getElementById('toggle-confirm').addEventListener('click', async () => {
+      if (!pendingToggleId) return;
+      try {
+        await setCategoryActive(pendingToggleId, false);
+        categories = await fetchCategories(currentType, currentUser.id, true);
+        document.getElementById('toggle-modal').classList.add('hidden');
+        pendingToggleId = null;
+        renderList();
+      } catch (err) {
+        document.getElementById('toggle-modal').classList.add('hidden');
+        console.error(err.message);
+      }
+    });
+
+    // ---------- Full edit modal helpers ----------
 
     function renderModalColorGrid() {
       const grid = document.getElementById('modal-color-grid');
@@ -215,9 +337,9 @@
       container.innerHTML = ICON_GROUPS.map(group =>
         `<div>
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">${group.label}</p>
-          <div class="grid grid-cols-8 gap-1">
+          <div class="grid grid-cols-5 gap-1">
             ${group.icons.map(icon =>
-              `<button type="button" data-icon="${icon}" class="modal-icon-btn w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${icon === modalIcon ? 'bg-lavender-light text-lavender-dark' : 'text-gray-400 hover:bg-gray-100'}">
+              `<button type="button" data-icon="${icon}" class="modal-icon-btn w-full aspect-square rounded-xl flex items-center justify-center transition-colors ${icon === modalIcon ? 'bg-lavender-light text-lavender-dark' : 'text-gray-400 hover:bg-gray-100'}">
                 <i data-lucide="${icon}" class="w-5 h-5 pointer-events-none"></i>
               </button>`
             ).join('')}
@@ -242,9 +364,10 @@
       modalColor = 'lavender';
       modalIcon = 'circle';
       modalSelectedType = currentType;
-      document.getElementById('modal-title').textContent = 'Tambah Kategori';
+      document.getElementById('modal-title').textContent = 'Tambah Kategori Kustom';
       document.getElementById('modal-name').value = '';
       document.getElementById('modal-error').classList.add('hidden');
+      document.getElementById('modal-type-section').classList.remove('hidden');
       renderModalTypePills(currentType);
       renderModalColorGrid();
       renderModalIconGroups();
@@ -261,18 +384,11 @@
       document.getElementById('modal-title').textContent = 'Edit Kategori';
       document.getElementById('modal-name').value = cat.name;
       document.getElementById('modal-error').classList.add('hidden');
-      renderModalTypePills(cat.type);
+      document.getElementById('modal-type-section').classList.add('hidden');
       renderModalColorGrid();
       renderModalIconGroups();
       document.getElementById('cat-modal').classList.remove('hidden');
     }
-
-    function openDeleteModal(id) {
-      pendingDeleteId = id;
-      document.getElementById('delete-modal').classList.remove('hidden');
-    }
-
-    // ---------- Modal type pill click ----------
 
     document.getElementById('cat-modal').addEventListener('click', e => {
       const typeBtn = e.target.closest('.type-pick-btn');
@@ -286,7 +402,7 @@
       document.getElementById('cat-modal').classList.add('hidden');
     });
 
-    // ---------- Save ----------
+    // ---------- Save custom category ----------
 
     document.getElementById('modal-save').addEventListener('click', async () => {
       const name = document.getElementById('modal-name').value.trim();
@@ -310,7 +426,7 @@
           await createCategory({ name, type: modalSelectedType, icon: modalIcon, color: modalColor, userId: currentUser.id });
           if (modalSelectedType !== currentType) await setTab(modalSelectedType);
         }
-        categories = await fetchCategories(currentType, currentUser.id);
+        categories = await fetchCategories(currentType, currentUser.id, true);
         document.getElementById('cat-modal').classList.add('hidden');
         renderList();
       } catch (err) {
@@ -322,7 +438,12 @@
       }
     });
 
-    // ---------- Delete ----------
+    // ---------- Delete custom category ----------
+
+    function openDeleteModal(id) {
+      pendingDeleteId = id;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    }
 
     document.getElementById('delete-cancel').addEventListener('click', () => {
       document.getElementById('delete-modal').classList.add('hidden');
@@ -333,13 +454,13 @@
       if (!pendingDeleteId) return;
       try {
         await deleteCategory(pendingDeleteId);
-        categories = await fetchCategories(currentType, currentUser.id);
+        categories = await fetchCategories(currentType, currentUser.id, true);
         document.getElementById('delete-modal').classList.add('hidden');
         pendingDeleteId = null;
         renderList();
       } catch (err) {
         document.getElementById('delete-modal').classList.add('hidden');
-        alert('Gagal menghapus: ' + err.message);
+        console.error('Gagal menghapus:', err.message);
       }
     });
 
@@ -348,7 +469,7 @@
     // ---------- Load ----------
 
     async function loadCategories() {
-      categories = await fetchCategories(currentType, currentUser.id);
+      categories = await fetchCategories(currentType, currentUser.id, true);
       renderList();
     }
 
