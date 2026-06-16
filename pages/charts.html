@@ -56,22 +56,22 @@
       </div>
 
       <!-- Summary stats -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-          <p class="text-xs font-semibold text-sky-600 uppercase tracking-wide mb-1">Pemasukan</p>
-          <p id="stat-income" class="text-lg font-bold text-sky-600">Rp0</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pemasukan</p>
+          <p id="stat-income" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-sky-600">Rp0</p>
         </div>
         <div class="bg-peach-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-          <p class="text-xs font-semibold text-peach uppercase tracking-wide mb-1">Pengeluaran</p>
-          <p id="stat-expense" class="text-lg font-bold text-peach">Rp0</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pengeluaran</p>
+          <p id="stat-expense" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-peach">Rp0</p>
         </div>
         <div class="bg-mint-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-          <p class="text-xs font-semibold text-mint uppercase tracking-wide mb-1">Selisih</p>
-          <p id="stat-diff" class="text-lg font-bold text-[#1E1B4B]">Rp0</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Selisih</p>
+          <p id="stat-diff" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">Rp0</p>
         </div>
         <div class="bg-lavender-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-          <p class="text-xs font-semibold text-lavender-dark uppercase tracking-wide mb-1">Transaksi</p>
-          <p id="stat-count" class="text-lg font-bold text-lavender-dark">0</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Transaksi</p>
+          <p id="stat-count" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">0</p>
         </div>
       </div>
 
@@ -186,7 +186,7 @@
       document.getElementById('stat-expense').textContent = formatCurrency(expense, currency);
       const diffEl = document.getElementById('stat-diff');
       diffEl.textContent = formatCurrency(diff, currency);
-      diffEl.className = `text-lg font-bold ${diff < 0 ? 'text-peach' : 'text-mint'}`;
+      diffEl.className = `text-xl md:text-2xl font-extrabold tracking-tight truncate ${diff < 0 ? 'text-peach' : 'text-mint'}`;
       document.getElementById('stat-count').textContent = txs.length;
     }
 

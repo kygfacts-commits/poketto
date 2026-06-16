@@ -61,22 +61,19 @@
           </button>
         </div>
 
-        <!-- Monthly Statistics -->
-        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-4">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Monthly Statistics</p>
-          <div class="grid grid-cols-3 gap-3 text-center">
-            <div>
-              <p class="text-xs text-gray-400 mb-1">Pengeluaran</p>
-              <p id="stat-expense" class="text-sm font-bold text-peach break-all">Rp0</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-1">Pemasukan</p>
-              <p id="stat-income" class="text-sm font-bold text-sky-600 break-all">Rp0</p>
-            </div>
-            <div>
-              <p class="text-xs text-gray-400 mb-1">Selisih</p>
-              <p id="stat-diff" class="text-sm font-bold text-lavender-dark break-all">Rp0</p>
-            </div>
+        <!-- Summary cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+          <div class="bg-peach-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pengeluaran</p>
+            <p id="stat-expense" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-peach">Rp0</p>
+          </div>
+          <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pemasukan</p>
+            <p id="stat-income" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-sky-600">Rp0</p>
+          </div>
+          <div class="bg-lavender-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4 col-span-2 sm:col-span-1">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Selisih</p>
+            <p id="stat-diff" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">Rp0</p>
           </div>
         </div>
 
@@ -243,7 +240,7 @@
       document.getElementById('stat-income').textContent = formatCurrency(stats.income, currency);
       const diffEl = document.getElementById('stat-diff');
       diffEl.textContent = formatCurrency(stats.diff, currency);
-      diffEl.className = `text-sm font-bold break-all ${stats.diff < 0 ? 'text-peach' : 'text-lavender-dark'}`;
+      diffEl.className = `text-xl md:text-2xl font-extrabold tracking-tight truncate ${stats.diff < 0 ? 'text-peach' : 'text-lavender-dark'}`;
     }
 
     function renderBudgetCard(start, end) {
