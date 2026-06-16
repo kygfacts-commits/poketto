@@ -9,6 +9,7 @@
 
 import { supabase } from './supabase-client.js';
 import './notification-badge.js';
+import './mobile-nav.js';
 
 console.log('[auth-guard] Memeriksa session...');
 

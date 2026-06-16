@@ -92,28 +92,6 @@
     <main class="p-6 md:p-10 max-w-2xl mx-auto">
       <h1 class="text-2xl font-bold text-[#1E1B4B] mb-6">Profil</h1>
 
-      <a href="accounts.html" class="md:hidden flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-[#EDE9FE] p-4 mb-6 hover:bg-gray-50 transition-colors">
-        <div class="w-10 h-10 rounded-xl bg-lavender-light/50 flex items-center justify-center flex-shrink-0">
-          <i data-lucide="wallet" class="w-5 h-5 text-lavender-dark"></i>
-        </div>
-        <div class="flex-1">
-          <p class="font-semibold text-gray-800">Kelola Akun</p>
-          <p class="text-sm text-gray-400">Tambah, ubah, atau arsipkan akun</p>
-        </div>
-        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
-      </a>
-
-      <a href="goals.html" class="md:hidden flex items-center gap-3 bg-white rounded-2xl shadow-sm border border-[#EDE9FE] p-4 mb-6 hover:bg-gray-50 transition-colors">
-        <div class="w-10 h-10 rounded-xl bg-lavender-light/50 flex items-center justify-center flex-shrink-0">
-          <i data-lucide="target" class="w-5 h-5 text-lavender-dark"></i>
-        </div>
-        <div class="flex-1">
-          <p class="font-semibold text-gray-800">Goals</p>
-          <p class="text-sm text-gray-400">Target dan tabungan</p>
-        </div>
-        <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
-      </a>
-
       <div class="bg-white rounded-2xl shadow-sm border border-[#EDE9FE] p-6 md:p-8">
         <div class="flex items-center gap-4 mb-6">
           <div id="avatar" class="w-16 h-16 rounded-full bg-lavender-light flex items-center justify-center text-2xl font-bold text-lavender-dark overflow-hidden flex-shrink-0">
@@ -154,10 +132,17 @@
 
           <p id="profile-status" class="hidden text-sm rounded-lg px-3 py-2"></p>
 
-          <button type="submit" id="profile-submit"
-            class="bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-6 py-2.5 transition-colors">
-            Simpan
-          </button>
+          <div class="flex items-center gap-3">
+            <button type="submit" id="profile-submit"
+              class="bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-6 py-2.5 transition-colors">
+              Simpan
+            </button>
+            <button type="button" id="logout-mobile-btn"
+              class="md:hidden flex items-center gap-2 text-red-500 hover:text-red-600 font-medium rounded-xl px-4 py-2.5 border border-red-200 hover:bg-red-50 transition-colors">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+              <span>Logout</span>
+            </button>
+          </div>
         </form>
       </div>
     </main>
@@ -192,6 +177,7 @@
     import { supabase } from '../assets/js/supabase-client.js';
 
     document.getElementById('logout-btn').addEventListener('click', logout);
+    document.getElementById('logout-mobile-btn')?.addEventListener('click', logout);
 
     const avatarEl = document.getElementById('avatar');
     const emailEl = document.getElementById('profile-email');

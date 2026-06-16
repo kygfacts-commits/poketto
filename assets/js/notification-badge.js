@@ -28,9 +28,9 @@ window.addEventListener('schatz:auth-ready', async ({ detail: { user } }) => {
 });
 
 function injectBadges(label) {
-  // Tangkap semua anchor ke bills.html di sidebar maupun bottom nav
+  // Tangkap semua anchor ke bills.html (sidebar) + tombol drawer (data-bills-link)
   const links = document.querySelectorAll(
-    'a[href="bills.html"], a[href="../pages/bills.html"], a[href*="/bills.html"]'
+    'a[href="bills.html"], a[href="../pages/bills.html"], a[href*="/bills.html"], [data-bills-link]'
   );
 
   links.forEach(link => {
