@@ -1,0 +1,21 @@
+{
+  "name": "Poketto",
+  "short_name": "Poketto",
+  "description": "Personal finance tracker",
+  "start_url": "/pages/home.html",
+  "display": "standalone",
+  "background_color": "#F8F7FF",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

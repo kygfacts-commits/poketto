@@ -29,3 +29,14 @@ export async function deleteTransaction(id) {
   const { error } = await supabase.from('transactions').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function fetchDailyLimit(userId) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('daily_limit')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return Number(data?.daily_limit || 0);
+}

@@ -8,6 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../assets/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#8B5CF6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Poketto">
   <script>
     tailwind.config = {
       theme: {
@@ -89,6 +95,13 @@
         </button>
       </div>
 
+      <!-- Tema Warna card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-[#EDE9FE] p-5 mt-4">
+        <h2 class="font-bold text-base text-[#1E1B4B] mb-1">Tema Warna</h2>
+        <p class="text-sm text-gray-400 mb-4">Pilih tema aplikasi</p>
+        <div id="theme-grid" class="flex flex-wrap gap-4"></div>
+      </div>
+
       <!-- Keamanan card -->
       <div class="bg-white rounded-2xl shadow-sm border border-[#EDE9FE] p-5 mt-4">
         <h2 class="font-bold text-base text-[#1E1B4B] mb-4">Keamanan</h2>
@@ -110,6 +123,21 @@
           </button>
         </form>
       </div>
+
+      <!-- Limit Harian card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-[#EDE9FE] p-5 mt-4">
+        <h2 class="font-bold text-base text-[#1E1B4B] mb-1">Limit Harian</h2>
+        <p class="text-sm text-gray-400 mb-4">Dapatkan peringatan saat pengeluaran harian mendekati batas.</p>
+        <label for="daily-limit-input" class="block text-sm font-medium text-gray-700 mb-1">Limit pengeluaran harian (Rp)</label>
+        <input type="text" inputmode="numeric" id="daily-limit-input" placeholder="0"
+          class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+        <p class="text-xs text-gray-400 mt-1">Isi 0 untuk menonaktifkan.</p>
+        <p id="daily-limit-status" class="hidden text-sm rounded-lg px-3 py-2 mt-3"></p>
+        <button type="button" id="daily-limit-submit"
+          class="w-full mt-4 bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold rounded-2xl py-3 transition-colors">
+          Simpan
+        </button>
+      </div>
     </main>
   </div>
 
@@ -120,8 +148,35 @@
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
     import { supabase } from '../assets/js/supabase-client.js';
+    import { attachThousandsInput, parseThousands, formatThousands } from '../assets/js/utils.js';
 
     document.getElementById('logout-mobile-btn')?.addEventListener('click', logout);
+
+    // ---------- Tema Warna (Fitur 5) ----------
+    const THEME_OPTIONS = [
+      { name: 'lavender', label: 'Lavender', hex: '#8B5CF6' },
+      { name: 'ocean', label: 'Ocean', hex: '#0EA5E9' },
+      { name: 'rose', label: 'Rose', hex: '#F43F5E' },
+      { name: 'forest', label: 'Forest', hex: '#10B981' },
+      { name: 'amber', label: 'Amber', hex: '#F59E0B' },
+    ];
+
+    function renderThemeGrid() {
+      const active = (window.getPokettoTheme && window.getPokettoTheme()) || 'lavender';
+      const grid = document.getElementById('theme-grid');
+      grid.innerHTML = THEME_OPTIONS.map((t) => `
+        <button type="button" data-theme="${t.name}" title="${t.label}"
+          class="theme-dot rounded-full transition-all ${t.name === active ? 'ring-2 ring-offset-2 ring-gray-700 scale-110' : 'hover:scale-105'}"
+          style="width:36px;height:36px;background-color:${t.hex}"></button>
+      `).join('');
+      grid.querySelectorAll('.theme-dot').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (window.applyPokettoTheme) window.applyPokettoTheme(btn.dataset.theme);
+          renderThemeGrid();
+        });
+      });
+    }
+    renderThemeGrid();
 
     const avatarEl = document.getElementById('avatar');
     const emailEl = document.getElementById('profile-email');
@@ -161,6 +216,8 @@
       fullNameInput.value = data?.full_name || '';
       currencySelect.value = data?.currency_preference || 'IDR';
       languageSelect.value = data?.language_preference || 'en';
+      const limit = Number(data?.daily_limit || 0);
+      dailyLimitInput.value = limit > 0 ? formatThousands(String(limit)) : '';
       renderAvatar(data, user);
     }
 
@@ -240,6 +297,33 @@
       passwordStatusEl.classList.remove('hidden');
       passwordSubmitBtn.disabled = false;
       passwordSubmitBtn.textContent = 'Ubah Password';
+    });
+
+    // ---------- Limit Harian (Fitur 4) ----------
+    const dailyLimitInput = document.getElementById('daily-limit-input');
+    const dailyLimitStatus = document.getElementById('daily-limit-status');
+    const dailyLimitSubmit = document.getElementById('daily-limit-submit');
+    attachThousandsInput(dailyLimitInput);
+
+    dailyLimitSubmit.addEventListener('click', async () => {
+      if (!currentUser) return;
+      const limit = parseThousands(dailyLimitInput.value) || 0;
+      dailyLimitSubmit.disabled = true;
+      dailyLimitSubmit.textContent = 'Menyimpan...';
+      dailyLimitStatus.classList.add('hidden');
+
+      const { error } = await supabase.from('profiles').upsert({ id: currentUser.id, daily_limit: limit });
+
+      if (error) {
+        dailyLimitStatus.textContent = 'Gagal menyimpan: ' + error.message;
+        dailyLimitStatus.className = 'text-sm rounded-lg px-3 py-2 mt-3 bg-red-50 text-red-600';
+      } else {
+        dailyLimitStatus.textContent = limit > 0 ? 'Limit harian berhasil disimpan.' : 'Limit harian dinonaktifkan.';
+        dailyLimitStatus.className = 'text-sm rounded-lg px-3 py-2 mt-3 bg-mint-light text-emerald-700';
+      }
+      dailyLimitStatus.classList.remove('hidden');
+      dailyLimitSubmit.disabled = false;
+      dailyLimitSubmit.textContent = 'Simpan';
     });
   </script>
   <script type="module" src="../assets/js/nav-loader.js"></script>

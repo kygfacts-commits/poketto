@@ -23,7 +23,7 @@ const ACTIVE_FILE  = FILENAME === 'account-detail.html' ? 'accounts.html' : FILE
 // mobile slot: pages that belong to the "Lainnya" drawer group
 const DRAWER_PAGES = new Set(['accounts.html','goals.html','bills.html','portfolio.html',
                                'charts.html','reports.html','profile.html','account-detail.html',
-                               'insights.html','categories.html']);
+                               'insights.html','categories.html','backup.html']);
 const ACTIVE_SLOT  =
   ACTIVE_FILE === 'home.html'         ? 'home'         :
   ACTIVE_FILE === 'transactions.html' ? 'transactions' :

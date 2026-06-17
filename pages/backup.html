@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Backup & Restore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../assets/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#8B5CF6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Poketto">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
+
+  <div id="sidebar-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <!-- Main content -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-2xl mx-auto">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-[#1E1B4B]">Backup & Restore</h1>
+        <p class="text-sm text-gray-400 mt-0.5">Kelola data keuangan kamu</p>
+      </div>
+
+      <!-- Warning -->
+      <div class="rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 p-4 text-sm mb-4 flex items-start gap-3">
+        <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+        <span>Restore akan menimpa data yang sudah ada. Pastikan file backup valid.</span>
+      </div>
+
+      <!-- Export -->
+      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5 mb-4">
+        <h2 class="font-bold text-base text-[#1E1B4B] mb-1">Export Data</h2>
+        <p class="text-sm text-gray-400 mb-4">Unduh seluruh datamu (akun, transaksi, kategori, budget, goals, tagihan, portfolio) sebagai satu file JSON.</p>
+        <button type="button" id="export-btn"
+          class="w-full flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold rounded-2xl py-3 transition-colors">
+          <i data-lucide="download" class="w-5 h-5"></i>
+          Download Backup (JSON)
+        </button>
+        <p id="export-status" class="hidden text-sm rounded-lg px-3 py-2 mt-3"></p>
+      </div>
+
+      <!-- Import -->
+      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+        <h2 class="font-bold text-base text-[#1E1B4B] mb-1">Import Data</h2>
+        <p class="text-sm text-gray-400 mb-4">Pilih file backup JSON lalu klik Restore.</p>
+        <input type="file" id="import-file" accept="application/json,.json"
+          class="w-full text-sm text-gray-600 rounded-xl border border-[#DDD6FE] px-4 py-2.5 mb-3 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-lavender-light file:text-lavender-dark file:font-semibold file:text-sm">
+        <button type="button" id="restore-btn"
+          class="w-full flex items-center justify-center gap-2 bg-white border border-[#8B5CF6] text-[#8B5CF6] hover:bg-[#EDE9FE] font-semibold rounded-2xl py-3 transition-colors">
+          <i data-lucide="upload" class="w-5 h-5"></i>
+          Restore
+        </button>
+        <p id="import-status" class="hidden text-sm rounded-lg px-3 py-2 mt-3"></p>
+      </div>
+    </main>
+  </div>
+
+  <div id="mobile-nav-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { supabase } from '../assets/js/supabase-client.js';
+    import { showToast } from '../assets/js/toast.js';
+
+    let currentUser = null;
+
+    // Semua tabel data milik user.
+    const EXPORT_TABLES = ['accounts', 'transactions', 'categories', 'budgets', 'goals', 'scheduled_bills', 'portfolio_holdings'];
+    // Urutan restore: parent dulu agar foreign key aman.
+    const RESTORE_ORDER = ['categories', 'accounts', 'goals', 'portfolio_holdings', 'budgets', 'scheduled_bills', 'transactions'];
+
+    const exportStatus = document.getElementById('export-status');
+    const importStatus = document.getElementById('import-status');
+
+    function setStatus(el, msg, ok) {
+      el.textContent = msg;
+      el.className = 'text-sm rounded-lg px-3 py-2 mt-3 ' + (ok ? 'bg-mint-light text-emerald-700' : 'bg-red-50 text-red-600');
+      el.classList.remove('hidden');
+    }
+
+    // ---------- Export ----------
+    document.getElementById('export-btn').addEventListener('click', async () => {
+      if (!currentUser) return;
+      const btn = document.getElementById('export-btn');
+      btn.disabled = true;
+      try {
+        const backup = { app: 'poketto', version: 1, exported_at: new Date().toISOString(), user_id: currentUser.id, data: {} };
+        for (const t of EXPORT_TABLES) {
+          const { data, error } = await supabase.from(t).select('*').eq('user_id', currentUser.id);
+          if (error) throw error;
+          backup.data[t] = data || [];
+        }
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const today = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `poketto-backup-${today}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setStatus(exportStatus, 'Backup berhasil diunduh.', true);
+      } catch (err) {
+        setStatus(exportStatus, 'Gagal export: ' + err.message, false);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // ---------- Import / Restore ----------
+    document.getElementById('restore-btn').addEventListener('click', async () => {
+      if (!currentUser) return;
+      const fileInput = document.getElementById('import-file');
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) { setStatus(importStatus, 'Pilih file backup terlebih dahulu.', false); return; }
+
+      const btn = document.getElementById('restore-btn');
+      btn.disabled = true;
+      try {
+        const text = await file.text();
+        let parsed;
+        try { parsed = JSON.parse(text); } catch { throw new Error('File JSON tidak valid.'); }
+        const data = parsed.data || parsed;
+
+        for (const t of RESTORE_ORDER) {
+          const rows = (data[t] || []).map((r) => ({ ...r, user_id: currentUser.id }));
+          if (rows.length === 0) continue;
+          const { error } = await supabase.from(t).upsert(rows);
+          if (error) throw error;
+        }
+        setStatus(importStatus, 'Data berhasil direstore.', true);
+        showToast('Data berhasil direstore');
+      } catch (err) {
+        setStatus(importStatus, 'Gagal restore: ' + err.message, false);
+        showToast('Gagal restore: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    window.addEventListener('schatz:auth-ready', (e) => {
+      currentUser = e.detail.user;
+    });
+  </script>
+  <script type="module" src="../assets/js/nav-loader.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

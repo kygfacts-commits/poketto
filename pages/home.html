@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Poketto - Home</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../assets/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#8B5CF6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Poketto">
   <script>
     tailwind.config = {
       theme: {
@@ -34,6 +40,13 @@
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
     <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
+      <!-- Reminder banner (Fitur 7) -->
+      <div id="reminder-banner" class="hidden mb-4 rounded-xl bg-[#EDE9FE] border border-[#8B5CF6]/20 text-[#6B21A8] p-3 flex items-center gap-3">
+        <span class="text-sm flex-1">🔔 Jangan lupa catat pengeluaran hari ini!</span>
+        <a href="add.html" class="text-xs font-semibold bg-[#8B5CF6] text-white rounded-lg px-3 py-1.5 whitespace-nowrap hover:bg-lavender-dark transition-colors">Catat Sekarang</a>
+        <button type="button" id="reminder-dismiss" class="text-xs font-medium text-[#6B21A8]/70 hover:text-[#6B21A8] whitespace-nowrap">Tutup</button>
+      </div>
+
       <h1 class="text-2xl font-bold text-[#1E1B4B] mb-0.5">
         Selamat datang, <span id="user-email" class="text-lavender-dark">...</span>
       </h1>
@@ -81,6 +94,9 @@
           </button>
         </div>
 
+        <!-- Daily limit banner (Fitur 4) -->
+        <div id="daily-limit-banner" class="hidden -mt-2 mb-6 rounded-xl px-4 py-3 text-sm font-medium"></div>
+
         <!-- Summary cards -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
           <div class="bg-sky-light/20 rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
@@ -125,6 +141,9 @@
         <div id="empty-month" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center">
           <p class="text-gray-500">Tidak ada transaksi di bulan ini.</p>
         </div>
+
+        <!-- Streak Pencatatan (Fitur 6) -->
+        <div id="streak-card" class="rounded-2xl p-4 bg-white border border-[#EDE9FE] shadow-sm mt-6"></div>
       </div>
     </main>
   </div>
@@ -202,7 +221,7 @@
     import { formatCurrency, formatDate, formatDateWithDay, getAccountBalance, getMonthRange } from '../assets/js/utils.js';
     import { ACCOUNT_COLOR_CLASSES, fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
-    import { fetchAllTransactions, fetchProfileCurrency, deleteTransaction } from '../assets/js/home.js';
+    import { fetchAllTransactions, fetchProfileCurrency, deleteTransaction, fetchDailyLimit } from '../assets/js/home.js';
     import { showToast, flushQueuedToast } from '../assets/js/toast.js';
 
     // ---------- Elements ----------
@@ -248,6 +267,7 @@
     let allTransactions = [];
     let categoriesById = new Map();
     let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    let dailyLimit = 0;
     let selectedTransactionId = null;
     let balanceVisible = false;
 
@@ -415,7 +435,127 @@
       renderTotalBalance();
       renderAccountStrip();
       renderTransactionList();
+      renderDailyLimitBanner();
+      renderStreakCard();
+      renderReminderBanner();
     }
+
+    // ---------- Daily limit banner (Fitur 4) ----------
+    function todayStr() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function todayExpenseTotal() {
+      const t = todayStr();
+      return allTransactions
+        .filter((tx) => tx.type === 'expense' && tx.date === t)
+        .reduce((sum, tx) => sum + Number(tx.amount), 0);
+    }
+
+    function renderDailyLimitBanner() {
+      const banner = document.getElementById('daily-limit-banner');
+      if (!dailyLimit || dailyLimit <= 0) { banner.classList.add('hidden'); return; }
+
+      const spent = todayExpenseTotal();
+      const pct = Math.round((spent / dailyLimit) * 100);
+
+      if (spent >= dailyLimit) {
+        banner.className = '-mt-2 mb-6 rounded-xl px-4 py-3 text-sm font-medium bg-red-50 border border-red-200 text-red-600';
+        banner.textContent = `⚠️ Limit pengeluaran harian tercapai! Kamu sudah mengeluarkan ${formatCurrency(spent, currency)} dari limit ${formatCurrency(dailyLimit, currency)}`;
+        banner.classList.remove('hidden');
+      } else if (spent >= dailyLimit * 0.8) {
+        banner.className = '-mt-2 mb-6 rounded-xl px-4 py-3 text-sm font-medium bg-amber-50 border border-amber-200 text-amber-700';
+        banner.textContent = `Hampir mencapai limit harian (${pct}%)`;
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    // ---------- Streak pencatatan (Fitur 6) ----------
+    function computeStreak() {
+      const dates = new Set(allTransactions.map((tx) => tx.date));
+      if (dates.size === 0) return 0;
+
+      // Mulai dari hari ini; jika hari ini belum ada transaksi, mulai dari kemarin.
+      let cursor = new Date();
+      cursor.setHours(0, 0, 0, 0);
+      const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      if (!dates.has(fmt(cursor))) {
+        cursor.setDate(cursor.getDate() - 1);
+        if (!dates.has(fmt(cursor))) return 0;
+      }
+
+      let streak = 0;
+      while (dates.has(fmt(cursor))) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    }
+
+    function renderStreakCard() {
+      const card = document.getElementById('streak-card');
+      const streak = computeStreak();
+
+      let best = 0;
+      try { best = Number(localStorage.getItem('poketto-best-streak') || 0); } catch (e) {}
+      if (streak > best) {
+        best = streak;
+        try { localStorage.setItem('poketto-best-streak', String(best)); } catch (e) {}
+      }
+
+      if (streak === 0) {
+        card.innerHTML = `
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-lavender-light flex items-center justify-center flex-shrink-0">
+              <i data-lucide="flame" class="w-6 h-6 text-lavender-dark"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-[#1E1B4B]">Mulai streak hari ini!</p>
+              <p class="text-sm text-gray-400">Catat transaksi pertamamu.</p>
+            </div>
+            <a href="add.html" class="text-xs font-semibold bg-[#8B5CF6] text-white rounded-lg px-3 py-2 whitespace-nowrap hover:bg-lavender-dark transition-colors">Catat</a>
+          </div>`;
+      } else {
+        card.innerHTML = `
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-lavender-light flex items-center justify-center flex-shrink-0">
+              <i data-lucide="flame" class="w-6 h-6 text-lavender-dark"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-0.5">Streak Pencatatan</p>
+              <p class="leading-none"><span class="text-3xl font-extrabold text-[#1E1B4B]">${streak}</span> <span class="text-sm text-gray-500">hari berturut-turut</span></p>
+              <p class="text-xs text-gray-400 mt-1">Terbaik: ${best} hari</p>
+            </div>
+          </div>`;
+      }
+      lucide.createIcons();
+    }
+
+    // ---------- Reminder banner (Fitur 7) ----------
+    function renderReminderBanner() {
+      const banner = document.getElementById('reminder-banner');
+      const t = todayStr();
+      const hasToday = allTransactions.some((tx) => tx.date === t);
+      const hour = new Date().getHours();
+
+      let dismissed = false;
+      try { dismissed = localStorage.getItem('poketto-reminder-dismissed') === t; } catch (e) {}
+
+      if (!hasToday && hour >= 18 && !dismissed) {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('reminder-dismiss').addEventListener('click', () => {
+      try { localStorage.setItem('poketto-reminder-dismissed', todayStr()); } catch (e) {}
+      document.getElementById('reminder-banner').classList.add('hidden');
+    });
 
     // ---------- Month navigation ----------
 
@@ -568,6 +708,12 @@
         currency = await fetchProfileCurrency(currentUser.id);
       } catch (err) {
         console.log('[home] Gagal memuat preferensi mata uang:', err.message);
+      }
+
+      try {
+        dailyLimit = await fetchDailyLimit(currentUser.id);
+      } catch (err) {
+        console.log('[home] Gagal memuat limit harian:', err.message);
       }
 
       try {
