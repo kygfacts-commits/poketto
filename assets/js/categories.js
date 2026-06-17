@@ -42,7 +42,10 @@ export async function updateCategoryColor(id, color) {
     .eq('id', id)
     .select()
     .single();
-  if (error) throw error;
+  if (error) {
+    console.error('[updateCategoryColor] Supabase error:', JSON.stringify(error));
+    throw error;
+  }
   return data;
 }
 
@@ -53,7 +56,10 @@ export async function setCategoryActive(id, isActive) {
     .eq('id', id)
     .select()
     .single();
-  if (error) throw error;
+  if (error) {
+    console.error('[setCategoryActive] Supabase error:', JSON.stringify(error));
+    throw error;
+  }
   return data;
 }
 
