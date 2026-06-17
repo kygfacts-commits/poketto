@@ -571,7 +571,7 @@
       }
 
       try {
-        const [incomeCats, expenseCats] = await Promise.all([fetchCategories('income'), fetchCategories('expense')]);
+        const [incomeCats, expenseCats] = await Promise.all([fetchCategories('income', null, true), fetchCategories('expense', null, true)]);
         categoriesById = new Map([...incomeCats, ...expenseCats].map((c) => [c.id, c]));
       } catch (err) {
         console.log('[home] Gagal memuat kategori:', err.message);

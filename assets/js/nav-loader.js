@@ -10,7 +10,7 @@
 // Diimpor sebagai ES module di setiap halaman terproteksi.
 
 import { supabase } from './supabase-client.js';
-import './notification-badge.js';
+import { updateBillsBadge } from './notification-badge.js';
 
 // ── Path base (halaman ada di /pages/, komponen di /components/) ──────────────
 const IN_PAGES = window.location.pathname.includes('/pages/');
@@ -22,7 +22,8 @@ const FILENAME = window.location.pathname.split('/').pop() || 'home.html';
 const ACTIVE_FILE  = FILENAME === 'account-detail.html' ? 'accounts.html' : FILENAME;
 // mobile slot: pages that belong to the "Lainnya" drawer group
 const DRAWER_PAGES = new Set(['accounts.html','goals.html','bills.html','portfolio.html',
-                               'charts.html','reports.html','profile.html','account-detail.html']);
+                               'charts.html','reports.html','profile.html','account-detail.html',
+                               'insights.html','categories.html']);
 const ACTIVE_SLOT  =
   ACTIVE_FILE === 'home.html'         ? 'home'         :
   ACTIVE_FILE === 'transactions.html' ? 'transactions' :
@@ -50,6 +51,9 @@ async function loadNav() {
     setActiveNav();
     initDrawerSwipe();
     await initLogout();
+
+    // Badge notifikasi tagihan jatuh tempo (≤ 7 hari)
+    updateBillsBadge();
   } catch (err) {
     console.warn('[nav-loader] Nav load failed:', err.message);
     sidebarEl?.classList.remove('opacity-0');
@@ -97,6 +101,8 @@ function openDrawer() {
     backdrop.classList.add('pkn-open');
     drawer.classList.add('pkn-open');
   });
+  // Perbarui badge tagihan setiap kali drawer dibuka
+  updateBillsBadge();
 }
 
 function closeDrawer() {

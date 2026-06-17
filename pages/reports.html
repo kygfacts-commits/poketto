@@ -26,6 +26,7 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="min-h-screen bg-[#F8F7FF] font-sans">
@@ -36,9 +37,16 @@
   <!-- Main content -->
   <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
     <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
-      <div class="mb-5">
-        <h1 class="text-2xl font-bold text-[#1E1B4B]">Reports</h1>
-        <p class="text-sm text-gray-400 mt-0.5">Ringkasan keuangan bulanan</p>
+      <div class="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <h1 class="text-2xl font-bold text-[#1E1B4B]">Reports</h1>
+          <p class="text-sm text-gray-400 mt-0.5">Ringkasan keuangan bulanan</p>
+        </div>
+        <button id="export-pdf-btn" type="button"
+          class="bg-white border border-[#8B5CF6] text-[#8B5CF6] rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#EDE9FE] transition-colors flex-shrink-0 flex items-center gap-2">
+          <i data-lucide="file-down" class="w-4 h-4"></i>
+          Export PDF
+        </button>
       </div>
 
       <!-- Tab switcher -->
@@ -200,6 +208,7 @@
     import { fetchAccounts, ACCOUNT_COLOR_CLASSES, getAccountTypeLabel } from '../assets/js/accounts.js';
     import { fetchBudgets } from '../assets/js/budget.js';
     import { buildMonthlyStats, buildTopCategories, buildBudgetSummary } from '../assets/js/reports.js';
+    import { showToast } from '../assets/js/toast.js';
 
     // ---------- State ----------
     let currentUser, currency = 'IDR', accounts = [], allTransactions = [], categoriesById = new Map();
@@ -434,6 +443,142 @@
       await loadBudgetsAndRenderSummary();
     });
 
+    // ---------- Export PDF ----------
+    const TYPE_LABEL = { income: 'Pemasukan', expense: 'Pengeluaran', transfer: 'Transfer' };
+
+    function exportPDF() {
+      if (!window.jspdf) { showToast('Gagal memuat library PDF.', 'error'); return; }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const LAV = [139, 92, 246]; // #8B5CF6
+      const MARGIN = 14;
+      const PAGE_W = doc.internal.pageSize.getWidth();
+      const PAGE_H = doc.internal.pageSize.getHeight();
+
+      const monthLabel = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(currentMonth);
+      const { start, end } = getMonthRange(currentMonth);
+      const stats = buildMonthlyStats(allTransactions, start, end);
+      const txs = allTransactions
+        .filter((t) => t.date >= start && t.date <= end)
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      // --- Header ---
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(...LAV);
+      doc.text('Laporan Keuangan Poketto', MARGIN, 20);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(80);
+      doc.text(monthLabel, MARGIN, 28);
+      doc.text(`Pengguna: ${currentUser?.email || '-'}`, MARGIN, 34);
+
+      // --- Generic table renderer (thin borders) ---
+      function drawTable(startY, headers, rows, widths, aligns) {
+        const rowH = 8;
+        let y = startY;
+
+        const drawHeader = () => {
+          doc.setFillColor(...LAV);
+          doc.rect(MARGIN, y, widths.reduce((a, b) => a + b, 0), rowH, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9);
+          doc.setTextColor(255);
+          let x = MARGIN;
+          headers.forEach((h, i) => {
+            const align = aligns[i] || 'left';
+            const tx = align === 'right' ? x + widths[i] - 2 : x + 2;
+            doc.text(String(h), tx, y + 5.5, { align });
+            x += widths[i];
+          });
+          y += rowH;
+        };
+
+        drawHeader();
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(40);
+        const totalW = widths.reduce((a, b) => a + b, 0);
+
+        rows.forEach((row) => {
+          if (y + rowH > PAGE_H - MARGIN) {
+            doc.addPage();
+            y = MARGIN;
+            drawHeader();
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(40);
+          }
+          doc.setDrawColor(225);
+          doc.setLineWidth(0.1);
+          doc.rect(MARGIN, y, totalW, rowH);
+          let x = MARGIN;
+          row.forEach((cell, i) => {
+            const align = aligns[i] || 'left';
+            const maxChars = Math.floor(widths[i] / 1.8);
+            let text = String(cell ?? '');
+            if (text.length > maxChars) text = text.slice(0, maxChars - 1) + '…';
+            const tx = align === 'right' ? x + widths[i] - 2 : x + 2;
+            doc.text(text, tx, y + 5.5, { align });
+            x += widths[i];
+          });
+          y += rowH;
+        });
+        return y;
+      }
+
+      // --- Summary table ---
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(...LAV);
+      doc.text('Ringkasan', MARGIN, 46);
+
+      let y = drawTable(
+        50,
+        ['Keterangan', 'Jumlah'],
+        [
+          ['Pemasukan', formatCurrency(stats.income, currency)],
+          ['Pengeluaran', formatCurrency(stats.expense, currency)],
+          ['Selisih', formatCurrency(stats.diff, currency)],
+        ],
+        [PAGE_W - MARGIN * 2 - 70, 70],
+        ['left', 'right']
+      );
+
+      // --- Transactions table ---
+      y += 10;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(...LAV);
+      doc.text('Daftar Transaksi', MARGIN, y);
+      y += 4;
+
+      if (txs.length === 0) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(10);
+        doc.setTextColor(120);
+        doc.text('Tidak ada transaksi pada bulan ini.', MARGIN, y + 6);
+      } else {
+        const rows = txs.map((tx) => {
+          const cat = categoriesById.get(tx.category_id);
+          const catName = tx.type === 'transfer' ? 'Transfer' : (cat?.name || 'Lainnya');
+          const sign = tx.type === 'expense' ? '-' : tx.type === 'income' ? '+' : '';
+          return [tx.date, catName, tx.description || '-', sign + formatCurrency(Number(tx.amount), currency)];
+        });
+        drawTable(
+          y,
+          ['Tanggal', 'Kategori', 'Deskripsi', 'Nominal'],
+          rows,
+          [26, 50, 56, PAGE_W - MARGIN * 2 - 132],
+          ['left', 'left', 'left', 'right']
+        );
+      }
+
+      const filename = `Laporan-Poketto-${monthLabel.replace(/\s+/g, '-')}.pdf`;
+      doc.save(filename);
+    }
+
+    document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
+
     // ---------- Data loading ----------
     async function loadBudgetsAndRenderSummary() {
       const { start } = getMonthRange(currentMonth);
@@ -445,7 +590,7 @@
       currentUser = e.detail.user;
       try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
       try {
-        const [inc, exp] = await Promise.all([fetchCategories('income'), fetchCategories('expense')]);
+        const [inc, exp] = await Promise.all([fetchCategories('income', null, true), fetchCategories('expense', null, true)]);
         categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
       } catch {}
       try {

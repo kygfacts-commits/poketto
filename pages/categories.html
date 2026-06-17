@@ -193,7 +193,7 @@
       list.innerHTML = sorted.map(cat => {
         const cc = getCategoryColorClasses(cat.color || 'slate');
         const isCustom = !!cat.user_id;
-        const isActive = cat.is_active !== false;
+        const isActive = cat.is_active === true || cat.is_active === null;
 
         return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-3 flex items-center gap-3 ${!isActive ? 'opacity-50 grayscale' : ''}">
           <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${cc.bg}">

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Insights</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
+
+  <div id="sidebar-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <!-- Main content -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-4xl mx-auto">
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-[#1E1B4B]">Insights</h1>
+        <p class="text-sm text-gray-400 mt-0.5">Analisis keuangan kamu</p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Bulan Ini vs Bulan Lalu -->
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Bulan Ini vs Bulan Lalu</p>
+          <div class="flex items-end justify-between gap-3">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Pengeluaran bulan ini</p>
+              <p id="cmp-current" class="text-2xl font-extrabold tracking-tight text-[#1E1B4B]">Rp0</p>
+              <p class="text-xs text-gray-400 mt-1">Bulan lalu: <span id="cmp-prev" class="font-medium text-gray-500">Rp0</span></p>
+            </div>
+            <div id="cmp-change" class="flex items-center gap-1 flex-shrink-0"></div>
+          </div>
+        </div>
+
+        <!-- Kategori Terboros -->
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Kategori Terboros</p>
+          <div id="top-cats" class="space-y-4"></div>
+          <p id="top-cats-empty" class="hidden text-sm text-gray-400 text-center py-2">Belum ada pengeluaran bulan ini.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Hari Paling Boros -->
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Hari Paling Boros</p>
+            <p id="top-day" class="text-2xl font-extrabold tracking-tight text-lavender-dark">–</p>
+            <p id="top-day-amount" class="text-xs text-gray-400 mt-1"></p>
+          </div>
+
+          <!-- Rata-rata Pengeluaran Harian -->
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Rata-rata Pengeluaran Harian</p>
+            <p id="avg-daily" class="text-2xl font-extrabold tracking-tight text-peach">Rp0</p>
+            <p id="avg-daily-sub" class="text-xs text-gray-400 mt-1"></p>
+          </div>
+        </div>
+
+        <!-- Skor Kesehatan Keuangan -->
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Skor Kesehatan Keuangan</p>
+          <div class="flex items-center gap-4">
+            <div class="relative w-20 h-20 flex-shrink-0">
+              <svg class="w-20 h-20 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.915" fill="none" stroke="#EDE9FE" stroke-width="3.5"></circle>
+                <circle id="score-ring" cx="18" cy="18" r="15.915" fill="none" stroke="#34D399" stroke-width="3.5"
+                  stroke-linecap="round" stroke-dasharray="0 100"></circle>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span id="score-value" class="text-xl font-extrabold text-[#1E1B4B]">0</span>
+              </div>
+            </div>
+            <div>
+              <p id="score-label" class="text-lg font-bold text-[#1E1B4B]">–</p>
+              <p class="text-xs text-gray-400 mt-1">Berdasarkan rasio pengeluaran terhadap pemasukan bulan ini.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="mobile-nav-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { formatCurrency, getMonthRange } from '../assets/js/utils.js';
+    import { fetchCategories } from '../assets/js/categories.js';
+    import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
+
+    let currentUser, currency = 'IDR', allTransactions = [], categoriesById = new Map();
+
+    const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+    function expensesIn(start, end) {
+      return allTransactions.filter((t) => t.type === 'expense' && t.date >= start && t.date <= end);
+    }
+    function sumAmount(txs) {
+      return txs.reduce((s, t) => s + Number(t.amount), 0);
+    }
+
+    // --- Card 2: Bulan ini vs bulan lalu ---
+    function renderComparison() {
+      const now = new Date();
+      const { start, end } = getMonthRange(now);
+      const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const prevRange = getMonthRange(prevDate);
+
+      const curr = sumAmount(expensesIn(start, end));
+      const prev = sumAmount(expensesIn(prevRange.start, prevRange.end));
+
+      document.getElementById('cmp-current').textContent = formatCurrency(curr, currency);
+      document.getElementById('cmp-prev').textContent = formatCurrency(prev, currency);
+
+      const el = document.getElementById('cmp-change');
+      if (prev === 0 && curr === 0) {
+        el.innerHTML = '<span class="text-gray-400 text-sm">–</span>';
+        return;
+      }
+      if (prev === 0) {
+        el.innerHTML = '<span class="text-sm font-semibold text-gray-500">Baru</span>';
+        return;
+      }
+      const pct = ((curr - prev) / prev) * 100;
+      const up = pct > 0;
+      // Naik = pengeluaran bertambah (peach), turun = berkurang (mint)
+      const color = up ? 'text-peach' : 'text-mint';
+      const arrow = up ? '↑' : '↓';
+      el.innerHTML = `<span class="${color} text-2xl font-bold leading-none">${arrow}</span>
+        <span class="${color} text-lg font-bold">${Math.abs(pct).toFixed(1)}%</span>`;
+    }
+
+    // --- Card 3: Kategori terboros (top 3) ---
+    function renderTopCategories() {
+      const { start, end } = getMonthRange(new Date());
+      const txs = expensesIn(start, end);
+      const totals = new Map();
+      for (const tx of txs) {
+        totals.set(tx.category_id, (totals.get(tx.category_id) || 0) + Number(tx.amount));
+      }
+      const ranked = [...totals.entries()]
+        .map(([id, amount]) => ({ name: categoriesById.get(id)?.name || 'Lainnya', amount }))
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 3);
+
+      const container = document.getElementById('top-cats');
+      const empty = document.getElementById('top-cats-empty');
+
+      if (ranked.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      const max = ranked[0].amount || 1;
+      container.innerHTML = ranked.map((c) => {
+        const pct = Math.max(4, Math.round((c.amount / max) * 100));
+        return `<div>
+          <div class="flex justify-between items-center mb-1.5">
+            <span class="text-sm font-medium text-gray-700 truncate">${c.name}</span>
+            <span class="text-sm font-semibold text-gray-700 flex-shrink-0 ml-2">${formatCurrency(c.amount, currency)}</span>
+          </div>
+          <div class="h-2.5 rounded-full bg-lavender-light overflow-hidden">
+            <div class="h-full rounded-full bg-lavender-dark" style="width:${pct}%"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // --- Card 4: Hari paling boros (rata-rata tertinggi) ---
+    function renderTopDay() {
+      const expenses = allTransactions.filter((t) => t.type === 'expense');
+      const sumByDay = [0, 0, 0, 0, 0, 0, 0];
+      const datesByDay = [new Set(), new Set(), new Set(), new Set(), new Set(), new Set(), new Set()];
+
+      for (const tx of expenses) {
+        const [y, m, d] = tx.date.split('-').map(Number);
+        const wd = new Date(y, m - 1, d).getDay();
+        sumByDay[wd] += Number(tx.amount);
+        datesByDay[wd].add(tx.date);
+      }
+
+      let bestDay = -1, bestAvg = 0;
+      for (let i = 0; i < 7; i++) {
+        const count = datesByDay[i].size;
+        if (count === 0) continue;
+        const avg = sumByDay[i] / count;
+        if (avg > bestAvg) { bestAvg = avg; bestDay = i; }
+      }
+
+      if (bestDay === -1) {
+        document.getElementById('top-day').textContent = '–';
+        document.getElementById('top-day-amount').textContent = 'Belum ada data';
+        return;
+      }
+      document.getElementById('top-day').textContent = DAY_NAMES[bestDay];
+      document.getElementById('top-day-amount').textContent =
+        `Rata-rata ${formatCurrency(Math.round(bestAvg), currency)}`;
+    }
+
+    // --- Card 5: Rata-rata pengeluaran harian (bulan ini) ---
+    function renderAvgDaily() {
+      const now = new Date();
+      const { start, end } = getMonthRange(now);
+      const total = sumAmount(expensesIn(start, end));
+      const daysElapsed = now.getDate(); // hari yang sudah berlalu di bulan ini
+      const avg = daysElapsed > 0 ? total / daysElapsed : 0;
+      document.getElementById('avg-daily').textContent = formatCurrency(Math.round(avg), currency);
+      document.getElementById('avg-daily-sub').textContent = `Dari ${daysElapsed} hari berjalan bulan ini`;
+    }
+
+    // --- Card 6: Skor kesehatan keuangan ---
+    function renderHealthScore() {
+      const { start, end } = getMonthRange(new Date());
+      const monthTxs = allTransactions.filter((t) => t.date >= start && t.date <= end);
+      const income = monthTxs.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+      const expense = monthTxs.filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+
+      let score;
+      if (income <= 0) {
+        score = expense > 0 ? 0 : 100;
+      } else {
+        score = Math.max(0, Math.min(100, Math.round((1 - expense / income) * 100)));
+      }
+
+      let label, stroke, labelColor;
+      if (score > 80) { label = 'Sangat Baik'; stroke = '#34D399'; labelColor = 'text-mint'; }
+      else if (score >= 60) { label = 'Baik'; stroke = '#38BDF8'; labelColor = 'text-sky'; }
+      else if (score >= 40) { label = 'Cukup'; stroke = '#FBBF24'; labelColor = 'text-amber-500'; }
+      else { label = 'Perlu Perhatian'; stroke = '#FB923C'; labelColor = 'text-peach'; }
+
+      document.getElementById('score-value').textContent = score;
+      const lbl = document.getElementById('score-label');
+      lbl.textContent = label;
+      lbl.className = `text-lg font-bold ${labelColor}`;
+      const ring = document.getElementById('score-ring');
+      ring.setAttribute('stroke', stroke);
+      ring.setAttribute('stroke-dasharray', `${score} ${100 - score}`);
+    }
+
+    function renderAll() {
+      renderComparison();
+      renderTopCategories();
+      renderTopDay();
+      renderAvgDaily();
+      renderHealthScore();
+    }
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
+      try {
+        const [inc, exp] = await Promise.all([
+          fetchCategories('income', null, true),
+          fetchCategories('expense', null, true),
+        ]);
+        categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
+      } catch {}
+      try {
+        allTransactions = await fetchAllTransactions(currentUser.id);
+      } catch (err) {
+        console.log('[insights] Gagal memuat data:', err.message);
+      }
+      renderAll();
+    });
+  </script>
+  <script type="module" src="../assets/js/nav-loader.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

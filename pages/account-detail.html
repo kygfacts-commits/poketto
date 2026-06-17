@@ -249,7 +249,7 @@
 
       try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
       try {
-        const [inc, exp] = await Promise.all([fetchCategories('income'), fetchCategories('expense')]);
+        const [inc, exp] = await Promise.all([fetchCategories('income', null, true), fetchCategories('expense', null, true)]);
         categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
       } catch {}
       try {

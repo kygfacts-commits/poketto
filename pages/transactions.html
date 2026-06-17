@@ -72,6 +72,13 @@
         </select>
       </div>
 
+      <!-- Search -->
+      <div class="relative mb-4">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        <input type="text" id="tx-search" placeholder="Cari transaksi..."
+          class="w-full rounded-xl border border-[#DDD6FE] bg-white shadow-sm pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+      </div>
+
       <!-- Summary cards -->
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
         <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
@@ -114,7 +121,7 @@
       <!-- Empty state (shared) -->
       <div id="tx-empty" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-12 text-center">
         <i data-lucide="inbox" class="w-10 h-10 text-gray-200 mx-auto mb-3"></i>
-        <p class="text-sm text-gray-400">Tidak ada transaksi untuk periode ini.</p>
+        <p id="tx-empty-text" class="text-sm text-gray-400">Tidak ada transaksi untuk periode ini.</p>
       </div>
 
       <!-- Pagination (shared) -->
@@ -218,7 +225,7 @@
     let allTransactions = [], filteredTxs = [];
     let incomeCategories = [], expenseCategories = [], allCategories = [];
     let categoriesById = new Map();
-    let currentYear, currentMonth, filterType = 'all', filterCategoryId = '';
+    let currentYear, currentMonth, filterType = 'all', filterCategoryId = '', searchQuery = '';
     let currentPage = 1;
     let deletingId = null, editingTx = null;
 
@@ -234,8 +241,8 @@
         [accounts, allTransactions, incomeCategories, expenseCategories] = await Promise.all([
           fetchAccounts(currentUser.id),
           fetchAllTransactions(currentUser.id),
-          fetchCategories('income'),
-          fetchCategories('expense'),
+          fetchCategories('income', null, true),
+          fetchCategories('expense', null, true),
         ]);
         accountsById = new Map(accounts.map(a => [a.id, a]));
         allCategories = [...incomeCategories, ...expenseCategories];
@@ -273,6 +280,11 @@
         if (y !== currentYear || m !== currentMonth + 1) return false;
         if (filterType !== 'all' && tx.type !== filterType) return false;
         if (filterCategoryId && tx.category_id !== filterCategoryId) return false;
+        if (searchQuery) {
+          const cat = categoriesById.get(tx.category_id);
+          const haystack = `${cat?.name || ''} ${tx.description || ''}`.toLowerCase();
+          if (!haystack.includes(searchQuery)) return false;
+        }
         return true;
       });
 
@@ -308,6 +320,8 @@
       if (total === 0) {
         tbody.innerHTML = '';
         mobileList.innerHTML = '';
+        document.getElementById('tx-empty-text').textContent =
+          searchQuery ? 'Tidak ada transaksi ditemukan' : 'Tidak ada transaksi untuk periode ini.';
         emptyEl.classList.remove('hidden');
         paginationWrap.classList.add('hidden');
         lucide.createIcons();
@@ -440,6 +454,12 @@
     // --- Category filter ---
     document.getElementById('cat-filter').addEventListener('change', e => {
       filterCategoryId = e.target.value;
+      applyFilters();
+    });
+
+    // --- Search (filter tampilan saja, tanpa fetch ulang) ---
+    document.getElementById('tx-search').addEventListener('input', e => {
+      searchQuery = e.target.value.trim().toLowerCase();
       applyFilters();
     });
 
