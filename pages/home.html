@@ -231,7 +231,7 @@
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
     import { supabase } from '../assets/js/supabase-client.js';
-    import { formatCurrency, formatDate, formatDateWithDay, getAccountBalance, getMonthRange } from '../assets/js/utils.js';
+    import { formatCurrency, formatDate, formatDateWithDay, getAccountBalance, getMonthRange, groupTransferPairs } from '../assets/js/utils.js';
     import { ACCOUNT_COLOR_CLASSES, fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
     import { fetchAllTransactions, fetchProfileCurrency, deleteTransaction, deleteTransactionByPair, fetchDailyLimit, fetchLiabilitiesTotal } from '../assets/js/home.js';
@@ -366,21 +366,21 @@
       let title;
 
       const isTransfer = tx.type === 'transfer' || !!tx.transfer_type;
+      let subtitleText;
       if (isTransfer) {
         iconName = 'arrow-right-left';
         colorClasses = TRANSFER_COLOR_CLASSES;
-        if (tx.transfer_type) {
-          title = tx.description || 'Transfer';
-        } else {
-          const fromName = getAccountById(tx.account_id)?.name || '?';
-          const toName = getAccountById(tx.to_account_id)?.name || '?';
-          title = `${fromName} &rarr; ${toName}`;
-        }
+        title = 'Transfer';
+        const fromName = getAccountById(tx.fromAccountId || tx.account_id)?.name || '?';
+        const toName = getAccountById(tx.toAccountId || tx.to_account_id)?.name || '?';
+        subtitleText = `${fromName} → ${toName}`;
       } else {
         const cat = categoriesById.get(tx.category_id);
         iconName = cat?.icon || 'circle';
         colorClasses = getCategoryColorClasses(cat?.color || 'slate');
         title = cat?.name || 'Lainnya';
+        const acctName = getAccountById(tx.account_id)?.name || '–';
+        subtitleText = tx.description ? `${acctName} · ${tx.description}` : acctName;
       }
 
       let amountClass = 'text-lavender-dark';
@@ -395,7 +395,7 @@
 
       const account = getAccountById(tx.account_id);
       const amountText = formatCurrency(Number(tx.amount), account?.currency || currency);
-      const subtitle = (tx.description && !isTransfer) ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
+      const subtitle = `<p class="text-xs text-gray-400 truncate">${subtitleText}</p>`;
 
       return `
         <div class="tx-row flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50 transition-colors" data-id="${tx.id}">
@@ -413,9 +413,8 @@
 
     function renderTransactionList() {
       const { start, end } = getMonthRange(currentMonth);
-      // Transaksi Terakhir: tampilkan 5 transaksi terbaru bulan ini saja (Lihat Semua → transactions.html).
-      const monthTx = allTransactions
-        .filter((tx) => tx.date >= start && tx.date <= end)
+      // Transaksi Terakhir: gabungkan pasangan transfer, lalu tampilkan 5 terbaru bulan ini.
+      const monthTx = groupTransferPairs(allTransactions.filter((tx) => tx.date >= start && tx.date <= end))
         .slice(0, 5);
 
       if (allTransactions.length === 0) {
@@ -633,16 +632,19 @@
         iconName = 'arrow-right-left';
         colorClasses = TRANSFER_COLOR_CLASSES;
         amountClass = 'text-lavender-dark';
-        if (tx.transfer_type) {
-          title = tx.description || 'Transfer';
-          detailAccountRow.classList.remove('hidden');
-          detailAccount.textContent = getAccountById(tx.account_id)?.name || '?';
-        } else {
-          const fromName = getAccountById(tx.account_id)?.name || '?';
-          const toName = getAccountById(tx.to_account_id)?.name || '?';
-          title = `${fromName} → ${toName}`;
-          detailAccountRow.classList.add('hidden');
+        title = 'Transfer';
+        // Cari pasangan transfer untuk menampilkan asal → tujuan.
+        let fromName = getAccountById(tx.account_id)?.name || '?';
+        let toName = getAccountById(tx.to_account_id)?.name || '?';
+        if (tx.transfer_pair_id) {
+          const pair = allTransactions.filter((t) => t.transfer_pair_id === tx.transfer_pair_id);
+          const out = pair.find((t) => t.transfer_type === 'transfer_out');
+          const inn = pair.find((t) => t.transfer_type === 'transfer_in');
+          if (out) fromName = getAccountById(out.account_id)?.name || fromName;
+          if (inn) toName = getAccountById(inn.account_id)?.name || toName;
         }
+        detailAccountRow.classList.remove('hidden');
+        detailAccount.textContent = `${fromName} → ${toName}`;
         // Transfer tidak boleh diedit individual.
         detailEditBtn.classList.add('hidden');
       } else {

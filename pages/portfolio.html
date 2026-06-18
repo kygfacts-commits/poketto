@@ -48,11 +48,17 @@
           <h1 class="text-2xl font-bold text-[#1E1B4B]">Portfolio</h1>
           <p class="text-sm text-gray-400 mt-0.5">Pantau investasi kamu</p>
         </div>
-        <button id="open-add-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
-          <i data-lucide="plus" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Tambah Holding</span>
-          <span class="sm:hidden">Tambah</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <a href="portfolio-history.html" class="flex items-center gap-2 bg-white border border-[#8B5CF6] text-[#8B5CF6] hover:bg-[#EDE9FE] font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Riwayat</span>
+          </a>
+          <button id="open-add-btn" class="flex items-center gap-2 bg-lavender hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Tambah Holding</span>
+            <span class="sm:hidden">Tambah</span>
+          </button>
+        </div>
       </div>
 
       <!-- Loading -->
@@ -74,20 +80,24 @@
       <!-- Main portfolio content -->
       <div id="portfolio-content" class="hidden space-y-6">
 
-        <!-- Summary cards -->
+        <!-- Summary cards (2x2) -->
         <p id="sum-gain" class="hidden">–</p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
             <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Nilai</p>
             <p id="sum-nilai" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">–</p>
           </div>
           <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
-            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Invested</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Invested</p>
             <p id="sum-modal" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">–</p>
           </div>
-          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 col-span-2 sm:col-span-1">
-            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Return</p>
-            <p id="sum-pct" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">–</p>
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Unrealized PnL</p>
+            <p id="sum-unrealized" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">–</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Realized PnL</p>
+            <p id="sum-realized" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">–</p>
           </div>
         </div>
 
@@ -226,6 +236,81 @@
     </div>
   </div>
 
+  <!-- Catat Transaksi Portfolio Modal -->
+  <div id="ptx-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-bold text-[#1E1B4B]">Catat Transaksi Portfolio</h2>
+          <p id="ptx-holding-name" class="text-sm text-gray-400 mt-0.5"></p>
+        </div>
+        <button id="ptx-modal-close" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="ptx-form" class="space-y-4">
+        <input type="hidden" id="ptx-holding-id">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+            <select id="ptx-type" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+              <option value="buy">Beli</option>
+              <option value="sell">Jual</option>
+              <option value="dividend">Dividen</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+            <input type="date" id="ptx-date" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+          </div>
+        </div>
+
+        <div id="ptx-qty-price" class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+            <input type="number" step="any" min="0" id="ptx-qty" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Harga / Unit</label>
+            <input type="text" inputmode="numeric" id="ptx-price" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+          </div>
+        </div>
+
+        <div id="ptx-dividend-wrap" class="hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Dividen (Rp)</label>
+          <input type="text" inputmode="numeric" id="ptx-dividend" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fee Broker <span class="text-gray-400 font-normal">(opsional)</span></label>
+            <input type="text" inputmode="numeric" id="ptx-fee" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pajak <span class="text-gray-400 font-normal">(opsional)</span></label>
+            <input type="text" inputmode="numeric" id="ptx-tax" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+          </div>
+        </div>
+
+        <div class="bg-[#F8F7FF] rounded-xl px-4 py-3 flex items-center justify-between">
+          <span class="text-sm text-gray-500">Total</span>
+          <span id="ptx-total" class="font-bold text-[#1E1B4B]">Rp0</span>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Catatan <span class="text-gray-400 font-normal">(opsional)</span></label>
+          <input type="text" id="ptx-notes" placeholder="cth. average down" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+        </div>
+
+        <p id="ptx-error" class="hidden text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2"></p>
+        <div class="flex gap-3 pt-1">
+          <button type="button" id="ptx-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+          <button type="submit" id="ptx-submit" class="flex-1 rounded-xl bg-[#8B5CF6] hover:bg-lavender-dark text-white py-2.5 text-sm font-semibold transition-colors">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast" class="hidden fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-2xl shadow-lg text-sm font-medium text-white transition-all"></div>
 
@@ -235,7 +320,8 @@
     import { formatCurrency, parseThousands, attachThousandsInput, validateAmount, validateDecimal, shakeElement } from '../assets/js/utils.js';
     import { fetchProfileCurrency } from '../assets/js/home.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
-    import { fetchHoldings, createHolding, updateHolding, deleteHolding } from '../assets/js/portfolio.js';
+    import { fetchHoldings, createHolding, updateHolding, deleteHolding,
+             fetchPortfolioTransactions, createPortfolioTransaction, computeHoldingPnL } from '../assets/js/portfolio.js';
     import { showToast } from '../assets/js/toast.js';
 
     const ASSET_TYPE_LABELS = {
@@ -253,6 +339,7 @@
 
     let currentUser, currency = 'IDR', accounts = [], holdings = [];
     let investmentAccounts = [];
+    let portfolioTxs = [], ptxByHolding = new Map();
     let filterAccountId = '';
     let deletingId = null;
 
@@ -260,14 +347,28 @@
     attachThousandsInput(document.getElementById('holding-avg-price'));
     attachThousandsInput(document.getElementById('holding-cur-price'));
     attachThousandsInput(document.getElementById('price-input'));
+    attachThousandsInput(document.getElementById('ptx-price'));
+    attachThousandsInput(document.getElementById('ptx-dividend'));
+    attachThousandsInput(document.getElementById('ptx-fee'));
+    attachThousandsInput(document.getElementById('ptx-tax'));
+
+    function indexPortfolioTxs() {
+      ptxByHolding = new Map();
+      for (const t of portfolioTxs) {
+        if (!ptxByHolding.has(t.holding_id)) ptxByHolding.set(t.holding_id, []);
+        ptxByHolding.get(t.holding_id).push(t);
+      }
+    }
 
     async function loadData() {
       try {
-        [accounts, holdings] = await Promise.all([
+        [accounts, holdings, portfolioTxs] = await Promise.all([
           fetchAccounts(currentUser.id),
           fetchHoldings(currentUser.id),
+          fetchPortfolioTransactions(currentUser.id).catch(() => []),
         ]);
         investmentAccounts = accounts.filter(a => a.type === 'investment');
+        indexPortfolioTxs();
       } catch (err) {
         console.error('[portfolio]', err.message);
       }
@@ -309,17 +410,30 @@
       renderTable(filtered);
     }
 
+    function pnlFor(h) {
+      return computeHoldingPnL(h, ptxByHolding.get(h.id) || []);
+    }
+
     function renderSummary(filtered) {
-      const totalNilai = filtered.reduce((s, h) => s + Number(h.quantity) * Number(h.current_price || h.avg_buy_price), 0);
-      const totalModal = filtered.reduce((s, h) => s + Number(h.quantity) * Number(h.avg_buy_price), 0);
-      const gainLoss = totalNilai - totalModal;
-      const gainLossPct = totalModal > 0 ? (gainLoss / totalModal * 100) : 0;
-      const isPos = gainLoss >= 0;
+      let totalNilai = 0, totalModal = 0, totalUnreal = 0, totalReal = 0;
+      for (const h of filtered) {
+        const p = pnlFor(h);
+        totalNilai += p.value;
+        totalModal += p.invested;
+        totalUnreal += p.unrealized;
+        totalReal += p.realized;
+      }
+      const unrealPct = totalModal > 0 ? (totalUnreal / totalModal * 100) : 0;
+      const upU = totalUnreal >= 0, upR = totalReal >= 0;
 
       document.getElementById('sum-nilai').textContent = formatCurrency(totalNilai, currency);
       document.getElementById('sum-modal').textContent = formatCurrency(totalModal, currency);
-      document.getElementById('sum-gain').innerHTML = `<span class="${isPos ? 'text-mint' : 'text-peach'}">${isPos ? '+' : ''}${formatCurrency(Math.abs(gainLoss), currency)}</span>`;
-      document.getElementById('sum-pct').innerHTML = `<span class="${isPos ? 'text-mint' : 'text-peach'}">${isPos ? '+' : ''}${gainLossPct.toFixed(2)}%</span>`;
+      document.getElementById('sum-unrealized').innerHTML =
+        `<span class="${upU ? 'text-mint' : 'text-peach'}">${upU ? '+' : '-'}${formatCurrency(Math.abs(totalUnreal), currency)}<span class="text-sm font-bold"> (${upU ? '+' : ''}${unrealPct.toFixed(1)}%)</span></span>`;
+      document.getElementById('sum-realized').innerHTML =
+        `<span class="${upR ? 'text-mint' : 'text-peach'}">${upR ? '+' : '-'}${formatCurrency(Math.abs(totalReal), currency)}</span>`;
+      // legacy hidden gain element (kept for compatibility)
+      document.getElementById('sum-gain').innerHTML = '';
     }
 
     function renderAllocation(filtered) {
@@ -367,14 +481,19 @@
       wrap.classList.remove('hidden');
 
       tbody.innerHTML = filtered.map(h => {
-        const price = Number(h.current_price || h.avg_buy_price);
-        const nilai = Number(h.quantity) * price;
-        const modal = Number(h.quantity) * Number(h.avg_buy_price);
-        const gainNom = nilai - modal;
-        const gainPct = modal > 0 ? (gainNom / modal * 100) : 0;
+        const p = pnlFor(h);
         const tc = ASSET_TYPE_COLORS[h.asset_type] || ASSET_TYPE_COLORS.lainnya;
-        const gc = gainNom >= 0 ? 'text-mint' : 'text-peach';
         const cur = h.currency || 'IDR';
+        const upU = p.unrealized >= 0;
+        const ucls = upU ? 'text-mint' : 'text-peach';
+        const rcls = p.realized >= 0 ? 'text-mint' : 'text-peach';
+
+        const realizedLine = (ptxByHolding.get(h.id) || []).some(t => t.type === 'sell')
+          ? `<p class="${rcls} text-xs font-semibold">Realized: ${p.realized >= 0 ? '+' : '-'}${formatCurrency(Math.abs(p.realized), cur)}</p>`
+          : '';
+        const dividendLine = p.dividend > 0
+          ? `<p class="text-sky-600 text-xs font-semibold">Dividen: +${formatCurrency(p.dividend, cur)}</p>`
+          : '';
 
         return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
           <div class="flex items-start justify-between gap-3 mb-3">
@@ -394,16 +513,21 @@
               </button>
             </div>
           </div>
-          <div class="flex items-end justify-between">
+          <div class="flex items-end justify-between mb-3">
             <div>
-              <p class="text-xs text-gray-400">${Number(h.quantity).toLocaleString('id-ID', { maximumFractionDigits: 8 })} × ${formatCurrency(Number(h.avg_buy_price), cur)}</p>
+              <p class="text-xs text-gray-400">${Number(p.qty).toLocaleString('id-ID', { maximumFractionDigits: 8 })} × ${formatCurrency(Number(p.avgBuy), cur)}</p>
               <p class="text-xs text-gray-400">Harga kini: ${h.current_price ? formatCurrency(Number(h.current_price), cur) : '–'}</p>
             </div>
             <div class="text-right">
-              <p class="font-bold text-gray-800">${formatCurrency(nilai, cur)}</p>
-              <p class="${gc} text-xs font-semibold">${gainNom >= 0 ? '+' : ''}${gainPct.toFixed(1)}% (${gainNom >= 0 ? '+' : ''}${formatCurrency(Math.abs(gainNom), cur)})</p>
+              <p class="font-bold text-gray-800">${formatCurrency(p.value, cur)}</p>
+              <p class="${ucls} text-xs font-semibold">Unrealized: ${upU ? '+' : '-'}${formatCurrency(Math.abs(p.unrealized), cur)} (${upU ? '+' : ''}${p.unrealizedPct.toFixed(1)}%)</p>
+              ${realizedLine}
+              ${dividendLine}
             </div>
           </div>
+          <button data-id="${h.id}" class="record-ptx-btn w-full text-sm border border-[#8B5CF6] text-[#8B5CF6] rounded-xl py-2 font-medium hover:bg-lavender-light/40 transition-colors flex items-center justify-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Catat Transaksi
+          </button>
         </div>`;
       }).join('');
 
@@ -585,20 +709,120 @@
       const updateBtn = e.target.closest('.update-price-btn');
       const editBtn = e.target.closest('.edit-btn');
       const deleteBtn = e.target.closest('.delete-btn');
-      const id = (updateBtn || editBtn || deleteBtn)?.dataset.id;
+      const recordBtn = e.target.closest('.record-ptx-btn');
+      const id = (updateBtn || editBtn || deleteBtn || recordBtn)?.dataset.id;
       if (!id) return;
       const h = holdings.find(x => x.id === id);
       if (!h) return;
       if (updateBtn) openPriceModal(h);
       else if (editBtn) openEditModal(h);
       else if (deleteBtn) openDeleteModal(h);
+      else if (recordBtn) openPtxModal(h);
     });
 
     // --- Filter change ---
     document.getElementById('filter-account').addEventListener('change', applyFilter);
 
+    // --- Catat Transaksi Portfolio Modal ---
+    function ptxType() { return document.getElementById('ptx-type').value; }
+
+    function syncPtxFields() {
+      const isDiv = ptxType() === 'dividend';
+      document.getElementById('ptx-qty-price').classList.toggle('hidden', isDiv);
+      document.getElementById('ptx-dividend-wrap').classList.toggle('hidden', !isDiv);
+      updatePtxTotal();
+    }
+
+    function updatePtxTotal() {
+      const fee = parseThousands(document.getElementById('ptx-fee').value) || 0;
+      const tax = parseThousands(document.getElementById('ptx-tax').value) || 0;
+      let total;
+      if (ptxType() === 'dividend') {
+        const div = parseThousands(document.getElementById('ptx-dividend').value) || 0;
+        total = Math.max(0, div - fee - tax);
+      } else {
+        const qty = parseFloat(document.getElementById('ptx-qty').value) || 0;
+        const price = parseThousands(document.getElementById('ptx-price').value) || 0;
+        total = qty * price + fee + tax;
+      }
+      document.getElementById('ptx-total').textContent = formatCurrency(total, currency);
+    }
+
+    function openPtxModal(h) {
+      document.getElementById('ptx-form').reset();
+      document.getElementById('ptx-holding-id').value = h.id;
+      document.getElementById('ptx-holding-name').textContent = h.asset_name;
+      document.getElementById('ptx-date').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('ptx-error').classList.add('hidden');
+      syncPtxFields();
+      document.getElementById('ptx-modal').classList.remove('hidden');
+    }
+    function closePtxModal() { document.getElementById('ptx-modal').classList.add('hidden'); }
+
+    document.getElementById('ptx-type').addEventListener('change', syncPtxFields);
+    ['ptx-qty','ptx-price','ptx-dividend','ptx-fee','ptx-tax'].forEach(id =>
+      document.getElementById(id).addEventListener('input', updatePtxTotal));
+    document.getElementById('ptx-modal-close').addEventListener('click', closePtxModal);
+    document.getElementById('ptx-cancel').addEventListener('click', closePtxModal);
+
+    document.getElementById('ptx-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('ptx-error');
+      errEl.classList.add('hidden');
+      const holding_id = document.getElementById('ptx-holding-id').value;
+      const type = ptxType();
+      const date = document.getElementById('ptx-date').value;
+      const fee = parseThousands(document.getElementById('ptx-fee').value) || 0;
+      const tax = parseThousands(document.getElementById('ptx-tax').value) || 0;
+      const notes = document.getElementById('ptx-notes').value.trim() || null;
+
+      let quantity = 0, price = 0;
+      if (type === 'dividend') {
+        price = parseThousands(document.getElementById('ptx-dividend').value);
+        if (!price || price <= 0) { errEl.textContent = 'Masukkan nominal dividen yang valid.'; errEl.classList.remove('hidden'); return; }
+      } else {
+        quantity = parseFloat(document.getElementById('ptx-qty').value);
+        price = parseThousands(document.getElementById('ptx-price').value);
+        const qCheck = validateDecimal(quantity, 0.00000001, 999999999);
+        if (!qCheck.valid) { errEl.textContent = 'Quantity: ' + qCheck.message; errEl.classList.remove('hidden'); shakeElement(document.getElementById('ptx-qty')); return; }
+        const pCheck = validateAmount(price, 1, 999999999999);
+        if (!pCheck.valid) { errEl.textContent = 'Harga: ' + pCheck.message; errEl.classList.remove('hidden'); shakeElement(document.getElementById('ptx-price')); return; }
+      }
+      if (!date) { errEl.textContent = 'Tanggal wajib diisi.'; errEl.classList.remove('hidden'); return; }
+
+      const submitBtn = document.getElementById('ptx-submit');
+      submitBtn.disabled = true; submitBtn.textContent = 'Memuat...';
+
+      try {
+        await createPortfolioTransaction({
+          user_id: currentUser.id, holding_id, type, quantity, price, fee, tax, date, notes,
+        });
+
+        // Refresh transaksi & auto-update avg_buy_price + quantity holding dari transaksi beli/jual.
+        portfolioTxs = await fetchPortfolioTransactions(currentUser.id);
+        indexPortfolioTxs();
+        const h = holdings.find(x => x.id === holding_id);
+        if (h) {
+          const p = computeHoldingPnL(h, ptxByHolding.get(holding_id) || []);
+          const hasBuys = (ptxByHolding.get(holding_id) || []).some(t => t.type === 'buy');
+          if (hasBuys) {
+            await updateHolding(holding_id, { avg_buy_price: Math.round(p.avgBuy), quantity: p.qty });
+          }
+        }
+        holdings = await fetchHoldings(currentUser.id);
+        showToast('Transaksi portfolio dicatat');
+        closePtxModal();
+        applyFilter();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false; submitBtn.textContent = 'Simpan';
+      }
+    });
+
     // --- Close modals on backdrop ---
-    ['holding-modal','price-modal','delete-modal'].forEach(id => {
+    ['holding-modal','price-modal','delete-modal','ptx-modal'].forEach(id => {
       document.getElementById(id).addEventListener('click', (e) => {
         if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
       });

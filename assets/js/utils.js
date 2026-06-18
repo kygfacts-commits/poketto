@@ -50,6 +50,44 @@ export function getAccountBalance(accountId, accounts, transactions) {
   }, initialBalance);
 }
 
+// Gabungkan dua baris transfer (transfer_out + transfer_in) dengan transfer_pair_id sama
+// menjadi SATU item tampilan. Baris non-transfer dilewatkan apa adanya.
+// Item gabungan: { ...rowOut, __isTransfer:true, fromAccountId, toAccountId, amount }.
+// Urutan dipertahankan berdasarkan posisi kemunculan pertama dari pasangan.
+export function groupTransferPairs(transactions) {
+  const byPair = new Map();
+  for (const tx of transactions) {
+    if (!tx.transfer_pair_id) continue;
+    if (!byPair.has(tx.transfer_pair_id)) byPair.set(tx.transfer_pair_id, []);
+    byPair.get(tx.transfer_pair_id).push(tx);
+  }
+
+  const seen = new Set();
+  const result = [];
+  for (const tx of transactions) {
+    if (!tx.transfer_pair_id) {
+      result.push(tx);
+      continue;
+    }
+    if (seen.has(tx.transfer_pair_id)) continue;
+    seen.add(tx.transfer_pair_id);
+
+    const pair = byPair.get(tx.transfer_pair_id);
+    const out = pair.find((t) => t.transfer_type === 'transfer_out') || pair[0];
+    const inn = pair.find((t) => t.transfer_type === 'transfer_in') || pair.find((t) => t !== out) || out;
+    result.push({
+      ...out,
+      __isTransfer: true,
+      id: out.id,
+      transfer_pair_id: tx.transfer_pair_id,
+      fromAccountId: out.account_id,
+      toAccountId: inn ? inn.account_id : null,
+      amount: out.amount,
+    });
+  }
+  return result;
+}
+
 export function formatDateWithDay(date, locale = 'id-ID') {
   const d = typeof date === 'string' ? new Date(date) : date;
 

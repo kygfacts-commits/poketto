@@ -181,7 +181,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, formatDateWithDay } from '../assets/js/utils.js';
+    import { formatCurrency, formatDateWithDay, groupTransferPairs } from '../assets/js/utils.js';
     import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
     import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
@@ -455,19 +455,22 @@
 
     // ---------- Render: transaction list ----------
     function renderTxRow(tx) {
-      const isTransfer = tx.type === 'transfer' || !!tx.transfer_type;
-      let iconName, colorClasses, title;
+      const isTransfer = tx.type === 'transfer' || !!tx.transfer_type || tx.__isTransfer;
+      let iconName, colorClasses, title, subtitleText;
       if (isTransfer) {
         iconName = 'arrow-right-left';
         colorClasses = TRANSFER_COLOR_CLASSES;
-        title = tx.transfer_type
-          ? (tx.description || 'Transfer')
-          : `${getAccountById(tx.account_id)?.name || '?'} &rarr; ${getAccountById(tx.to_account_id)?.name || '?'}`;
+        title = 'Transfer';
+        const fromName = getAccountById(tx.fromAccountId || tx.account_id)?.name || '?';
+        const toName = getAccountById(tx.toAccountId || tx.to_account_id)?.name || '?';
+        subtitleText = `${fromName} → ${toName}`;
       } else {
         const cat = categoriesById.get(tx.category_id);
         iconName = cat?.icon || 'circle';
         colorClasses = getCategoryColorClasses(cat?.color || 'slate');
         title = cat?.name || 'Lainnya';
+        const acctName = getAccountById(tx.account_id)?.name || '–';
+        subtitleText = tx.description ? `${acctName} · ${tx.description}` : acctName;
       }
       let amountClass = 'text-lavender-dark', amountPrefix = '';
       if (!isTransfer && tx.type === 'income') { amountClass = 'text-sky-600'; amountPrefix = '+'; }
@@ -475,7 +478,7 @@
 
       const acc = getAccountById(tx.account_id);
       const amountText = formatCurrency(Number(tx.amount), acc?.currency || currency);
-      const desc = tx.description ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
+      const desc = `<p class="text-xs text-gray-400 truncate">${subtitleText}</p>`;
 
       return `<div class="flex items-center gap-3 p-4">
         <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}">
@@ -500,7 +503,7 @@
       }
       emptyEl.classList.add('hidden');
 
-      const sorted = [...txs].sort((a, b) => b.date.localeCompare(a.date));
+      const sorted = groupTransferPairs([...txs].sort((a, b) => b.date.localeCompare(a.date)));
       const groups = [];
       for (const tx of sorted) {
         const last = groups[groups.length - 1];

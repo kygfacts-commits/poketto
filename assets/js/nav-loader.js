@@ -11,6 +11,7 @@
 
 import { supabase } from './supabase-client.js';
 import { updateBillsBadge } from './notification-badge.js';
+import { initQuickAdd } from './quick-add.js';
 
 // ── Path base (halaman ada di /pages/, komponen di /components/) ──────────────
 const IN_PAGES = window.location.pathname.includes('/pages/');
@@ -50,6 +51,7 @@ async function loadNav() {
 
     setActiveNav();
     initDrawerSwipe();
+    initQuickAdd();
     await initLogout();
 
     // Badge notifikasi tagihan jatuh tempo (≤ 7 hari)

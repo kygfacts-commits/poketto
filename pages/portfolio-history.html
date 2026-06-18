@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Riwayat Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../assets/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#8B5CF6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Poketto">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          colors: {
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
+
+
+  <div id="sidebar-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <!-- Main -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-3xl mx-auto">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-6">
+        <button id="back-btn" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </button>
+        <div>
+          <h1 class="text-2xl font-bold text-[#1E1B4B]">Riwayat Transaksi Portfolio</h1>
+          <p class="text-sm text-gray-400 mt-0.5">Catatan beli, jual & dividen</p>
+        </div>
+      </div>
+
+      <!-- Filter -->
+      <div class="flex items-center gap-3 mb-4">
+        <label class="text-sm font-medium text-gray-600">Holding:</label>
+        <select id="filter-holding" class="rounded-xl border border-[#DDD6FE] bg-white shadow-sm px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+          <option value="">Semua Holding</option>
+        </select>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading-state" class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center text-gray-400 text-sm">Memuat data…</div>
+
+      <!-- List -->
+      <div id="ptx-list" class="space-y-3"></div>
+
+      <!-- Empty -->
+      <div id="ptx-empty" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center">
+        <i data-lucide="inbox" class="w-10 h-10 text-gray-200 mx-auto mb-3"></i>
+        <p class="text-gray-400 text-sm">Belum ada transaksi portfolio. Catat dari halaman <a href="portfolio.html" class="text-lavender hover:underline">Portfolio</a>.</p>
+      </div>
+    </main>
+  </div>
+
+
+  <div id="mobile-nav-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <!-- Delete Confirm Modal -->
+  <div id="delete-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-xs p-6 text-center">
+      <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="trash-2" class="w-7 h-7 text-red-500"></i>
+      </div>
+      <h2 class="text-lg font-bold text-[#1E1B4B] mb-1">Hapus Transaksi?</h2>
+      <p class="text-sm text-gray-400 mb-5">Transaksi portfolio ini akan dihapus permanen.</p>
+      <div class="flex gap-3">
+        <button id="delete-cancel" class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button id="delete-confirm" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white py-2.5 text-sm font-semibold transition-colors">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { formatCurrency, formatDate } from '../assets/js/utils.js';
+    import { fetchProfileCurrency } from '../assets/js/home.js';
+    import { fetchHoldings, fetchPortfolioTransactions, deletePortfolioTransaction } from '../assets/js/portfolio.js';
+    import { showToast } from '../assets/js/toast.js';
+
+    const TYPE_META = {
+      buy:      { label: 'Beli',    badge: 'bg-sky-100 text-sky-600' },
+      sell:     { label: 'Jual',    badge: 'bg-peach-light text-peach' },
+      dividend: { label: 'Dividen', badge: 'bg-mint-light text-emerald-600' },
+    };
+
+    let currentUser, currency = 'IDR';
+    let holdings = [], holdingsById = new Map();
+    let ptxs = [], filterHoldingId = '', deletingId = null;
+
+    document.getElementById('back-btn').addEventListener('click', () => window.location.href = 'portfolio.html');
+
+    async function loadData() {
+      try {
+        [holdings, ptxs] = await Promise.all([
+          fetchHoldings(currentUser.id),
+          fetchPortfolioTransactions(currentUser.id),
+        ]);
+        holdingsById = new Map(holdings.map(h => [h.id, h]));
+      } catch (err) {
+        console.error('[portfolio-history]', err.message);
+        showToast('Gagal memuat data: ' + err.message, 'error');
+      }
+      document.getElementById('loading-state').classList.add('hidden');
+
+      const sel = document.getElementById('filter-holding');
+      sel.innerHTML = `<option value="">Semua Holding</option>` +
+        holdings.map(h => `<option value="${h.id}">${h.asset_name}</option>`).join('');
+
+      render();
+    }
+
+    function render() {
+      const listEl = document.getElementById('ptx-list');
+      const emptyEl = document.getElementById('ptx-empty');
+      const filtered = filterHoldingId ? ptxs.filter(t => t.holding_id === filterHoldingId) : ptxs;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      listEl.innerHTML = filtered.map(t => {
+        const meta = TYPE_META[t.type] || TYPE_META.buy;
+        const h = holdingsById.get(t.holding_id);
+        const cur = h?.currency || currency;
+        const fee = Number(t.fee || 0), tax = Number(t.tax || 0);
+        let total, detailLine;
+        if (t.type === 'dividend') {
+          total = Number(t.price || 0) - fee - tax;
+          detailLine = `Dividen ${formatCurrency(Number(t.price || 0), cur)}`;
+        } else {
+          total = Number(t.quantity || 0) * Number(t.price || 0) + (t.type === 'buy' ? fee + tax : -fee - tax);
+          detailLine = `${Number(t.quantity || 0).toLocaleString('id-ID', { maximumFractionDigits: 8 })} unit × ${formatCurrency(Number(t.price || 0), cur)}`;
+        }
+
+        return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${meta.badge}">${meta.label}</span>
+                <span class="text-xs text-gray-400">${formatDate(t.date)}</span>
+              </div>
+              <p class="font-semibold text-gray-800 truncate">${h?.asset_name || 'Holding'}</p>
+            </div>
+            <button data-id="${t.id}" class="del-ptx p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <div class="flex items-end justify-between">
+            <div class="text-xs text-gray-400 space-y-0.5">
+              <p>${detailLine}</p>
+              <p>Fee ${formatCurrency(fee, cur)} • Pajak ${formatCurrency(tax, cur)}</p>
+              ${t.notes ? `<p class="italic">${t.notes}</p>` : ''}
+            </div>
+            <p class="font-bold text-gray-800 whitespace-nowrap">${formatCurrency(total, cur)}</p>
+          </div>
+        </div>`;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    document.getElementById('filter-holding').addEventListener('change', (e) => {
+      filterHoldingId = e.target.value;
+      render();
+    });
+
+    document.getElementById('ptx-list').addEventListener('click', (e) => {
+      const btn = e.target.closest('.del-ptx');
+      if (!btn) return;
+      deletingId = btn.dataset.id;
+      document.getElementById('delete-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('delete-cancel').addEventListener('click', () => {
+      document.getElementById('delete-modal').classList.add('hidden');
+      deletingId = null;
+    });
+    document.getElementById('delete-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) { e.currentTarget.classList.add('hidden'); deletingId = null; }
+    });
+    document.getElementById('delete-confirm').addEventListener('click', async () => {
+      if (!deletingId) return;
+      try {
+        await deletePortfolioTransaction(deletingId);
+        showToast('Transaksi dihapus');
+        document.getElementById('delete-modal').classList.add('hidden');
+        ptxs = await fetchPortfolioTransactions(currentUser.id);
+        render();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+      deletingId = null;
+    });
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
+      await loadData();
+    });
+  </script>
+  <script type="module" src="../assets/js/nav-loader.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

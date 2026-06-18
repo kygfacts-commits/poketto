@@ -159,11 +159,14 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { fetchCategories, getCategoryColorClasses, createCategory, updateCategory, updateCategoryColor, setCategoryActive, deleteCategory, CATEGORY_COLORS, ICON_GROUPS } from '../assets/js/categories.js';
+    import { fetchSubcategories, createSubcategory, deleteSubcategory } from '../assets/js/subcategories.js';
     import { showToast } from '../assets/js/toast.js';
 
     let currentUser = null;
     let currentType = 'income';
     let categories = [];
+    let subsByCat = new Map(); // category_id -> [subcategory]
+    let expandedCatId = null;  // kategori yang panel sub-nya sedang terbuka
     let modalColor = 'lavender';
     let modalIcon = 'circle';
     let modalSelectedType = 'income';
@@ -200,34 +203,72 @@
         const cc = getCategoryColorClasses(cat.color || 'slate');
         const isCustom = !!cat.user_id;
         const isActive = cat.is_active === true || cat.is_active === null;
+        const subs = subsByCat.get(cat.id) || [];
+        const expanded = expandedCatId === cat.id;
 
-        return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-3 flex items-center gap-3 ${!isActive ? 'opacity-50 grayscale' : ''}">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${cc.bg}">
-            <i data-lucide="${cat.icon || 'circle'}" class="w-5 h-5 ${cc.icon}"></i>
+        const subPanel = expanded
+          ? `<div class="mt-2 border-t border-gray-100 pt-3 space-y-2">
+              ${subs.length
+                ? subs.map(s => `<div class="flex items-center justify-between gap-2 pl-2">
+                    <span class="text-sm text-gray-600">${s.name}</span>
+                    <button data-sub-id="${s.id}" class="del-sub-btn p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                  </div>`).join('')
+                : '<p class="text-xs text-gray-400 pl-2">Belum ada sub-kategori.</p>'}
+              <div class="flex gap-2 pt-1">
+                <input type="text" maxlength="30" data-sub-input="${cat.id}" placeholder="Sub-kategori baru"
+                  class="flex-1 rounded-lg border border-[#DDD6FE] px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]">
+                <button data-add-sub="${cat.id}" class="add-sub-btn rounded-lg bg-[#8B5CF6] text-white px-3 py-1.5 text-sm font-semibold hover:bg-lavender-dark transition-colors">Tambah</button>
+              </div>
+            </div>`
+          : '';
+
+        return `<div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-3 ${!isActive ? 'opacity-50 grayscale' : ''}">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${cc.bg}">
+              <i data-lucide="${cat.icon || 'circle'}" class="w-5 h-5 ${cc.icon}"></i>
+            </div>
+            <div class="flex-1 min-w-0 flex items-center gap-1.5">
+              <span class="font-medium text-gray-800 truncate">${cat.name}</span>
+              ${!isActive ? '<span class="flex-shrink-0 bg-red-100 text-red-500 rounded-full px-2 py-0.5 text-xs font-semibold">Nonaktif</span>' : ''}
+            </div>
+            <button data-id="${cat.id}" class="sub-toggle-btn flex-shrink-0 text-xs font-medium border ${expanded ? 'border-[#8B5CF6] text-lavender-dark bg-lavender-light/30' : 'border-gray-200 text-gray-500'} rounded-lg px-2 py-1 hover:bg-gray-50 transition-colors">Sub (${subs.length})</button>
+            ${isCustom
+              ? `<button data-id="${cat.id}" class="edit-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Edit">
+                  <i data-lucide="edit-2" class="w-4 h-4"></i>
+                </button>
+                <button data-id="${cat.id}" class="delete-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>`
+              : `<button data-id="${cat.id}" class="edit-color-btn p-1.5 rounded-lg text-gray-400 hover:text-lavender-dark hover:bg-lavender-light/30 transition-colors" title="Ubah warna">
+                  <i data-lucide="palette" class="w-4 h-4"></i>
+                </button>
+                ${isActive
+                  ? `<button data-id="${cat.id}" class="toggle-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors" title="Nonaktifkan">${SVG_EYE_OFF}</button>`
+                  : `<button data-id="${cat.id}" class="activate-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-green-500 hover:bg-green-50 transition-colors" title="Aktifkan">${SVG_EYE}</button>`
+                }`
+            }
           </div>
-          <div class="flex-1 min-w-0 flex items-center gap-1.5">
-            <span class="font-medium text-gray-800 truncate">${cat.name}</span>
-            ${!isActive ? '<span class="flex-shrink-0 bg-red-100 text-red-500 rounded-full px-2 py-0.5 text-xs font-semibold">Nonaktif</span>' : ''}
-          </div>
-          ${isCustom
-            ? `<button data-id="${cat.id}" class="edit-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Edit">
-                <i data-lucide="edit-2" class="w-4 h-4"></i>
-              </button>
-              <button data-id="${cat.id}" class="delete-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Hapus">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>`
-            : `<button data-id="${cat.id}" class="edit-color-btn p-1.5 rounded-lg text-gray-400 hover:text-lavender-dark hover:bg-lavender-light/30 transition-colors" title="Ubah warna">
-                <i data-lucide="palette" class="w-4 h-4"></i>
-              </button>
-              ${isActive
-                ? `<button data-id="${cat.id}" class="toggle-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-amber-500 hover:bg-amber-50 transition-colors" title="Nonaktifkan">${SVG_EYE_OFF}</button>`
-                : `<button data-id="${cat.id}" class="activate-cat-btn p-1.5 rounded-lg text-gray-400 hover:text-green-500 hover:bg-green-50 transition-colors" title="Aktifkan">${SVG_EYE}</button>`
-              }`
-          }
+          ${subPanel}
         </div>`;
       }).join('');
 
       lucide.createIcons();
+
+      list.querySelectorAll('.sub-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          expandedCatId = expandedCatId === btn.dataset.id ? null : btn.dataset.id;
+          renderList();
+        });
+      });
+      list.querySelectorAll('.add-sub-btn').forEach(btn => {
+        btn.addEventListener('click', () => addSub(btn.dataset.addSub));
+      });
+      list.querySelectorAll('[data-sub-input]').forEach(inp => {
+        inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addSub(inp.dataset.subInput); } });
+      });
+      list.querySelectorAll('.del-sub-btn').forEach(btn => {
+        btn.addEventListener('click', () => removeSub(btn.dataset.subId));
+      });
 
       list.querySelectorAll('.edit-cat-btn').forEach(btn => {
         btn.addEventListener('click', () => openEditModal(btn.dataset.id));
@@ -479,7 +520,45 @@
 
     async function loadCategories() {
       categories = await fetchCategories(currentType, currentUser.id, true);
+      try {
+        const allSubs = await fetchSubcategories(currentUser.id);
+        subsByCat = new Map();
+        for (const s of allSubs) {
+          if (!subsByCat.has(s.category_id)) subsByCat.set(s.category_id, []);
+          subsByCat.get(s.category_id).push(s);
+        }
+      } catch (err) {
+        console.log('[categories] Gagal memuat sub-kategori:', err.message);
+      }
       renderList();
+    }
+
+    // ---------- Sub-kategori ----------
+    async function addSub(categoryId) {
+      const inp = document.querySelector(`[data-sub-input="${categoryId}"]`);
+      const name = inp?.value.trim();
+      if (!name) return;
+      try {
+        const sub = await createSubcategory({ userId: currentUser.id, categoryId, name });
+        if (!subsByCat.has(categoryId)) subsByCat.set(categoryId, []);
+        subsByCat.get(categoryId).push(sub);
+        renderList();
+      } catch (err) {
+        showToast('Gagal menambah sub-kategori: ' + err.message, 'error');
+      }
+    }
+
+    async function removeSub(subId) {
+      try {
+        await deleteSubcategory(subId);
+        for (const [cid, list] of subsByCat) {
+          const idx = list.findIndex(s => s.id === subId);
+          if (idx !== -1) { list.splice(idx, 1); break; }
+        }
+        renderList();
+      } catch (err) {
+        showToast('Gagal menghapus sub-kategori: ' + err.message, 'error');
+      }
     }
 
     window.addEventListener('schatz:auth-ready', async (e) => {

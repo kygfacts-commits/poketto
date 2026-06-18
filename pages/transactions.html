@@ -89,11 +89,18 @@
         </label>
       </div>
 
-      <!-- Search -->
-      <div class="relative mb-4">
-        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-        <input type="text" id="tx-search" placeholder="Cari transaksi..."
-          class="w-full rounded-xl border border-[#DDD6FE] bg-white shadow-sm pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+      <!-- Search + tag filter -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <input type="text" id="tx-search" placeholder="Cari transaksi..."
+            class="w-full rounded-xl border border-[#DDD6FE] bg-white shadow-sm pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
+        <div class="relative sm:w-56">
+          <i data-lucide="tag" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <input type="text" id="tx-tag-search" placeholder="Cari tag..."
+            class="w-full rounded-xl border border-[#DDD6FE] bg-white shadow-sm pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+        </div>
       </div>
 
       <!-- Summary cards -->
@@ -225,7 +232,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
+    import { formatCurrency, parseThousands, attachThousandsInput, groupTransferPairs } from '../assets/js/utils.js';
     import { fetchProfileCurrency, fetchAllTransactions } from '../assets/js/home.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories } from '../assets/js/categories.js';
@@ -242,7 +249,7 @@
     let allTransactions = [], filteredTxs = [];
     let incomeCategories = [], expenseCategories = [], allCategories = [];
     let categoriesById = new Map();
-    let currentYear, currentMonth, filterType = 'all', filterCategoryId = '', searchQuery = '';
+    let currentYear, currentMonth, filterType = 'all', filterCategoryId = '', searchQuery = '', filterTag = '';
     let currentPage = 1;
     let deletingId = null, editingTx = null;
 
@@ -292,9 +299,13 @@
     function applyFilters() {
       document.getElementById('month-label').textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
 
-      filteredTxs = allTransactions.filter(tx => {
+      // Filter bulan dulu, lalu gabungkan pasangan transfer menjadi satu item.
+      const monthRows = allTransactions.filter(tx => {
         const [y, m] = tx.date.split('-').map(Number);
-        if (y !== currentYear || m !== currentMonth + 1) return false;
+        return y === currentYear && m === currentMonth + 1;
+      });
+
+      filteredTxs = groupTransferPairs(monthRows).filter(tx => {
         const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
         if (filterType === 'transfer') {
           if (!isTransfer) return false;
@@ -304,8 +315,13 @@
         if (filterCategoryId && tx.category_id !== filterCategoryId) return false;
         if (searchQuery) {
           const cat = categoriesById.get(tx.category_id);
-          const haystack = `${cat?.name || ''} ${tx.description || ''}`.toLowerCase();
+          const tagsStr = Array.isArray(tx.tags) ? tx.tags.join(' ') : '';
+          const haystack = `${cat?.name || ''} ${tx.description || ''} ${tagsStr}`.toLowerCase();
           if (!haystack.includes(searchQuery)) return false;
+        }
+        if (filterTag) {
+          const tags = Array.isArray(tx.tags) ? tx.tags.map(t => String(t).toLowerCase()) : [];
+          if (!tags.some(t => t.includes(filterTag))) return false;
         }
         return true;
       });
@@ -358,7 +374,6 @@
         const cat = categoriesById.get(tx.category_id);
         const [y, m, d] = tx.date.split('-').map(Number);
         const dateStr = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
-        const toAcct = tx.to_account_id ? accountsById.get(tx.to_account_id) : null;
 
         const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
         let typeBadge, amountClass, prefix;
@@ -373,18 +388,30 @@
           amountClass = 'text-peach'; prefix = '-';
         }
 
-        const catName = isTransfer
-          ? (tx.transfer_type ? (tx.description || 'Transfer') : (toAcct ? `→ ${toAcct.name}` : 'Transfer'))
-          : (cat?.name || '–');
+        // Nama akun: transfer = "asal → tujuan"; non-transfer = nama akun.
+        let catName, acctLabel;
+        if (isTransfer) {
+          catName = 'Transfer';
+          const fromName = accountsById.get(tx.fromAccountId || tx.account_id)?.name || '?';
+          const toName = accountsById.get(tx.toAccountId)?.name || '?';
+          acctLabel = `${fromName} → ${toName}`;
+        } else {
+          catName = cat?.name || '–';
+          acctLabel = acct?.name || '–';
+        }
+
+        const tagsHtml = (!isTransfer && Array.isArray(tx.tags) && tx.tags.length)
+          ? `<div class="flex flex-wrap gap-1 mt-1">${tx.tags.map(t => `<span class="bg-[#EDE9FE] text-[#8B5CF6] rounded-full px-2 py-0.5 text-[10px]">#${t}</span>`).join('')}</div>`
+          : '';
         const acctCur = acct?.currency || currency;
-        return { tx, acct, dateStr, typeBadge, amountClass, prefix, catName, acctCur };
+        return { tx, acct, dateStr, typeBadge, amountClass, prefix, catName, acctLabel, tagsHtml, acctCur };
       });
 
-      tbody.innerHTML = rows.map(({ tx, acct, dateStr, typeBadge, amountClass, prefix, catName, acctCur }) =>
+      tbody.innerHTML = rows.map(({ tx, dateStr, typeBadge, amountClass, prefix, catName, acctLabel, tagsHtml, acctCur }) =>
         `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
           <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${dateStr}</td>
-          <td class="px-4 py-3 text-sm text-gray-700 max-w-[100px] truncate hidden sm:table-cell">${acct?.name || '–'}</td>
-          <td class="px-4 py-3 text-sm text-gray-600 max-w-[120px] truncate">${catName}</td>
+          <td class="px-4 py-3 text-sm text-gray-700 max-w-[140px] truncate hidden sm:table-cell">${acctLabel}</td>
+          <td class="px-4 py-3 text-sm text-gray-600 max-w-[140px]"><span class="truncate block">${catName}</span>${tagsHtml}</td>
           <td class="px-4 py-3 text-xs text-gray-400 max-w-[150px] truncate hidden md:table-cell">${tx.description || '–'}</td>
           <td class="px-4 py-3 text-center">${typeBadge}</td>
           <td class="px-4 py-3 text-right font-semibold ${amountClass} whitespace-nowrap">${prefix}${formatCurrency(Number(tx.amount), acctCur)}</td>
@@ -401,13 +428,15 @@
         </tr>`
       ).join('');
 
-      mobileList.innerHTML = rows.map(({ tx, dateStr, typeBadge, amountClass, prefix, catName, acctCur }) =>
+      mobileList.innerHTML = rows.map(({ tx, dateStr, typeBadge, amountClass, prefix, catName, acctLabel, tagsHtml, acctCur }) =>
         `<div class="rounded-xl p-3 bg-white border border-[#EDE9FE] shadow-sm">
-          <div class="flex items-start justify-between mb-2">
+          <div class="flex items-start justify-between mb-1">
             <p class="font-medium text-gray-800 text-sm truncate flex-1 mr-2">${catName}</p>
             ${typeBadge}
           </div>
-          <div class="flex items-center justify-between">
+          <p class="text-xs text-gray-400 mb-2 truncate">${acctLabel}</p>
+          ${tagsHtml}
+          <div class="flex items-center justify-between mt-1">
             <p class="text-xs text-gray-400">${dateStr}</p>
             <p class="font-semibold text-sm ${amountClass} whitespace-nowrap">${prefix}${formatCurrency(Number(tx.amount), acctCur)}</p>
           </div>
@@ -486,6 +515,12 @@
     // --- Search (filter tampilan saja, tanpa fetch ulang) ---
     document.getElementById('tx-search').addEventListener('input', e => {
       searchQuery = e.target.value.trim().toLowerCase();
+      applyFilters();
+    });
+
+    // --- Filter tag ---
+    document.getElementById('tx-tag-search').addEventListener('input', e => {
+      filterTag = e.target.value.trim().toLowerCase().replace(/^#/, '');
       applyFilters();
     });
 
@@ -634,11 +669,18 @@
         const dayName = DAY_NAMES[new Date(y, m - 1, d).getDay()];
         const acct = accountsById.get(tx.account_id);
         const cat = categoriesById.get(tx.category_id);
-        const toAcct = tx.to_account_id ? accountsById.get(tx.to_account_id) : null;
-        const typeLabel = tx.type === 'income' ? 'Pemasukan' : tx.type === 'expense' ? 'Pengeluaran' : 'Transfer';
-        const catName = cat?.name || (tx.type === 'transfer' ? (toAcct ? `Transfer → ${toAcct.name}` : 'Transfer') : '–');
+        const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
+        const typeLabel = isTransfer ? 'Transfer' : (tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran');
+        let acctName = acct?.name || '–';
+        let catName = cat?.name || '–';
+        if (isTransfer) {
+          catName = 'Transfer';
+          const fromN = accountsById.get(tx.fromAccountId || tx.account_id)?.name || '?';
+          const toN = accountsById.get(tx.toAccountId)?.name || '?';
+          acctName = `${fromN} → ${toN}`;
+        }
         return [
-          dateStr, dayName, acct?.name || '–', catName,
+          dateStr, dayName, acctName, catName,
           tx.description || '', typeLabel, Number(tx.amount), acct?.currency || currency,
         ];
       });
@@ -670,14 +712,18 @@
       const lines = rows.map(tx => {
         const acct = accountsById.get(tx.account_id);
         const cat = categoriesById.get(tx.category_id);
-        const toAcct = tx.to_account_id ? accountsById.get(tx.to_account_id) : null;
         const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
         const typeLabel = isTransfer ? 'Transfer' : (tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran');
-        const catName = isTransfer
-          ? (tx.transfer_type ? (tx.description || 'Transfer') : (toAcct ? `Transfer → ${toAcct.name}` : 'Transfer'))
-          : (cat?.name || '');
+        let acctName = acct?.name || '';
+        let catName = cat?.name || '';
+        if (isTransfer) {
+          catName = 'Transfer';
+          const fromN = accountsById.get(tx.fromAccountId || tx.account_id)?.name || '?';
+          const toN = accountsById.get(tx.toAccountId)?.name || '?';
+          acctName = `${fromN} → ${toN}`;
+        }
         return [
-          tx.date, typeLabel, catName, '', acct?.name || '',
+          tx.date, typeLabel, catName, '', acctName,
           Number(tx.amount), tx.description || '', tx.transfer_pair_id || '',
         ].map(csvEscape).join(',');
       });

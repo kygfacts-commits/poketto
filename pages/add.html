@@ -68,6 +68,25 @@
           <div id="ie-category-grid" class="grid grid-cols-4 gap-3"></div>
         </div>
 
+        <!-- Sub-kategori (opsional) -->
+        <div id="ie-subcategory-section" class="hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Sub-kategori (opsional)</label>
+          <div id="ie-subcategory-chips" class="flex gap-2 overflow-x-auto scrollbar-hide pb-1"></div>
+          <div id="ie-subcategory-new" class="hidden mt-2 flex gap-2">
+            <input type="text" id="ie-subcategory-input" maxlength="30" placeholder="Nama sub-kategori"
+              class="flex-1 rounded-xl border border-[#DDD6FE] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+            <button type="button" id="ie-subcategory-save" class="rounded-xl bg-[#8B5CF6] text-white px-4 py-2 text-sm font-semibold hover:bg-lavender-dark transition-colors">Tambah</button>
+          </div>
+        </div>
+
+        <!-- Tags (opsional) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tags (opsional)</label>
+          <div id="ie-tags-chips" class="flex flex-wrap gap-2 mb-2"></div>
+          <input type="text" id="ie-tags-input" placeholder="Tambah tag... (Enter untuk tambah)"
+            class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+        </div>
+
         <div>
           <label for="ie-amount" class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
           <div class="relative">
@@ -251,6 +270,7 @@
     import { logout } from '../assets/js/auth.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories, getCategoryColorClasses, createCategory, CATEGORY_COLORS, ICON_GROUPS } from '../assets/js/categories.js';
+    import { fetchSubcategories, createSubcategory } from '../assets/js/subcategories.js';
     import { fetchTransactionById, createTransaction, createTransactions, updateTransaction } from '../assets/js/add.js';
     import { createBill } from '../assets/js/bills.js';
     import { queueToast, showToast } from '../assets/js/toast.js';
@@ -301,6 +321,9 @@
     let categoriesByType = { income: [], expense: [] };
     let selectedCategoryId = null;
     let editingId = null;
+    let selectedSubcategoryId = null;
+    let subcategoriesByCategory = new Map(); // category_id -> [subcategory]
+    let currentTags = [];
 
     attachThousandsInput(ieAmountInput);
     attachThousandsInput(trAmountInput);
@@ -447,6 +470,7 @@
 
       ieCategoryGrid.querySelectorAll('.category-option').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (selectedCategoryId !== btn.dataset.id) selectedSubcategoryId = null;
           selectedCategoryId = btn.dataset.id;
           renderCategoryGrid(type);
         });
@@ -455,7 +479,103 @@
       document.getElementById('add-category-btn').addEventListener('click', () => {
         openCatPicker(type);
       });
+
+      renderSubcategorySection();
     }
+
+    // ---------- Sub-kategori ----------
+    const subSection = document.getElementById('ie-subcategory-section');
+    const subChips = document.getElementById('ie-subcategory-chips');
+    const subNewWrap = document.getElementById('ie-subcategory-new');
+    const subInput = document.getElementById('ie-subcategory-input');
+
+    async function renderSubcategorySection() {
+      if (!selectedCategoryId) { subSection.classList.add('hidden'); return; }
+      subSection.classList.remove('hidden');
+
+      // Fetch & cache sub-kategori untuk kategori ini.
+      if (!subcategoriesByCategory.has(selectedCategoryId)) {
+        try {
+          const subs = await fetchSubcategories(currentUser.id, selectedCategoryId);
+          subcategoriesByCategory.set(selectedCategoryId, subs);
+        } catch (err) {
+          console.log('[add] Gagal memuat sub-kategori:', err.message);
+          subcategoriesByCategory.set(selectedCategoryId, []);
+        }
+      }
+      const subs = subcategoriesByCategory.get(selectedCategoryId) || [];
+
+      subChips.innerHTML = subs.map((s) => {
+        const active = s.id === selectedSubcategoryId;
+        return `<button type="button" data-sub-id="${s.id}" class="sub-chip flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${active ? 'bg-[#8B5CF6] text-white' : 'border border-gray-200 text-gray-500 hover:bg-gray-50'}">${s.name}</button>`;
+      }).join('') +
+        `<button type="button" id="ie-subcategory-add" class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border border-dashed border-gray-300 text-gray-400 hover:border-[#8B5CF6] hover:text-lavender-dark transition-colors">+ Baru</button>`;
+
+      subChips.querySelectorAll('.sub-chip').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedSubcategoryId = selectedSubcategoryId === btn.dataset.subId ? null : btn.dataset.subId;
+          renderSubcategorySection();
+        });
+      });
+      document.getElementById('ie-subcategory-add').addEventListener('click', () => {
+        subNewWrap.classList.remove('hidden');
+        subInput.focus();
+      });
+    }
+
+    async function saveNewSubcategory() {
+      const name = subInput.value.trim();
+      if (!name || !selectedCategoryId) return;
+      const btn = document.getElementById('ie-subcategory-save');
+      btn.disabled = true; btn.textContent = '...';
+      try {
+        const sub = await createSubcategory({ userId: currentUser.id, categoryId: selectedCategoryId, name });
+        const list = subcategoriesByCategory.get(selectedCategoryId) || [];
+        list.push(sub);
+        subcategoriesByCategory.set(selectedCategoryId, list);
+        selectedSubcategoryId = sub.id;
+        subInput.value = '';
+        subNewWrap.classList.add('hidden');
+        renderSubcategorySection();
+      } catch (err) {
+        showToast('Gagal menambah sub-kategori: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Tambah';
+      }
+    }
+    document.getElementById('ie-subcategory-save').addEventListener('click', saveNewSubcategory);
+    subInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveNewSubcategory(); } });
+
+    // ---------- Tags ----------
+    const tagsChips = document.getElementById('ie-tags-chips');
+    const tagsInput = document.getElementById('ie-tags-input');
+
+    function renderTags() {
+      tagsChips.innerHTML = currentTags.map((t, i) =>
+        `<span class="inline-flex items-center gap-1 bg-[#EDE9FE] text-[#8B5CF6] rounded-full px-2 py-0.5 text-xs">#${t}<button type="button" data-tag-idx="${i}" class="tag-remove hover:text-lavender-darker">&times;</button></span>`
+      ).join('');
+      tagsChips.querySelectorAll('.tag-remove').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          currentTags.splice(Number(btn.dataset.tagIdx), 1);
+          renderTags();
+        });
+      });
+    }
+
+    function addTag(raw) {
+      const tag = raw.trim().replace(/^#/, '').toLowerCase();
+      if (!tag) return;
+      if (!currentTags.includes(tag)) currentTags.push(tag);
+      renderTags();
+    }
+
+    tagsInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addTag(tagsInput.value);
+        tagsInput.value = '';
+      }
+    });
 
     // ---------- Category picker modal ----------
 
@@ -613,7 +733,10 @@
         trDateInput.value = tx.date;
       } else {
         selectedCategoryId = tx.category_id;
+        selectedSubcategoryId = tx.subcategory_id || null;
+        currentTags = Array.isArray(tx.tags) ? [...tx.tags] : [];
         setTab(tx.type);
+        renderTags();
         ieAccountSelect.value = tx.account_id;
         ieAmountInput.value = formatThousands(String(Math.round(Number(tx.amount))));
         ieDescriptionInput.value = tx.description || '';
@@ -651,6 +774,8 @@
         user_id: currentUser.id,
         account_id: accountId,
         category_id: selectedCategoryId,
+        subcategory_id: selectedSubcategoryId || null,
+        tags: currentTags.length ? currentTags : null,
         to_account_id: null,
         type: currentTab,
         amount,

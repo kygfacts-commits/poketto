@@ -56,6 +56,10 @@
             </div>
             <div id="cmp-change" class="flex items-center gap-1 flex-shrink-0"></div>
           </div>
+          <div id="cmp-reco" class="hidden mt-4 rounded-xl bg-[#FFF7ED] border border-peach-light p-3">
+            <p id="cmp-reco-text" class="text-sm text-[#9A3412] mb-2"></p>
+            <a href="budget.html" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#8B5CF6] text-white rounded-lg px-3 py-1.5 hover:bg-lavender-dark transition-colors">Set Budget Sekarang</a>
+          </div>
         </div>
 
         <!-- Kategori Terboros -->
@@ -100,6 +104,30 @@
               <p class="text-xs text-gray-400 mt-1">Berdasarkan rasio pengeluaran terhadap pemasukan bulan ini.</p>
             </div>
           </div>
+          <div id="score-reco" class="hidden mt-4 rounded-xl bg-[#F8F7FF] border border-[#EDE9FE] p-3">
+            <p id="score-reco-text" class="text-sm text-gray-600 mb-2"></p>
+            <a id="score-reco-cta" href="budget.html" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#8B5CF6] text-white rounded-lg px-3 py-1.5 hover:bg-lavender-dark transition-colors"></a>
+          </div>
+        </div>
+
+        <!-- Prediksi Akhir Bulan -->
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Prediksi Akhir Bulan</p>
+          <p id="forecast-amount" class="text-2xl font-extrabold tracking-tight text-[#1E1B4B]">Rp0</p>
+          <p id="forecast-sub" class="text-xs text-gray-400 mt-1"></p>
+          <div id="forecast-warn" class="hidden mt-3 rounded-xl bg-[#FFF7ED] border border-peach-light p-3">
+            <p id="forecast-warn-text" class="text-sm text-[#9A3412]"></p>
+          </div>
+          <div id="forecast-budget" class="hidden mt-2 text-sm"></div>
+        </div>
+
+        <!-- Analisis Kebiasaan -->
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-5">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Analisis Kebiasaan</p>
+          <p id="habit-text" class="text-sm text-gray-700 leading-relaxed">–</p>
+          <div id="habit-tip" class="hidden mt-3 rounded-xl bg-lavender-light/40 border border-[#EDE9FE] p-3">
+            <p id="habit-tip-text" class="text-sm text-lavender-darker"></p>
+          </div>
         </div>
       </div>
     </main>
@@ -112,10 +140,31 @@
     import { formatCurrency, getMonthRange } from '../assets/js/utils.js';
     import { fetchCategories } from '../assets/js/categories.js';
     import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
+    import { fetchBudgets } from '../assets/js/budget.js';
 
     let currentUser, currency = 'IDR', allTransactions = [], categoriesById = new Map();
+    let budgetCatIds = new Set();
+    let totalBudget = 0;
 
     const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+    // Map total pengeluaran per kategori untuk rentang tertentu.
+    function expenseTotalsByCategory(start, end) {
+      const m = new Map();
+      for (const tx of expensesIn(start, end)) {
+        m.set(tx.category_id, (m.get(tx.category_id) || 0) + Number(tx.amount));
+      }
+      return m;
+    }
+
+    // Nama kategori pengeluaran terboros bulan ini (untuk rekomendasi).
+    function topExpenseCategoryName() {
+      const { start, end } = getMonthRange(new Date());
+      const totals = expenseTotalsByCategory(start, end);
+      let bestId = null, best = 0;
+      for (const [id, amt] of totals) { if (amt > best) { best = amt; bestId = id; } }
+      return bestId ? (categoriesById.get(bestId)?.name || 'Lainnya') : null;
+    }
 
     function expensesIn(start, end) {
       return allTransactions.filter((t) => t.type === 'expense' && !t.transfer_type && t.date >= start && t.date <= end);
@@ -153,18 +202,29 @@
       const arrow = up ? '↑' : '↓';
       el.innerHTML = `<span class="${color} text-2xl font-bold leading-none">${arrow}</span>
         <span class="${color} text-lg font-bold">${Math.abs(pct).toFixed(1)}%</span>`;
+
+      // Rekomendasi actionable bila pengeluaran naik > 20%.
+      const reco = document.getElementById('cmp-reco');
+      if (pct > 20) {
+        const topCat = topExpenseCategoryName();
+        document.getElementById('cmp-reco-text').textContent =
+          `💡 Pengeluaran naik signifikan (${pct.toFixed(0)}%). Cek kategori ${topCat || 'terboros'} dan pertimbangkan set budget.`;
+        reco.classList.remove('hidden');
+      } else {
+        reco.classList.add('hidden');
+      }
     }
 
     // --- Card 3: Kategori terboros (top 3) ---
     function renderTopCategories() {
-      const { start, end } = getMonthRange(new Date());
-      const txs = expensesIn(start, end);
-      const totals = new Map();
-      for (const tx of txs) {
-        totals.set(tx.category_id, (totals.get(tx.category_id) || 0) + Number(tx.amount));
-      }
+      const now = new Date();
+      const { start, end } = getMonthRange(now);
+      const prevRange = getMonthRange(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      const totals = expenseTotalsByCategory(start, end);
+      const prevTotals = expenseTotalsByCategory(prevRange.start, prevRange.end);
+
       const ranked = [...totals.entries()]
-        .map(([id, amount]) => ({ name: categoriesById.get(id)?.name || 'Lainnya', amount }))
+        .map(([id, amount]) => ({ id, name: categoriesById.get(id)?.name || 'Lainnya', amount }))
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 3);
 
@@ -180,14 +240,28 @@
       const max = ranked[0].amount || 1;
       container.innerHTML = ranked.map((c) => {
         const pct = Math.max(4, Math.round((c.amount / max) * 100));
+        const prev = prevTotals.get(c.id) || 0;
+        let changeHtml = '<span class="text-xs text-gray-400">Baru bulan ini</span>';
+        if (prev > 0) {
+          const ch = ((c.amount - prev) / prev) * 100;
+          const upC = ch >= 0;
+          changeHtml = `<span class="text-xs font-medium ${upC ? 'text-peach' : 'text-mint'}">${upC ? '↑' : '↓'} ${Math.abs(ch).toFixed(0)}% vs bln lalu</span>`;
+        }
+        const hasBudget = budgetCatIds.has(c.id);
+        const budgetHtml = hasBudget
+          ? ''
+          : `<div class="mt-1.5"><span class="text-xs text-gray-400">Belum ada budget</span>
+              <a href="budget.html" class="ml-2 inline-flex items-center text-xs font-semibold text-lavender-dark hover:underline">+ Set Budget</a></div>`;
         return `<div>
-          <div class="flex justify-between items-center mb-1.5">
+          <div class="flex justify-between items-center mb-1">
             <span class="text-sm font-medium text-gray-700 truncate">${c.name}</span>
             <span class="text-sm font-semibold text-gray-700 flex-shrink-0 ml-2">${formatCurrency(c.amount, currency)}</span>
           </div>
-          <div class="h-2.5 rounded-full bg-lavender-light overflow-hidden">
+          <div class="h-2.5 rounded-full bg-lavender-light overflow-hidden mb-1">
             <div class="h-full rounded-full bg-lavender-dark" style="width:${pct}%"></div>
           </div>
+          ${changeHtml}
+          ${budgetHtml}
         </div>`;
       }).join('');
     }
@@ -261,6 +335,121 @@
       const ring = document.getElementById('score-ring');
       ring.setAttribute('stroke', stroke);
       ring.setAttribute('stroke-dasharray', `${score} ${100 - score}`);
+
+      // Rekomendasi actionable berdasarkan band skor.
+      const topCat = topExpenseCategoryName();
+      let recoText, ctaText, ctaHref;
+      if (score < 40) {
+        recoText = `⚠️ Pengeluaran melebihi pemasukan. Prioritaskan kurangi ${topCat || 'kategori terboros'}.`;
+        ctaText = 'Atur Budget'; ctaHref = 'budget.html';
+      } else if (score < 60) {
+        recoText = '💡 Keuangan cukup stabil. Coba alokasikan minimal 10% untuk tabungan/investasi.';
+        ctaText = 'Buat Goal'; ctaHref = 'goals.html';
+      } else if (score < 80) {
+        recoText = '✅ Keuangan baik! Pertimbangkan tingkatkan investasi di Portfolio.';
+        ctaText = 'Buka Portfolio'; ctaHref = 'portfolio.html';
+      } else {
+        recoText = '🌟 Excellent! Kamu sudah mengelola keuangan dengan sangat baik.';
+        ctaText = 'Lihat Portfolio'; ctaHref = 'portfolio.html';
+      }
+      document.getElementById('score-reco-text').textContent = recoText;
+      const cta = document.getElementById('score-reco-cta');
+      cta.textContent = ctaText;
+      cta.href = ctaHref;
+      document.getElementById('score-reco').classList.remove('hidden');
+    }
+
+    // --- Card 7: Prediksi akhir bulan ---
+    function renderForecast() {
+      const now = new Date();
+      const { start, end } = getMonthRange(now);
+      const total = sumAmount(expensesIn(start, end));
+      const daysElapsed = now.getDate();
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const avgDaily = daysElapsed > 0 ? total / daysElapsed : 0;
+      const forecast = Math.round(avgDaily * daysInMonth);
+
+      document.getElementById('forecast-amount').textContent = formatCurrency(forecast, currency);
+      document.getElementById('forecast-sub').textContent =
+        `Berdasarkan rata-rata ${formatCurrency(Math.round(avgDaily), currency)}/hari × ${daysInMonth} hari`;
+
+      // Income bulan ini
+      const monthTxs = allTransactions.filter((t) => t.date >= start && t.date <= end && !t.transfer_type);
+      const income = monthTxs.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+
+      const warn = document.getElementById('forecast-warn');
+      if (income > 0 && forecast > income) {
+        document.getElementById('forecast-warn-text').textContent =
+          `⚠️ Prediksi pengeluaran melebihi pemasukan (${formatCurrency(income, currency)})!`;
+        warn.classList.remove('hidden');
+      } else {
+        warn.classList.add('hidden');
+      }
+
+      // Bandingkan dengan total budget bulan ini bila ada.
+      const budgetEl = document.getElementById('forecast-budget');
+      if (totalBudget > 0) {
+        const diff = forecast - totalBudget;
+        if (diff > 0) {
+          budgetEl.innerHTML = `Prediksi akan <span class="text-peach font-semibold">melebihi</span> budget sebesar ${formatCurrency(diff, currency)}.`;
+        } else {
+          budgetEl.innerHTML = `Prediksi masih <span class="text-mint font-semibold">dalam</span> budget, sisa ${formatCurrency(Math.abs(diff), currency)}.`;
+        }
+        budgetEl.classList.remove('hidden');
+      } else {
+        budgetEl.classList.add('hidden');
+      }
+    }
+
+    // --- Card 8: Analisis kebiasaan ---
+    function renderHabits() {
+      const txs = allTransactions.filter((t) => !t.transfer_type);
+      if (txs.length === 0) {
+        document.getElementById('habit-text').textContent = 'Belum ada cukup data untuk dianalisis.';
+        return;
+      }
+
+      // Hari paling sering aktif catat (jumlah transaksi terbanyak per weekday).
+      const countByDay = [0, 0, 0, 0, 0, 0, 0];
+      // Waktu (slot) berdasarkan created_at bila tersedia.
+      const slots = { pagi: 0, siang: 0, sore: 0, malam: 0 };
+      let hasTime = false;
+      for (const tx of txs) {
+        const [y, m, d] = tx.date.split('-').map(Number);
+        countByDay[new Date(y, m - 1, d).getDay()]++;
+        if (tx.created_at) {
+          hasTime = true;
+          const h = new Date(tx.created_at).getHours();
+          if (h >= 5 && h < 11) slots.pagi++;
+          else if (h >= 11 && h < 15) slots.siang++;
+          else if (h >= 15 && h < 19) slots.sore++;
+          else slots.malam++;
+        }
+      }
+      let bestDay = 0;
+      for (let i = 1; i < 7; i++) if (countByDay[i] > countByDay[bestDay]) bestDay = i;
+
+      let bestSlot = null, bestSlotCount = 0;
+      for (const [k, v] of Object.entries(slots)) if (v > bestSlotCount) { bestSlotCount = v; bestSlot = k; }
+
+      const dayStr = DAY_NAMES[bestDay];
+      const timeStr = hasTime && bestSlot ? bestSlot : null;
+      document.getElementById('habit-text').textContent = timeStr
+        ? `Kamu paling aktif catat transaksi hari ${dayStr} dan biasanya di waktu ${timeStr}.`
+        : `Kamu paling aktif catat transaksi hari ${dayStr}.`;
+
+      const tip = document.getElementById('habit-tip');
+      if (timeStr === 'malam') {
+        document.getElementById('habit-tip-text').textContent =
+          '💡 Coba catat transaksi real-time saat terjadi agar lebih akurat dan tidak terlewat.';
+        tip.classList.remove('hidden');
+      } else if (timeStr) {
+        document.getElementById('habit-tip-text').textContent =
+          '💡 Konsistensi mencatat di waktu yang sama membantu membangun kebiasaan finansial yang sehat.';
+        tip.classList.remove('hidden');
+      } else {
+        tip.classList.add('hidden');
+      }
     }
 
     function renderAll() {
@@ -269,6 +458,8 @@
       renderTopDay();
       renderAvgDaily();
       renderHealthScore();
+      renderForecast();
+      renderHabits();
     }
 
     window.addEventListener('schatz:auth-ready', async (e) => {
@@ -285,6 +476,14 @@
         allTransactions = await fetchAllTransactions(currentUser.id);
       } catch (err) {
         console.log('[insights] Gagal memuat data:', err.message);
+      }
+      try {
+        const { start } = getMonthRange(new Date());
+        const budgets = await fetchBudgets(currentUser.id, start);
+        budgetCatIds = new Set(budgets.map((b) => b.category_id));
+        totalBudget = budgets.reduce((s, b) => s + Number(b.limit_amount || 0), 0);
+      } catch (err) {
+        console.log('[insights] Gagal memuat budget:', err.message);
       }
       renderAll();
     });
