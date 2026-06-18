@@ -37,6 +37,7 @@ export function buildDailySeries(transactions, start, end) {
   const incomeMap = new Map();
   const expenseMap = new Map();
   for (const tx of transactions) {
+    if (tx.transfer_type) continue; // exclude transfer dari cashflow
     if (tx.type === 'income') incomeMap.set(tx.date, (incomeMap.get(tx.date) || 0) + Number(tx.amount));
     else if (tx.type === 'expense') expenseMap.set(tx.date, (expenseMap.get(tx.date) || 0) + Number(tx.amount));
   }
@@ -67,7 +68,7 @@ export function getCategoryHexColor(color) {
 export function buildCategoryBreakdown(transactions, categoriesById) {
   const totals = new Map();
   for (const tx of transactions) {
-    if (tx.type !== 'expense') continue;
+    if (tx.type !== 'expense' || tx.transfer_type) continue; // exclude transfer
     totals.set(tx.category_id, (totals.get(tx.category_id) || 0) + Number(tx.amount));
   }
   return [...totals.entries()]

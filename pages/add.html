@@ -251,10 +251,10 @@
     import { logout } from '../assets/js/auth.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories, getCategoryColorClasses, createCategory, CATEGORY_COLORS, ICON_GROUPS } from '../assets/js/categories.js';
-    import { fetchTransactionById, createTransaction, updateTransaction } from '../assets/js/add.js';
+    import { fetchTransactionById, createTransaction, createTransactions, updateTransaction } from '../assets/js/add.js';
     import { createBill } from '../assets/js/bills.js';
     import { queueToast, showToast } from '../assets/js/toast.js';
-    import { formatThousands, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
+    import { formatThousands, parseThousands, attachThousandsInput, validateAmount, shakeElement } from '../assets/js/utils.js';
 
     const pageTitle = document.getElementById('page-title');
     const tabButtons = document.querySelectorAll('.tab-btn');
@@ -590,6 +590,13 @@
         return;
       }
 
+      // Transfer (double-entry) tidak boleh diedit individual.
+      if (tx.transfer_type || tx.type === 'transfer') {
+        queueToast('Edit transfer tidak diizinkan. Hapus dan buat ulang.', 'error');
+        window.location.href = 'transactions.html';
+        return;
+      }
+
       editingId = tx.id;
       pageTitle.textContent = 'Edit Transaksi';
       document.title = 'Poketto - Edit Transaksi';
@@ -628,9 +635,11 @@
         ieError.classList.remove('hidden');
         return;
       }
-      if (amount <= 0) {
-        ieError.textContent = 'Jumlah harus lebih dari 0.';
+      const ieValidation = validateAmount(amount);
+      if (!ieValidation.valid) {
+        ieError.textContent = ieValidation.message;
         ieError.classList.remove('hidden');
+        shakeElement(ieAmountInput);
         return;
       }
 
@@ -722,40 +731,60 @@
         trError.classList.remove('hidden');
         return;
       }
-      if (amount <= 0) {
-        trError.textContent = 'Jumlah harus lebih dari 0.';
+      const trValidation = validateAmount(amount);
+      if (!trValidation.valid) {
+        trError.textContent = trValidation.message;
         trError.classList.remove('hidden');
+        shakeElement(trAmountInput);
         return;
       }
 
-      const resetLabel = editingId ? 'Update' : 'Simpan';
       trSubmitBtn.disabled = true;
       trSubmitBtn.textContent = 'Menyimpan...';
 
-      const payload = {
-        user_id: currentUser.id,
-        account_id: fromAccountId,
-        to_account_id: toAccountId,
-        category_id: null,
-        type: 'transfer',
-        amount,
-        description: trDescriptionInput.value.trim() || null,
-        date: trDateInput.value,
-      };
+      // Double-entry: satu transfer = dua baris transaksi yang berbagi transfer_pair_id.
+      const pairId = crypto.randomUUID();
+      const fromName = accounts.find((a) => a.id === fromAccountId)?.name || 'akun';
+      const toName = accounts.find((a) => a.id === toAccountId)?.name || 'akun';
+      const userNote = trDescriptionInput.value.trim();
+      const date = trDateInput.value;
+
+      const rows = [
+        {
+          user_id: currentUser.id,
+          account_id: fromAccountId,
+          to_account_id: null,
+          category_id: null,
+          type: 'expense',
+          transfer_type: 'transfer_out',
+          transfer_pair_id: pairId,
+          amount,
+          description: userNote || `Transfer ke ${toName}`,
+          date,
+        },
+        {
+          user_id: currentUser.id,
+          account_id: toAccountId,
+          to_account_id: null,
+          category_id: null,
+          type: 'income',
+          transfer_type: 'transfer_in',
+          transfer_pair_id: pairId,
+          amount,
+          description: userNote || `Transfer dari ${fromName}`,
+          date,
+        },
+      ];
 
       try {
-        if (editingId) {
-          await updateTransaction(editingId, payload);
-        } else {
-          await createTransaction(payload);
-        }
-        queueToast('Transaksi berhasil disimpan.');
+        await createTransactions(rows);
+        queueToast('Transfer berhasil dicatat');
         window.location.href = 'home.html';
       } catch (err) {
         trError.textContent = err.message;
         trError.classList.remove('hidden');
         trSubmitBtn.disabled = false;
-        trSubmitBtn.textContent = resetLabel;
+        trSubmitBtn.textContent = 'Simpan';
       }
     });
 

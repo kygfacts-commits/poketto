@@ -224,7 +224,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
+    import { formatCurrency, parseThousands, attachThousandsInput, validateAmount, shakeElement } from '../assets/js/utils.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { createTransaction } from '../assets/js/add.js';
     import { showToast } from '../assets/js/toast.js';
@@ -442,8 +442,9 @@
       const linkedAccountId = document.getElementById('goal-account').value || null;
       const errorEl = document.getElementById('goal-form-error');
 
-      if (!name) { errorEl.textContent = 'Nama goal wajib diisi.'; errorEl.classList.remove('hidden'); return; }
-      if (!target || target <= 0) { errorEl.textContent = 'Target amount harus lebih dari 0.'; errorEl.classList.remove('hidden'); return; }
+      if (!name) { errorEl.textContent = 'Nama goal wajib diisi.'; errorEl.classList.remove('hidden'); shakeElement(document.getElementById('goal-name')); return; }
+      const targetCheck = validateAmount(target, 1000);
+      if (!targetCheck.valid) { errorEl.textContent = targetCheck.message; errorEl.classList.remove('hidden'); shakeElement(document.getElementById('goal-target')); return; }
       errorEl.classList.add('hidden');
 
       const submitBtn = document.getElementById('goal-submit');
@@ -496,9 +497,11 @@
       const accountId = document.getElementById('funds-account').value || null;
       const errorEl = document.getElementById('funds-error');
 
-      if (!amount || amount <= 0) {
-        errorEl.textContent = 'Jumlah harus lebih dari 0.';
+      const fundsCheck = validateAmount(amount, 1000);
+      if (!fundsCheck.valid) {
+        errorEl.textContent = fundsCheck.message;
         errorEl.classList.remove('hidden');
+        shakeElement(document.getElementById('funds-amount'));
         return;
       }
       errorEl.classList.add('hidden');

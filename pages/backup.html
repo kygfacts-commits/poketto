@@ -88,9 +88,9 @@
     let currentUser = null;
 
     // Semua tabel data milik user.
-    const EXPORT_TABLES = ['accounts', 'transactions', 'categories', 'budgets', 'goals', 'scheduled_bills', 'portfolio_holdings'];
+    const EXPORT_TABLES = ['accounts', 'transactions', 'categories', 'budgets', 'goals', 'scheduled_bills', 'portfolio_holdings', 'liabilities'];
     // Urutan restore: parent dulu agar foreign key aman.
-    const RESTORE_ORDER = ['categories', 'accounts', 'goals', 'portfolio_holdings', 'budgets', 'scheduled_bills', 'transactions'];
+    const RESTORE_ORDER = ['categories', 'accounts', 'goals', 'portfolio_holdings', 'budgets', 'scheduled_bills', 'transactions', 'liabilities'];
 
     const exportStatus = document.getElementById('export-status');
     const importStatus = document.getElementById('import-status');

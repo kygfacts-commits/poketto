@@ -20,11 +20,23 @@ export async function fetchExpensesForMonth(userId, start, end) {
     .select('category_id, amount')
     .eq('user_id', userId)
     .eq('type', 'expense')
+    .is('transfer_type', null) // exclude transfer dari kalkulasi budget
     .gte('date', start)
     .lte('date', end);
 
   if (error) throw error;
   return data;
+}
+
+// Rentang bulan (start/end) untuk bulan SEBELUM monthStart ('YYYY-MM-01').
+export function getPrevMonthRange(monthStart) {
+  const [y, m] = monthStart.split('-').map(Number);
+  const prev = new Date(y, m - 2, 1); // m-1 = bulan ini (0-index), m-2 = bulan lalu
+  const startD = new Date(prev.getFullYear(), prev.getMonth(), 1);
+  const endD = new Date(prev.getFullYear(), prev.getMonth() + 1, 0);
+  const iso = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return { start: iso(startD), end: iso(endD) };
 }
 
 export async function createBudget(payload) {

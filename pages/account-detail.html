@@ -114,11 +114,14 @@
     function getAccountById(id) { return accounts.find((a) => a.id === id); }
 
     function renderTxRow(tx) {
+      const isTransfer = tx.type === 'transfer' || !!tx.transfer_type;
       let iconName, colorClasses, title;
-      if (tx.type === 'transfer') {
+      if (isTransfer) {
         iconName = 'arrow-right-left';
         colorClasses = TRANSFER_COLOR_CLASSES;
-        title = `${getAccountById(tx.account_id)?.name || '?'} &rarr; ${getAccountById(tx.to_account_id)?.name || '?'}`;
+        title = tx.transfer_type
+          ? (tx.description || 'Transfer')
+          : `${getAccountById(tx.account_id)?.name || '?'} &rarr; ${getAccountById(tx.to_account_id)?.name || '?'}`;
       } else {
         const cat = categoriesById.get(tx.category_id);
         iconName = cat?.icon || 'circle';
@@ -126,12 +129,12 @@
         title = cat?.name || 'Lainnya';
       }
       let amountClass = 'text-lavender-dark', amountPrefix = '';
-      if (tx.type === 'income') { amountClass = 'text-sky-600'; amountPrefix = '+'; }
-      else if (tx.type === 'expense') { amountClass = 'text-peach'; amountPrefix = '-'; }
+      if (!isTransfer && tx.type === 'income') { amountClass = 'text-sky-600'; amountPrefix = '+'; }
+      else if (!isTransfer && tx.type === 'expense') { amountClass = 'text-peach'; amountPrefix = '-'; }
 
       const acc = getAccountById(tx.account_id);
       const amountText = formatCurrency(Number(tx.amount), acc?.currency || currency);
-      const desc = tx.description ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
+      const desc = (tx.description && !isTransfer) ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
 
       return `<div class="flex items-center gap-3 p-4">
         <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClasses.bg}">

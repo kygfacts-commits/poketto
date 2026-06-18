@@ -118,7 +118,7 @@
     const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
     function expensesIn(start, end) {
-      return allTransactions.filter((t) => t.type === 'expense' && t.date >= start && t.date <= end);
+      return allTransactions.filter((t) => t.type === 'expense' && !t.transfer_type && t.date >= start && t.date <= end);
     }
     function sumAmount(txs) {
       return txs.reduce((s, t) => s + Number(t.amount), 0);
@@ -194,7 +194,7 @@
 
     // --- Card 4: Hari paling boros (rata-rata tertinggi) ---
     function renderTopDay() {
-      const expenses = allTransactions.filter((t) => t.type === 'expense');
+      const expenses = allTransactions.filter((t) => t.type === 'expense' && !t.transfer_type);
       const sumByDay = [0, 0, 0, 0, 0, 0, 0];
       const datesByDay = [new Set(), new Set(), new Set(), new Set(), new Set(), new Set(), new Set()];
 
@@ -237,7 +237,7 @@
     // --- Card 6: Skor kesehatan keuangan ---
     function renderHealthScore() {
       const { start, end } = getMonthRange(new Date());
-      const monthTxs = allTransactions.filter((t) => t.date >= start && t.date <= end);
+      const monthTxs = allTransactions.filter((t) => t.date >= start && t.date <= end && !t.transfer_type);
       const income = monthTxs.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
       const expense = monthTxs.filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
 

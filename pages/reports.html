@@ -33,6 +33,7 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="min-h-screen bg-[#F8F7FF] font-sans">
@@ -48,11 +49,18 @@
           <h1 class="text-2xl font-bold text-[#1E1B4B]">Reports</h1>
           <p class="text-sm text-gray-400 mt-0.5">Ringkasan keuangan bulanan</p>
         </div>
-        <button id="export-pdf-btn" type="button"
-          class="bg-white border border-[#8B5CF6] text-[#8B5CF6] rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#EDE9FE] transition-colors flex-shrink-0 flex items-center gap-2">
-          <i data-lucide="file-down" class="w-4 h-4"></i>
-          Export PDF
-        </button>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button id="export-excel-btn" type="button"
+            class="bg-[#8B5CF6] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-lavender-dark transition-colors flex items-center gap-2">
+            <i data-lucide="sheet" class="w-4 h-4"></i>
+            Excel
+          </button>
+          <button id="export-pdf-btn" type="button"
+            class="bg-white border border-[#8B5CF6] text-[#8B5CF6] rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#EDE9FE] transition-colors flex items-center gap-2">
+            <i data-lucide="file-down" class="w-4 h-4"></i>
+            PDF
+          </button>
+        </div>
       </div>
 
       <!-- Tab switcher -->
@@ -182,7 +190,7 @@
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-gray-400">Liabilitas</span>
-              <span class="font-semibold text-gray-400">Rp0</span>
+              <span id="liability-total" class="font-semibold text-peach">Rp0</span>
             </div>
           </div>
         </div>
@@ -210,7 +218,7 @@
     import { logout } from '../assets/js/auth.js';
     import { formatCurrency, formatDateWithDay, getAccountBalance, getMonthRange } from '../assets/js/utils.js';
     import { fetchCategories, getCategoryColorClasses } from '../assets/js/categories.js';
-    import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
+    import { fetchAllTransactions, fetchProfileCurrency, fetchLiabilitiesTotal } from '../assets/js/home.js';
     import { fetchAccounts, ACCOUNT_COLOR_CLASSES, getAccountTypeLabel } from '../assets/js/accounts.js';
     import { fetchBudgets } from '../assets/js/budget.js';
     import { buildMonthlyStats, buildTopCategories, buildBudgetSummary } from '../assets/js/reports.js';
@@ -219,7 +227,7 @@
     // ---------- State ----------
     let currentUser, currency = 'IDR', accounts = [], allTransactions = [], categoriesById = new Map();
     let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    let activeTab = 'ringkasan', budgets = [], budgetDonutChart = null;
+    let activeTab = 'ringkasan', budgets = [], budgetDonutChart = null, liabilitiesTotal = 0;
 
     const TAB_ACTIVE = 'px-4 py-2 rounded-full text-sm font-semibold bg-[#8B5CF6] text-white transition-colors';
     const TAB_INACTIVE = 'px-4 py-2 rounded-full text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors';
@@ -385,8 +393,11 @@
       const accountsByType = document.getElementById('accounts-by-type');
 
       if (accounts.length === 0) {
-        document.getElementById('net-worth-display').innerHTML = '<p class="text-3xl font-bold text-[#1E1B4B]">Rp0</p>';
+        const nw0 = -liabilitiesTotal;
+        document.getElementById('net-worth-display').innerHTML =
+          `<p class="text-3xl font-bold ${nw0 >= 0 ? 'text-[#1E1B4B]' : 'text-peach'}">${formatCurrency(nw0, currency)}</p>`;
         document.getElementById('asset-total').textContent = formatCurrency(0, currency);
+        document.getElementById('liability-total').textContent = '-' + formatCurrency(liabilitiesTotal, currency);
         accountsByType.innerHTML = '';
         accountsEmpty.classList.remove('hidden');
         lucide.createIcons();
@@ -394,18 +405,23 @@
       }
       accountsEmpty.classList.add('hidden');
 
-      // Net worth by currency
+      // Aset per currency
       const byC = {};
       for (const acc of accounts) {
         const bal = getAccountBalance(acc.id, accounts, allTransactions);
         const cur = acc.currency || currency;
         byC[cur] = (byC[cur] || 0) + bal;
       }
+      // Net worth = aset (currency utama) - liabilitas
+      const netWorth = (byC[currency] || 0) - liabilitiesTotal;
+      const secondary = Object.entries(byC)
+        .filter(([cur]) => cur !== currency)
+        .map(([cur, total]) => `<p class="text-sm text-gray-400">${formatCurrency(total, cur)}</p>`)
+        .join('');
       document.getElementById('net-worth-display').innerHTML =
-        Object.entries(byC).map(([cur, total]) =>
-          `<p class="text-3xl font-bold text-[#1E1B4B]">${formatCurrency(total, cur)}</p>`
-        ).join('');
+        `<p class="text-3xl font-bold ${netWorth >= 0 ? 'text-[#1E1B4B]' : 'text-peach'}">${formatCurrency(netWorth, currency)}</p>` + secondary;
       document.getElementById('asset-total').textContent = formatCurrency(byC[currency] || 0, currency);
+      document.getElementById('liability-total').textContent = '-' + formatCurrency(liabilitiesTotal, currency);
 
       // Group accounts by type
       const TYPE_ORDER = ['cash', 'bank', 'ewallet', 'investment', 'other'];
@@ -566,8 +582,9 @@
       } else {
         const rows = txs.map((tx) => {
           const cat = categoriesById.get(tx.category_id);
-          const catName = tx.type === 'transfer' ? 'Transfer' : (cat?.name || 'Lainnya');
-          const sign = tx.type === 'expense' ? '-' : tx.type === 'income' ? '+' : '';
+          const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
+          const catName = isTransfer ? (tx.description || 'Transfer') : (cat?.name || 'Lainnya');
+          const sign = isTransfer ? '' : (tx.type === 'expense' ? '-' : '+');
           return [tx.date, catName, tx.description || '-', sign + formatCurrency(Number(tx.amount), currency)];
         });
         drawTable(
@@ -584,6 +601,68 @@
     }
 
     document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
+
+    // ---------- Export Excel (Tugas 5B) — 3 sheet ----------
+    function exportExcel() {
+      const XLSX = window.XLSX;
+      if (!XLSX) { showToast('Library Excel belum siap, coba lagi.', 'error'); return; }
+
+      const monthLabel = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(currentMonth);
+      const { start, end } = getMonthRange(currentMonth);
+      const stats = buildMonthlyStats(allTransactions, start, end);
+      const top = buildTopCategories(allTransactions, categoriesById, start, end, 5);
+      const monthTxs = allTransactions
+        .filter((t) => t.date >= start && t.date <= end)
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Ringkasan
+      const ringkasanRows = [
+        ['Laporan Poketto', monthLabel],
+        [],
+        ['Keterangan', 'Jumlah'],
+        ['Pemasukan', stats.income],
+        ['Pengeluaran', stats.expense],
+        ['Selisih', stats.diff],
+        [],
+        ['Top Kategori Pengeluaran', ''],
+        ...top.map((c) => [c.name, c.amount]),
+      ];
+      const ws1 = XLSX.utils.aoa_to_sheet(ringkasanRows);
+      ws1['!cols'] = [{ wch: 28 }, { wch: 18 }];
+      XLSX.utils.book_append_sheet(wb, ws1, 'Ringkasan');
+
+      // Sheet 2: Transaksi
+      const txHeaders = ['Tanggal', 'Tipe', 'Kategori', 'Akun', 'Deskripsi', 'Nominal'];
+      const txRows = monthTxs.map((tx) => {
+        const cat = categoriesById.get(tx.category_id);
+        const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
+        const typeLabel = isTransfer ? 'Transfer' : (tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran');
+        const catName = isTransfer ? (tx.description || 'Transfer') : (cat?.name || 'Lainnya');
+        const acct = accounts.find((a) => a.id === tx.account_id);
+        return [tx.date, typeLabel, catName, acct?.name || '', tx.description || '', Number(tx.amount)];
+      });
+      const ws2 = XLSX.utils.aoa_to_sheet([txHeaders, ...txRows]);
+      ws2['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 16 }, { wch: 25 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, ws2, 'Transaksi');
+
+      // Sheet 3: Saldo per akun
+      const accHeaders = ['Akun', 'Tipe', 'Mata Uang', 'Saldo'];
+      const accRows = accounts.map((acc) => [
+        acc.name,
+        getAccountTypeLabel(acc.type),
+        acc.currency || currency,
+        getAccountBalance(acc.id, accounts, allTransactions),
+      ]);
+      const ws3 = XLSX.utils.aoa_to_sheet([accHeaders, ...accRows]);
+      ws3['!cols'] = [{ wch: 20 }, { wch: 14 }, { wch: 12 }, { wch: 18 }];
+      XLSX.utils.book_append_sheet(wb, ws3, 'Saldo Akun');
+
+      XLSX.writeFile(wb, `Laporan-Poketto-${monthLabel.replace(/\s+/g, '-')}.xlsx`);
+      showToast('File Excel berhasil didownload');
+    }
+    document.getElementById('export-excel-btn').addEventListener('click', exportExcel);
 
     // ---------- Data loading ----------
     async function loadBudgetsAndRenderSummary() {
@@ -607,6 +686,7 @@
       } catch (err) {
         console.log('[reports] Gagal memuat data:', err.message);
       }
+      try { liabilitiesTotal = await fetchLiabilitiesTotal(currentUser.id); } catch {}
       await loadBudgetsAndRenderSummary();
       renderAccountTab();
     });

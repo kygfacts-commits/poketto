@@ -21,6 +21,13 @@ export async function createTransaction(payload) {
   return data;
 }
 
+// Insert beberapa baris sekaligus (dipakai untuk double-entry transfer).
+export async function createTransactions(rows) {
+  const { data, error } = await supabase.from('transactions').insert(rows).select();
+  if (error) throw error;
+  return data;
+}
+
 export async function updateTransaction(id, payload) {
   const { data, error } = await supabase.from('transactions').update(payload).eq('id', id).select().single();
   if (error) throw error;

@@ -49,6 +49,14 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Shake animation untuk validasi input gagal (Tugas 2) */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+.animate-shake { animation: shake 0.4s ease-in-out; }
+
 /* ── Mobile nav & drawer ─────────────────────────────────────────────────────── */
 #pkn-bottom-nav {
   display: none;

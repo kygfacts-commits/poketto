@@ -47,11 +47,18 @@
           <h1 class="text-2xl font-bold text-[#1E1B4B]">Transaksi</h1>
           <p class="text-sm text-gray-400 mt-0.5">Semua transaksi kamu</p>
         </div>
-        <button id="export-btn" class="flex items-center gap-2 bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
-          <i data-lucide="download" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Export Excel</span>
-          <span class="sm:hidden">Excel</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button id="export-csv-btn" class="flex items-center gap-2 bg-white border border-[#8B5CF6] text-[#8B5CF6] hover:bg-[#EDE9FE] font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Export CSV</span>
+            <span class="sm:hidden">CSV</span>
+          </button>
+          <button id="export-btn" class="flex items-center gap-2 bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold rounded-xl px-4 py-2.5 transition-colors text-sm">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Export Excel</span>
+            <span class="sm:hidden">Excel</span>
+          </button>
+        </div>
       </div>
 
       <!-- Month nav -->
@@ -76,6 +83,10 @@
         <select id="cat-filter" class="rounded-xl border border-gray-200 bg-white shadow-sm px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-lavender">
           <option value="">Semua Kategori</option>
         </select>
+        <label class="flex items-center gap-2 text-xs font-medium text-gray-500 cursor-pointer select-none">
+          <input type="checkbox" id="include-transfer-csv" class="rounded border-gray-300 text-[#8B5CF6] focus:ring-lavender">
+          Sertakan transfer di export
+        </label>
       </div>
 
       <!-- Search -->
@@ -218,7 +229,7 @@
     import { fetchProfileCurrency, fetchAllTransactions } from '../assets/js/home.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories } from '../assets/js/categories.js';
-    import { updateTransaction, deleteTransaction } from '../assets/js/transactions.js';
+    import { updateTransaction, deleteTransaction, deleteTransactionByPair } from '../assets/js/transactions.js';
     import { showToast } from '../assets/js/toast.js';
 
     const MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni',
@@ -284,7 +295,12 @@
       filteredTxs = allTransactions.filter(tx => {
         const [y, m] = tx.date.split('-').map(Number);
         if (y !== currentYear || m !== currentMonth + 1) return false;
-        if (filterType !== 'all' && tx.type !== filterType) return false;
+        const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
+        if (filterType === 'transfer') {
+          if (!isTransfer) return false;
+        } else if (filterType === 'income' || filterType === 'expense') {
+          if (tx.type !== filterType || isTransfer) return false;
+        }
         if (filterCategoryId && tx.category_id !== filterCategoryId) return false;
         if (searchQuery) {
           const cat = categoriesById.get(tx.category_id);
@@ -300,8 +316,9 @@
     }
 
     function renderSummary() {
-      const income = filteredTxs.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
-      const expense = filteredTxs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+      // Exclude transfer dari ringkasan cashflow.
+      const income = filteredTxs.filter(t => t.type === 'income' && !t.transfer_type).reduce((s, t) => s + Number(t.amount), 0);
+      const expense = filteredTxs.filter(t => t.type === 'expense' && !t.transfer_type).reduce((s, t) => s + Number(t.amount), 0);
       const diff = income - expense;
       document.getElementById('sum-income').textContent = formatCurrency(income, currency);
       document.getElementById('sum-expense').textContent = formatCurrency(expense, currency);
@@ -343,19 +360,22 @@
         const dateStr = `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
         const toAcct = tx.to_account_id ? accountsById.get(tx.to_account_id) : null;
 
+        const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
         let typeBadge, amountClass, prefix;
-        if (tx.type === 'income') {
-          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-light/50 text-sky-600">Pemasukan</span>';
-          amountClass = 'text-sky-600'; prefix = '+';
-        } else if (tx.type === 'expense') {
-          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-peach-light/50 text-peach">Pengeluaran</span>';
-          amountClass = 'text-peach'; prefix = '-';
-        } else {
+        if (isTransfer) {
           typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-lavender-light/50 text-lavender-dark">Transfer</span>';
           amountClass = 'text-lavender-dark'; prefix = '';
+        } else if (tx.type === 'income') {
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-light/50 text-sky-600">Pemasukan</span>';
+          amountClass = 'text-sky-600'; prefix = '+';
+        } else {
+          typeBadge = '<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-peach-light/50 text-peach">Pengeluaran</span>';
+          amountClass = 'text-peach'; prefix = '-';
         }
 
-        const catName = cat?.name || (tx.type === 'transfer' ? (toAcct ? `→ ${toAcct.name}` : 'Transfer') : '–');
+        const catName = isTransfer
+          ? (tx.transfer_type ? (tx.description || 'Transfer') : (toAcct ? `→ ${toAcct.name}` : 'Transfer'))
+          : (cat?.name || '–');
         const acctCur = acct?.currency || currency;
         return { tx, acct, dateStr, typeBadge, amountClass, prefix, catName, acctCur };
       });
@@ -483,6 +503,12 @@
       editingTx = allTransactions.find(t => t.id === txId);
       if (!editingTx) return;
       const tx = editingTx;
+      // Transfer (double-entry) tidak boleh diedit individual.
+      if (tx.transfer_type || tx.type === 'transfer') {
+        showToast('Edit transfer tidak diizinkan. Hapus dan buat ulang.', 'error');
+        editingTx = null;
+        return;
+      }
       document.getElementById('edit-id').value = tx.id;
       document.getElementById('edit-type').value = tx.type;
       document.getElementById('edit-date').value = tx.date;
@@ -579,7 +605,12 @@
     document.getElementById('delete-confirm').addEventListener('click', async () => {
       if (!deletingId) return;
       try {
-        await deleteTransaction(deletingId);
+        const tx = allTransactions.find(t => t.id === deletingId);
+        if (tx?.transfer_pair_id) {
+          await deleteTransactionByPair(tx.transfer_pair_id); // hapus kedua sisi transfer
+        } else {
+          await deleteTransaction(deletingId);
+        }
         showToast('Transaksi dihapus');
         document.getElementById('delete-modal').classList.add('hidden');
         allTransactions = await fetchAllTransactions(currentUser.id);
@@ -619,6 +650,50 @@
       XLSX.utils.book_append_sheet(wb, ws, 'Transaksi');
       XLSX.writeFile(wb, `Poketto_Transaksi_${MONTH_NAMES[currentMonth]}_${currentYear}.xlsx`);
       showToast('File Excel berhasil didownload');
+    });
+
+    // --- Export CSV (Tugas 5A) ---
+    function csvEscape(value) {
+      const s = String(value ?? '');
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }
+
+    document.getElementById('export-csv-btn').addEventListener('click', () => {
+      const includeTransfer = document.getElementById('include-transfer-csv').checked;
+      let rows = filteredTxs.slice();
+      if (!includeTransfer) {
+        rows = rows.filter(tx => !tx.transfer_type && tx.type !== 'transfer');
+      }
+      if (rows.length === 0) { showToast('Tidak ada data untuk diexport.', 'error'); return; }
+
+      const headers = ['Tanggal','Tipe','Kategori','Sub-kategori','Akun','Jumlah','Deskripsi','Transfer Pair ID'];
+      const lines = rows.map(tx => {
+        const acct = accountsById.get(tx.account_id);
+        const cat = categoriesById.get(tx.category_id);
+        const toAcct = tx.to_account_id ? accountsById.get(tx.to_account_id) : null;
+        const isTransfer = !!tx.transfer_type || tx.type === 'transfer';
+        const typeLabel = isTransfer ? 'Transfer' : (tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran');
+        const catName = isTransfer
+          ? (tx.transfer_type ? (tx.description || 'Transfer') : (toAcct ? `Transfer → ${toAcct.name}` : 'Transfer'))
+          : (cat?.name || '');
+        return [
+          tx.date, typeLabel, catName, '', acct?.name || '',
+          Number(tx.amount), tx.description || '', tx.transfer_pair_id || '',
+        ].map(csvEscape).join(',');
+      });
+
+      // BOM (﻿) agar Excel membaca UTF-8 dengan benar.
+      const csv = '﻿' + [headers.join(','), ...lines].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `poketto-transaksi-${MONTH_NAMES[currentMonth].toLowerCase()}-${currentYear}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('File CSV berhasil didownload');
     });
 
     // --- Close modals on backdrop ---

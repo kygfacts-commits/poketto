@@ -232,7 +232,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
+    import { formatCurrency, parseThousands, attachThousandsInput, validateAmount, validateDecimal, shakeElement } from '../assets/js/utils.js';
     import { fetchProfileCurrency } from '../assets/js/home.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { fetchHoldings, createHolding, updateHolding, deleteHolding } from '../assets/js/portfolio.js';
@@ -454,14 +454,31 @@
       const account_id = document.getElementById('holding-account').value;
       const asset_type = document.getElementById('holding-type').value;
       const asset_name = document.getElementById('holding-name').value.trim();
-      const qty = parseFloat(document.getElementById('holding-qty').value);
-      const avg = parseThousands(document.getElementById('holding-avg-price').value);
+      const qtyEl = document.getElementById('holding-qty');
+      const avgEl = document.getElementById('holding-avg-price');
+      const qty = parseFloat(qtyEl.value);
+      const avg = parseThousands(avgEl.value);
       const cur = parseThousands(document.getElementById('holding-cur-price').value) || null;
       const cur_code = document.getElementById('holding-currency').value;
 
-      if (!asset_name || isNaN(qty) || qty <= 0 || isNaN(avg) || avg <= 0) {
-        errEl.textContent = 'Mohon isi semua field wajib dengan benar.';
+      if (!asset_name) {
+        errEl.textContent = 'Nama aset wajib diisi.';
         errEl.classList.remove('hidden');
+        shakeElement(document.getElementById('holding-name'));
+        return;
+      }
+      const qtyCheck = validateDecimal(qty, 0.001, 999999999);
+      if (!qtyCheck.valid) {
+        errEl.textContent = 'Jumlah/unit: ' + qtyCheck.message;
+        errEl.classList.remove('hidden');
+        shakeElement(qtyEl);
+        return;
+      }
+      const avgCheck = validateAmount(avg, 1, 999999999999);
+      if (!avgCheck.valid) {
+        errEl.textContent = 'Avg buy price: ' + avgCheck.message;
+        errEl.classList.remove('hidden');
+        shakeElement(avgEl);
         return;
       }
 

@@ -129,6 +129,19 @@
             class="w-full rounded-xl border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
         </div>
 
+        <!-- Toggle Rollover (Tugas 3) -->
+        <div>
+          <label class="flex items-center justify-between cursor-pointer select-none">
+            <span class="text-sm font-medium text-gray-700">Aktifkan Rollover</span>
+            <span class="relative inline-block w-11 h-6 flex-shrink-0">
+              <input type="checkbox" id="budget-rollover" class="peer sr-only">
+              <span class="absolute inset-0 rounded-full bg-gray-200 peer-checked:bg-[#8B5CF6] transition-colors"></span>
+              <span class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
+            </span>
+          </label>
+          <p class="text-xs text-gray-400 mt-1">Sisa budget bulan ini akan ditambahkan ke bulan depan.</p>
+        </div>
+
         <p id="budget-form-error" class="hidden text-sm text-red-500"></p>
 
         <div class="flex gap-3 pt-2">
@@ -167,7 +180,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, formatThousands, parseThousands, attachThousandsInput, getMonthRange } from '../assets/js/utils.js';
+    import { formatCurrency, formatThousands, parseThousands, attachThousandsInput, getMonthRange, validateAmount, shakeElement } from '../assets/js/utils.js';
     import { fetchCategories, getCategoryColorClasses } from '../assets/js/categories.js';
     import { fetchProfileCurrency } from '../assets/js/home.js';
     import {
@@ -177,6 +190,7 @@
       updateBudget,
       deleteBudget,
       getBudgetBarColor,
+      getPrevMonthRange,
     } from '../assets/js/budget.js';
 
     // ---------- Elements ----------
@@ -202,6 +216,7 @@
     const categoryIconWrap = document.getElementById('budget-category-icon-wrap');
     const categoryNameEl = document.getElementById('budget-category-name');
     const limitInput = document.getElementById('budget-limit');
+    const rolloverInput = document.getElementById('budget-rollover');
     const formError = document.getElementById('budget-form-error');
     const submitBtn = document.getElementById('budget-submit');
 
@@ -217,6 +232,7 @@
     let categoriesById = new Map();
     let budgets = [];
     let categoryUsage = new Map();
+    let rolloverByCategory = new Map(); // category_id -> sisa rollover (>0) dari bulan lalu
     let budgetPendingDelete = null;
 
     attachThousandsInput(limitInput);
@@ -251,12 +267,20 @@
         const cat = categoriesById.get(b.category_id);
         const colorClasses = getCategoryColorClasses(cat?.color || 'slate');
         const used = categoryUsage.get(b.category_id) || 0;
-        const limit = Number(b.limit_amount) || 0;
+        const baseLimit = Number(b.limit_amount) || 0;
+        const rollover = b.rollover_enabled ? (rolloverByCategory.get(b.category_id) || 0) : 0;
+        const limit = baseLimit + rollover; // effective amount sebagai denominator
         const percent = limit > 0 ? Math.round((used / limit) * 100) : 0;
         const barWidth = Math.min(percent, 100);
         const barColor = getBudgetBarColor(percent);
         const overBadge = percent >= 100
           ? '<span class="ml-2 text-xs font-semibold text-red-500 bg-red-100 px-2 py-0.5 rounded-full">Over Budget!</span>'
+          : '';
+        const rolloverBadge = b.rollover_enabled
+          ? '<span class="ml-2 text-xs font-semibold bg-mint-light text-emerald-700 rounded-full px-2 py-0.5">Rollover ✓</span>'
+          : '';
+        const rolloverSubtext = rollover > 0
+          ? `<p class="text-xs text-emerald-600 mt-0.5">${formatCurrency(baseLimit, currency)} + ${formatCurrency(rollover, currency)} rollover</p>`
           : '';
 
         return `
@@ -266,10 +290,11 @@
                 <i data-lucide="${cat?.icon || 'circle'}" class="w-5 h-5 ${colorClasses.icon}"></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-semibold text-gray-800 truncate">${cat?.name || 'Lainnya'}</p>
+                <p class="font-semibold text-gray-800 truncate">${cat?.name || 'Lainnya'}${rolloverBadge}</p>
                 <p class="text-xs text-gray-500">
                   ${formatCurrency(used, currency)} / ${formatCurrency(limit, currency)} (${percent}%)${overBadge}
                 </p>
+                ${rolloverSubtext}
               </div>
               <div class="flex gap-1 flex-shrink-0">
                 <button class="edit-btn p-2 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-lavender-dark transition-colors" data-id="${b.id}" title="Edit">
@@ -311,6 +336,8 @@
       form.reset();
       submitBtn.disabled = false;
       submitBtn.textContent = 'Simpan';
+
+      rolloverInput.checked = !!budget?.rollover_enabled;
 
       if (budget) {
         modalTitle.textContent = 'Edit Budget';
@@ -362,9 +389,11 @@
       formError.classList.add('hidden');
 
       const limit = parseThousands(limitInput.value);
-      if (limit <= 0) {
-        formError.textContent = 'Limit harus lebih dari 0.';
+      const limitCheck = validateAmount(limit, 1000);
+      if (!limitCheck.valid) {
+        formError.textContent = limitCheck.message;
         formError.classList.remove('hidden');
+        shakeElement(limitInput);
         return;
       }
 
@@ -379,13 +408,14 @@
 
       try {
         if (idInput.value) {
-          await updateBudget(idInput.value, { limit_amount: limit });
+          await updateBudget(idInput.value, { limit_amount: limit, rollover_enabled: rolloverInput.checked });
         } else {
           await createBudget({
             user_id: currentUser.id,
             category_id: categorySelect.value,
             month: getMonthRange(currentMonth).start,
             limit_amount: limit,
+            rollover_enabled: rolloverInput.checked,
           });
         }
         await loadBudgets();
@@ -446,6 +476,31 @@
       categoryUsage = new Map();
       for (const tx of expenses) {
         categoryUsage.set(tx.category_id, (categoryUsage.get(tx.category_id) || 0) + Number(tx.amount));
+      }
+
+      // Rollover: hitung sisa budget bulan lalu untuk kategori dengan rollover_enabled.
+      rolloverByCategory = new Map();
+      const rolloverBudgets = budgets.filter((b) => b.rollover_enabled);
+      if (rolloverBudgets.length > 0) {
+        try {
+          const prev = getPrevMonthRange(start);
+          const [prevBudgets, prevExpenses] = await Promise.all([
+            fetchBudgets(currentUser.id, prev.start),
+            fetchExpensesForMonth(currentUser.id, prev.start, prev.end),
+          ]);
+          const prevUsage = new Map();
+          for (const tx of prevExpenses) {
+            prevUsage.set(tx.category_id, (prevUsage.get(tx.category_id) || 0) + Number(tx.amount));
+          }
+          for (const b of rolloverBudgets) {
+            const prevB = prevBudgets.find((pb) => pb.category_id === b.category_id);
+            if (!prevB) continue;
+            const leftover = Number(prevB.limit_amount) - (prevUsage.get(b.category_id) || 0);
+            if (leftover > 0) rolloverByCategory.set(b.category_id, leftover);
+          }
+        } catch (err) {
+          console.log('[budget] Gagal menghitung rollover:', err.message);
+        }
       }
 
       renderSummary();

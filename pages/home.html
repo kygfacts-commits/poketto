@@ -84,14 +84,27 @@
         </div>
 
         <!-- Total saldo card -->
-        <div class="w-full rounded-2xl bg-gradient-to-r from-[#EDE9FE] to-white border border-[#EDE9FE] shadow-sm p-5 mb-6 flex items-center justify-between">
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Saldo</p>
-            <p id="total-balance-amount" class="text-3xl font-extrabold tracking-tight text-[#1E1B4B]">***</p>
+        <div class="w-full rounded-2xl bg-gradient-to-r from-[#EDE9FE] to-white border border-[#EDE9FE] shadow-sm p-5 mb-6">
+          <div class="flex items-start justify-between">
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Aset</p>
+              <p id="total-balance-amount" class="text-3xl font-extrabold tracking-tight text-[#1E1B4B]">***</p>
+            </div>
+            <button id="toggle-balance" type="button" class="ml-4 p-2.5 rounded-xl hover:bg-lavender-light/50 text-lavender-dark transition-colors flex-shrink-0">
+              <i data-lucide="eye-off" id="toggle-balance-icon" class="w-5 h-5"></i>
+            </button>
           </div>
-          <button id="toggle-balance" type="button" class="ml-4 p-2.5 rounded-xl hover:bg-lavender-light/50 text-lavender-dark transition-colors flex-shrink-0">
-            <i data-lucide="eye-off" id="toggle-balance-icon" class="w-5 h-5"></i>
-          </button>
+          <!-- Net worth = aset - liabilitas (Tugas 4B) -->
+          <div id="networth-rows" class="hidden mt-3 pt-3 border-t border-[#DDD6FE]/60 space-y-1.5">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-400">Liabilitas</span>
+              <span id="liabilities-amount" class="font-semibold text-peach">-Rp0</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Net Worth</span>
+              <span id="networth-amount" class="text-lg font-extrabold tracking-tight text-mint">Rp0</span>
+            </div>
+          </div>
         </div>
 
         <!-- Daily limit banner (Fitur 4) -->
@@ -221,7 +234,7 @@
     import { formatCurrency, formatDate, formatDateWithDay, getAccountBalance, getMonthRange } from '../assets/js/utils.js';
     import { ACCOUNT_COLOR_CLASSES, fetchAccounts } from '../assets/js/accounts.js';
     import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
-    import { fetchAllTransactions, fetchProfileCurrency, deleteTransaction, fetchDailyLimit } from '../assets/js/home.js';
+    import { fetchAllTransactions, fetchProfileCurrency, deleteTransaction, deleteTransactionByPair, fetchDailyLimit, fetchLiabilitiesTotal } from '../assets/js/home.js';
     import { showToast, flushQueuedToast } from '../assets/js/toast.js';
 
     // ---------- Elements ----------
@@ -268,6 +281,7 @@
     let categoriesById = new Map();
     let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let dailyLimit = 0;
+    let liabilitiesTotal = 0;
     let selectedTransactionId = null;
     let balanceVisible = false;
 
@@ -283,7 +297,7 @@
 
     function renderSummary() {
       const { start, end } = getMonthRange(currentMonth);
-      const monthTx = allTransactions.filter((tx) => tx.date >= start && tx.date <= end && tx.type !== 'transfer');
+      const monthTx = allTransactions.filter((tx) => tx.date >= start && tx.date <= end && tx.type !== 'transfer' && !tx.transfer_type);
 
       const income = monthTx.filter((tx) => tx.type === 'income').reduce((sum, tx) => sum + Number(tx.amount), 0);
       const expense = monthTx.filter((tx) => tx.type === 'expense').reduce((sum, tx) => sum + Number(tx.amount), 0);
@@ -302,6 +316,25 @@
       const formatted = formatCurrency(total, currency);
       totalBalanceAmount.dataset.formatted = formatted;
       totalBalanceAmount.textContent = balanceVisible ? formatted : '***';
+
+      // Net worth = total aset - total liabilitas
+      const rows = document.getElementById('networth-rows');
+      const liabEl = document.getElementById('liabilities-amount');
+      const nwEl = document.getElementById('networth-amount');
+      const netWorth = total - liabilitiesTotal;
+      const liabFormatted = '-' + formatCurrency(liabilitiesTotal, currency);
+      const nwFormatted = formatCurrency(netWorth, currency);
+      liabEl.dataset.formatted = liabFormatted;
+      nwEl.dataset.formatted = nwFormatted;
+      nwEl.className = `text-lg font-extrabold tracking-tight ${netWorth >= 0 ? 'text-mint' : 'text-peach'}`;
+
+      if (liabilitiesTotal > 0) {
+        rows.classList.remove('hidden');
+        liabEl.textContent = balanceVisible ? liabFormatted : '***';
+        nwEl.textContent = balanceVisible ? nwFormatted : '***';
+      } else {
+        rows.classList.add('hidden');
+      }
     }
 
     function renderAccountStrip() {
@@ -332,12 +365,17 @@
       let colorClasses;
       let title;
 
-      if (tx.type === 'transfer') {
+      const isTransfer = tx.type === 'transfer' || !!tx.transfer_type;
+      if (isTransfer) {
         iconName = 'arrow-right-left';
         colorClasses = TRANSFER_COLOR_CLASSES;
-        const fromName = getAccountById(tx.account_id)?.name || '?';
-        const toName = getAccountById(tx.to_account_id)?.name || '?';
-        title = `${fromName} &rarr; ${toName}`;
+        if (tx.transfer_type) {
+          title = tx.description || 'Transfer';
+        } else {
+          const fromName = getAccountById(tx.account_id)?.name || '?';
+          const toName = getAccountById(tx.to_account_id)?.name || '?';
+          title = `${fromName} &rarr; ${toName}`;
+        }
       } else {
         const cat = categoriesById.get(tx.category_id);
         iconName = cat?.icon || 'circle';
@@ -347,17 +385,17 @@
 
       let amountClass = 'text-lavender-dark';
       let amountPrefix = '';
-      if (tx.type === 'income') {
+      if (!isTransfer && tx.type === 'income') {
         amountClass = 'text-sky-600';
         amountPrefix = '+';
-      } else if (tx.type === 'expense') {
+      } else if (!isTransfer && tx.type === 'expense') {
         amountClass = 'text-peach';
         amountPrefix = '-';
       }
 
       const account = getAccountById(tx.account_id);
       const amountText = formatCurrency(Number(tx.amount), account?.currency || currency);
-      const subtitle = tx.description ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
+      const subtitle = (tx.description && !isTransfer) ? `<p class="text-xs text-gray-400 truncate">${tx.description}</p>` : '';
 
       return `
         <div class="tx-row flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50 transition-colors" data-id="${tx.id}">
@@ -375,7 +413,10 @@
 
     function renderTransactionList() {
       const { start, end } = getMonthRange(currentMonth);
-      const monthTx = allTransactions.filter((tx) => tx.date >= start && tx.date <= end);
+      // Transaksi Terakhir: tampilkan 5 transaksi terbaru bulan ini saja (Lihat Semua → transactions.html).
+      const monthTx = allTransactions
+        .filter((tx) => tx.date >= start && tx.date <= end)
+        .slice(0, 5);
 
       if (allTransactions.length === 0) {
         transactionList.innerHTML = '';
@@ -449,7 +490,7 @@
     function todayExpenseTotal() {
       const t = todayStr();
       return allTransactions
-        .filter((tx) => tx.type === 'expense' && tx.date === t)
+        .filter((tx) => tx.type === 'expense' && !tx.transfer_type && tx.date === t)
         .reduce((sum, tx) => sum + Number(tx.amount), 0);
     }
 
@@ -587,13 +628,23 @@
       let amountPrefix = '';
       let amountClass = 'text-sky-600';
 
-      if (tx.type === 'transfer') {
+      const isTransfer = tx.type === 'transfer' || !!tx.transfer_type;
+      if (isTransfer) {
         iconName = 'arrow-right-left';
         colorClasses = TRANSFER_COLOR_CLASSES;
-        const fromName = getAccountById(tx.account_id)?.name || '?';
-        const toName = getAccountById(tx.to_account_id)?.name || '?';
-        title = `${fromName} → ${toName}`;
-        detailAccountRow.classList.add('hidden');
+        amountClass = 'text-lavender-dark';
+        if (tx.transfer_type) {
+          title = tx.description || 'Transfer';
+          detailAccountRow.classList.remove('hidden');
+          detailAccount.textContent = getAccountById(tx.account_id)?.name || '?';
+        } else {
+          const fromName = getAccountById(tx.account_id)?.name || '?';
+          const toName = getAccountById(tx.to_account_id)?.name || '?';
+          title = `${fromName} → ${toName}`;
+          detailAccountRow.classList.add('hidden');
+        }
+        // Transfer tidak boleh diedit individual.
+        detailEditBtn.classList.add('hidden');
       } else {
         const cat = categoriesById.get(tx.category_id);
         iconName = cat?.icon || 'circle';
@@ -601,6 +652,7 @@
         title = cat?.name || 'Lainnya';
         detailAccountRow.classList.remove('hidden');
         detailAccount.textContent = getAccountById(tx.account_id)?.name || '?';
+        detailEditBtn.classList.remove('hidden');
 
         if (tx.type === 'income') {
           amountPrefix = '+';
@@ -657,6 +709,10 @@
       if (totalBalanceAmount.dataset.formatted) {
         totalBalanceAmount.textContent = balanceVisible ? totalBalanceAmount.dataset.formatted : '***';
       }
+      const liabEl = document.getElementById('liabilities-amount');
+      const nwEl = document.getElementById('networth-amount');
+      if (liabEl.dataset.formatted) liabEl.textContent = balanceVisible ? liabEl.dataset.formatted : '***';
+      if (nwEl.dataset.formatted) nwEl.textContent = balanceVisible ? nwEl.dataset.formatted : '***';
     });
 
     confirmCancelBtn.addEventListener('click', () => {
@@ -668,7 +724,12 @@
       if (!selectedTransactionId) return;
 
       try {
-        await deleteTransaction(selectedTransactionId);
+        const tx = allTransactions.find((t) => t.id === selectedTransactionId);
+        if (tx?.transfer_pair_id) {
+          await deleteTransactionByPair(tx.transfer_pair_id); // hapus kedua sisi transfer
+        } else {
+          await deleteTransaction(selectedTransactionId);
+        }
         confirmModal.classList.add('hidden');
         selectedTransactionId = null;
         await loadData();
@@ -714,6 +775,12 @@
         dailyLimit = await fetchDailyLimit(currentUser.id);
       } catch (err) {
         console.log('[home] Gagal memuat limit harian:', err.message);
+      }
+
+      try {
+        liabilitiesTotal = await fetchLiabilitiesTotal(currentUser.id);
+      } catch (err) {
+        console.log('[home] Gagal memuat liabilitas:', err.message);
       }
 
       try {

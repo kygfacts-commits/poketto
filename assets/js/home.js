@@ -30,6 +30,21 @@ export async function deleteTransaction(id) {
   if (error) throw error;
 }
 
+// Hapus kedua baris transfer yang berbagi transfer_pair_id sekaligus.
+export async function deleteTransactionByPair(pairId) {
+  const { error } = await supabase.from('transactions').delete().eq('transfer_pair_id', pairId);
+  if (error) throw error;
+}
+
+export async function fetchLiabilitiesTotal(userId) {
+  const { data, error } = await supabase
+    .from('liabilities')
+    .select('remaining_amount')
+    .eq('user_id', userId);
+  if (error) throw error;
+  return (data || []).reduce((sum, l) => sum + Number(l.remaining_amount || 0), 0);
+}
+
 export async function fetchDailyLimit(userId) {
   const { data, error } = await supabase
     .from('profiles')

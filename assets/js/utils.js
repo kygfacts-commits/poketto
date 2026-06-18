@@ -80,6 +80,69 @@ export function attachThousandsInput(input) {
   });
 }
 
+// ── Validasi & format input numerik (Tugas 2) ────────────────────────────────
+// Attach formatter ribuan ke input integer (alias semantik dari attachThousandsInput).
+// Mengembalikan fungsi getter yang membaca nilai numerik murni saat dipanggil.
+export function formatNumberInput(input) {
+  attachThousandsInput(input);
+  return () => getRawNumber(input.value);
+}
+
+// Hapus semua titik/karakter non-digit → integer murni. Bila mengandung koma desimal
+// (format id-ID), koma diperlakukan sebagai pemisah desimal.
+export function getRawNumber(formattedString) {
+  const str = String(formattedString ?? '').trim();
+  if (str.includes(',')) {
+    const cleaned = str.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+    return parseFloat(cleaned) || 0;
+  }
+  return parseInt(str.replace(/\D/g, ''), 10) || 0;
+}
+
+// Validasi nominal: { valid, message }. Default min 1, max 1 triliun.
+export function validateAmount(value, min = 1, max = 999999999999) {
+  const n = typeof value === 'number' ? value : getRawNumber(value);
+  if (!n || isNaN(n) || n <= 0) {
+    return { valid: false, message: 'Jumlah harus lebih dari 0' };
+  }
+  if (n < min) {
+    return { valid: false, message: `Jumlah minimal ${formatThousands(String(min))}` };
+  }
+  if (n > max) {
+    return { valid: false, message: `Jumlah maksimal ${formatThousands(String(max))}` };
+  }
+  return { valid: true, message: '' };
+}
+
+// Validasi nilai desimal (mis. quantity portfolio). Mengizinkan pecahan.
+export function validateDecimal(value, min = 0, max = 999999999999) {
+  const n = parseFloat(String(value).replace(/[^\d.]/g, ''));
+  const num = isNaN(n) ? 0 : n;
+  if (!num || num <= 0) return { valid: false, message: 'Nilai harus lebih dari 0' };
+  if (num < min) return { valid: false, message: `Nilai minimal ${min}` };
+  if (num > max) return { valid: false, message: `Nilai maksimal ${max}` };
+  return { valid: true, message: '' };
+}
+
+// Attach handler ke input desimal: hanya izinkan digit dan satu titik desimal.
+export function attachDecimalInput(input) {
+  input.addEventListener('input', (e) => {
+    let v = e.target.value.replace(/[^\d.]/g, '');
+    const firstDot = v.indexOf('.');
+    if (firstDot !== -1) {
+      v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
+    }
+    e.target.value = v;
+  });
+}
+
+// Animasi shake untuk feedback validasi gagal.
+export function shakeElement(el) {
+  if (!el) return;
+  el.classList.add('animate-shake');
+  setTimeout(() => el.classList.remove('animate-shake'), 500);
+}
+
 export function getMonthRange(date = new Date()) {
   const year = date.getFullYear();
   const month = date.getMonth();
