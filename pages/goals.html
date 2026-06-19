@@ -225,19 +225,24 @@
         <p id="detail-progress-label" class="text-xs text-gray-400 text-right">0%</p>
       </div>
 
-      <!-- Simulasi -->
+      <!-- Simulasi berbasis HARI -->
       <div class="bg-[#F8F7FF] rounded-xl p-4 border border-[#EDE9FE]">
-        <p id="detail-required" class="hidden text-sm text-gray-500 mb-2"></p>
-        <div class="flex items-center justify-between mb-2">
-          <label for="sim-slider" class="text-sm font-medium text-gray-700">Simulasi nabung per hari</label>
-          <span id="sim-perday-label" class="text-sm font-bold text-lavender-dark">Rp0</span>
+        <p id="detail-required" class="hidden text-sm text-gray-700 font-semibold mb-3"></p>
+        <label for="sim-days-input" class="block text-sm font-medium text-gray-700 mb-2">Simulasi: Saya ingin selesai dalam</label>
+        <div class="flex items-center gap-2 mb-3">
+          <input type="number" id="sim-days-input" min="1" inputmode="numeric"
+            class="w-24 rounded-xl border border-gray-200 px-3 py-2 text-sm text-center font-semibold focus:outline-none focus:ring-2 focus:ring-lavender focus:border-lavender">
+          <span class="text-sm text-gray-500">hari</span>
         </div>
-        <input type="range" id="sim-slider" min="1000" max="100000" step="1000" value="1000"
+        <input type="range" id="sim-slider" min="1" max="365" step="7" value="30"
           class="w-full accent-lavender-dark cursor-pointer">
-        <p id="sim-output" class="text-sm text-gray-600 mt-3 leading-relaxed"></p>
+        <div id="sim-output" class="text-sm text-gray-600 mt-3 leading-relaxed"></div>
+        <div id="sim-badge" class="hidden mt-3 rounded-lg px-3 py-2 text-xs font-medium leading-relaxed"></div>
       </div>
 
-      <button type="button" id="detail-close" class="w-full mt-5 rounded-xl bg-lavender hover:bg-lavender-dark text-white font-semibold py-2.5 text-sm transition-colors">
+      <p class="text-xs text-gray-400 italic mt-3">* Ini hanya simulasi, tidak mengubah target tanggal goal kamu</p>
+
+      <button type="button" id="detail-close" class="w-full mt-4 rounded-xl bg-lavender hover:bg-lavender-dark text-white font-semibold py-2.5 text-sm transition-colors">
         Tutup
       </button>
     </div>
@@ -272,10 +277,10 @@
     import { formatCurrency, parseThousands, attachThousandsInput, validateAmount, shakeElement } from '../assets/js/utils.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { createTransaction } from '../assets/js/add.js';
-    import { showToast } from '../assets/js/toast.js';
+    import { showToast, showCelebrateToast } from '../assets/js/toast.js';
     import { fetchGoals, createGoal, updateGoal, deleteGoal } from '../assets/js/goals.js';
     import { fetchProfileCurrency, fetchAllTransactions } from '../assets/js/home.js';
-    import { buildContributions, calculateProjection, simulateProjection, formatProjectionDate } from '../assets/js/goal-projection.js';
+    import { buildContributions, calculateProjection, simulateByDays, isSignificantContribution, formatProjectionDate } from '../assets/js/goal-projection.js';
 
     // --- Constants ---
 
@@ -298,7 +303,8 @@
     let currentUser, currency = 'IDR', accounts = [], goals = [], allTransactions = [];
     let editingGoalId = null, fundsTargetGoalId = null, pendingDeleteGoalId = null;
     let selectedIcon = 'target';
-    let detailRemaining = 0; // sisa target goal yang sedang disimulasikan
+    let detailRemaining = 0;   // sisa target goal yang sedang disimulasikan
+    let detailAvgPerDay = 0;   // kecepatan nabung aktual goal (untuk badge perbandingan)
 
     // --- Helpers ---
     function getPalette(goalId) {
@@ -353,36 +359,42 @@
     }
 
     // Insight terpadu untuk goal dengan deadline: bandingkan kecepatan vs target waktu.
+    // Urutan render: 1) Target tanggal  2) requiredPerDay (info utama, selalu)  3) status message.
     function renderDeadlineInsight(goal, projection) {
       const deadlineDate = formatGoalDate(goal.target_date);
       const avgFmt = formatCurrency(Math.round(projection.avgPerDay || 0), currency);
       const requiredFmt = formatCurrency(Math.max(0, projection.requiredPerDay), currency);
 
-      let boxStyle, line2, line3 = '';
+      let boxStyle, line3, line4 = '';
       switch (projection.deadlineStatus) {
         case 'completed':
           boxStyle = 'bg-mint-light/30 border-mint-dark/20';
-          line2 = `<p class="text-xs text-mint font-medium mt-1">🎉 Target sudah tercapai!</p>`;
+          line3 = `<p class="text-xs text-mint font-medium mt-1">🎉 Target sudah tercapai!</p>`;
           break;
         case 'on_track':
           boxStyle = 'bg-mint-light/30 border-mint-dark/20';
-          line2 = `<p class="text-xs text-mint font-medium mt-1 leading-relaxed">✅ Sesuai target! Dengan kecepatan saat ini (${avgFmt}/hari), tercapai ${formatProjectionDate(projection.estimasiTanggal)} — lebih cepat dari deadline</p>`;
+          line3 = `<p class="text-xs text-mint font-medium mt-1 leading-relaxed">✅ Sesuai target! Dengan kecepatan saat ini (${avgFmt}/hari), tercapai ${formatProjectionDate(projection.estimasiTanggal)} — lebih cepat dari deadline</p>`;
           break;
         case 'no_data':
           boxStyle = 'bg-gray-50 border-gray-100';
-          line2 = `<p class="text-xs text-gray-400 mt-1 leading-relaxed">Mulai nabung untuk melihat apakah kamu on track mencapai target ${deadlineDate}</p>`;
+          line3 = `<p class="text-xs text-gray-400 mt-1 leading-relaxed">Mulai nabung untuk melihat apakah kamu on track mencapai target ${deadlineDate}</p>`;
           break;
         default: // 'behind'
           boxStyle = 'bg-peach-light/30 border-peach/20';
-          line2 = `<p class="text-xs text-peach font-medium mt-1 leading-relaxed">⚠️ Perlu percepat! Untuk capai deadline ${deadlineDate}, kamu perlu nabung ${requiredFmt}/hari (saat ini baru ${avgFmt}/hari)</p>`;
-          line3 = `<button type="button" data-goal-id="${goal.id}" data-required="${Math.max(0, projection.requiredPerDay)}" class="detail-goal-btn mt-2 inline-flex items-center gap-1 text-xs font-semibold text-peach hover:underline">
+          line3 = `<p class="text-xs text-peach font-medium mt-1 leading-relaxed">⚠️ Perlu percepat! Saat ini kamu baru nabung ${avgFmt}/hari</p>`;
+          line4 = `<button type="button" data-goal-id="${goal.id}" data-sim-days="${Math.max(1, projection.sisaHariDeadline)}" class="detail-goal-btn mt-2 inline-flex items-center gap-1 text-xs font-semibold text-peach hover:underline">
             <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>Lihat Simulasi
           </button>`;
       }
 
+      // Baris requiredPerDay tampil SELALU (selama nominalnya bermakna / > 0).
+      const requiredLine = projection.requiredPerDay > 0
+        ? `<p class="text-sm font-semibold text-gray-700 mt-1">Untuk capai tepat waktu: ${requiredFmt}/hari</p>`
+        : '';
+
       return `<div class="mt-3 rounded-xl border px-3 py-2.5 ${boxStyle}">
         <p class="text-sm font-medium text-gray-700">🎯 Target: ${deadlineDate}</p>
-        ${line2}${line3}
+        ${requiredLine}${line3}${line4}
       </div>`;
     }
 
@@ -630,10 +642,14 @@
 
       try {
         const goal = goals.find((g) => g.id === fundsTargetGoalId);
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        // 1. Proyeksi LAMA (sebelum kontribusi baru).
+        const contribsBefore = buildContributions(goal, allTransactions);
+        const projBefore = calculateProjection(goal, contribsBefore);
 
         if (accountId) {
-          const today = new Date();
-          const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
           await createTransaction({
             user_id: currentUser.id,
             account_id: accountId,
@@ -647,16 +663,31 @@
         const newAmount = Number(goal.current_amount) + amount;
         const isCompleted = newAmount >= Number(goal.target_amount);
 
+        // 2. Update current_amount ke DB.
         await updateGoal(fundsTargetGoalId, {
           current_amount: newAmount,
           ...(isCompleted && { is_completed: true }),
         });
+
+        // 3. Proyeksi BARU (setelah kontribusi baru) — tambahkan kontribusi hari ini.
+        const newGoal = { ...goal, current_amount: newAmount };
+        const projAfter = calculateProjection(newGoal, [...contribsBefore, { date: dateStr, amount }]);
+
+        // 4. Tentukan notifikasi.
+        const significant = !isCompleted
+          && isSignificantContribution(amount, projBefore.avgPerDay)
+          && typeof projBefore.estimasiHari === 'number'
+          && typeof projAfter.estimasiHari === 'number'
+          && projAfter.estimasiHari < projBefore.estimasiHari;
 
         closeFundsModal();
         await loadGoals();
 
         if (isCompleted) {
           showToast(`Selamat! Goal "${goal.name}" tercapai! 🎉`, 'success');
+        } else if (significant) {
+          const daysFaster = projBefore.estimasiHari - projAfter.estimasiHari;
+          showCelebrateToast(`🎉 Kontribusi besar! Goal "${goal.name}" kini diprediksi selesai ${daysFaster} hari lebih cepat — sekitar ${formatProjectionDate(projAfter.estimasiTanggal)}`);
         } else {
           showToast('Dana berhasil ditambahkan.');
         }
@@ -699,23 +730,55 @@
       }
     });
 
-    // --- Modal: Detail & Simulasi ---
+    // --- Modal: Detail & Simulasi (berbasis HARI) ---
     const simSlider = document.getElementById('sim-slider');
+    const simDaysInput = document.getElementById('sim-days-input');
 
-    function updateSimOutput() {
-      const perDay = Number(simSlider.value);
-      document.getElementById('sim-perday-label').textContent = `${formatCurrency(perDay, currency)}`;
+    // Render output simulasi untuk N hari, lalu sinkronkan kedua kontrol.
+    function renderSim(days, source) {
+      days = Math.max(1, Math.floor(Number(days) || 1));
+
+      // Sinkronisasi dua arah tanpa memicu loop event.
+      if (source !== 'input' && Number(simDaysInput.value) !== days) simDaysInput.value = days;
+      const sliderVal = Math.min(days, Number(simSlider.max));
+      if (source !== 'slider' && Number(simSlider.value) !== sliderVal) simSlider.value = sliderVal;
+
       const outEl = document.getElementById('sim-output');
-      const sim = simulateProjection(detailRemaining, perDay);
-      if (!sim) {
-        outEl.textContent = 'Goal ini sudah tercapai. 🎉';
+      const badgeEl = document.getElementById('sim-badge');
+
+      if (detailRemaining <= 0) {
+        outEl.innerHTML = 'Goal ini sudah tercapai. 🎉';
+        badgeEl.classList.add('hidden');
         return;
       }
-      outEl.innerHTML = `Dengan <span class="font-semibold text-[#1E1B4B]">${formatCurrency(perDay, currency)}/hari</span>, goal tercapai dalam <span class="font-semibold text-lavender-dark">${sim.days} hari</span> (sekitar <span class="font-semibold text-lavender-dark">${formatProjectionDate(sim.date)}</span>).`;
+
+      const { perDay } = simulateByDays(detailRemaining, days);
+      const date = new Date(); date.setHours(0, 0, 0, 0); date.setDate(date.getDate() + days);
+
+      outEl.innerHTML = `Untuk selesai dalam <span class="font-semibold text-[#1E1B4B]">${days} hari</span>, kamu perlu nabung <span class="font-semibold text-lavender-dark">${formatCurrency(perDay, currency)}/hari</span>
+        <span class="block text-xs text-gray-500 mt-1">Estimasi tanggal: <span class="font-semibold">${formatProjectionDate(date)}</span></span>`;
+
+      // Badge perbandingan vs kecepatan aktual.
+      badgeEl.classList.remove('hidden');
+      if (detailAvgPerDay > 0) {
+        if (perDay <= detailAvgPerDay) {
+          badgeEl.className = 'mt-3 rounded-lg px-3 py-2 text-xs font-medium leading-relaxed bg-mint-light/40 text-emerald-700';
+          badgeEl.textContent = '✅ Realistis — sesuai atau lebih santai dari kecepatan kamu saat ini';
+        } else if (perDay <= detailAvgPerDay * 1.5) {
+          badgeEl.className = 'mt-3 rounded-lg px-3 py-2 text-xs font-medium leading-relaxed bg-amber-100 text-amber-700';
+          badgeEl.textContent = '💪 Cukup menantang — perlu sedikit usaha ekstra';
+        } else {
+          badgeEl.className = 'mt-3 rounded-lg px-3 py-2 text-xs font-medium leading-relaxed bg-peach-light/40 text-orange-600';
+          badgeEl.textContent = '🔥 Ambisius — butuh percepatan signifikan dari kebiasaan saat ini';
+        }
+      } else {
+        badgeEl.className = 'mt-3 rounded-lg px-3 py-2 text-xs font-medium leading-relaxed bg-sky-light/40 text-sky-600';
+        badgeEl.textContent = 'ℹ️ Belum ada kecepatan rata-rata untuk dibandingkan';
+      }
     }
 
-    // requiredOverride: jika diberikan (dari status 'behind'), slider default = nominal yang dibutuhkan.
-    function openDetailModal(goalId, requiredOverride = null) {
+    // daysOverride: jika diberikan (dari "Lihat Simulasi" status behind), default = sisaHariDeadline.
+    function openDetailModal(goalId, daysOverride = null) {
       const goal = goals.find((g) => g.id === goalId);
       if (!goal) return;
 
@@ -731,26 +794,35 @@
       document.getElementById('detail-progress-label').textContent = `${Math.round(pct)}%`;
 
       const projection = calculateProjection(goal, buildContributions(goal, allTransactions));
+      detailAvgPerDay = projection.avgPerDay || 0;
 
       // Baris info nominal yang dibutuhkan agar tepat waktu (hanya jika ada deadline).
       const reqEl = document.getElementById('detail-required');
-      if (projection.hasDeadline) {
-        reqEl.textContent = `Untuk capai target tepat waktu: ${formatCurrency(Math.max(0, projection.requiredPerDay), currency)}/hari`;
+      if (projection.hasDeadline && projection.requiredPerDay > 0) {
+        reqEl.textContent = `Untuk capai target tepat waktu: ${formatCurrency(projection.requiredPerDay, currency)}/hari`;
         reqEl.classList.remove('hidden');
       } else {
         reqEl.classList.add('hidden');
       }
 
-      // Default slider: requiredPerDay (jika dibuka dari "Lihat Simulasi") atau avgPerDay.
-      const base = Math.max(1000, Math.round(projection.avgPerDay || (detailRemaining / 180) || 1000));
-      const defaultVal = (typeof requiredOverride === 'number' && requiredOverride > 0) ? requiredOverride : base;
-      const max = Math.max(base * 4, detailRemaining, defaultVal, 2000);
-      simSlider.min = 1000;
-      simSlider.max = max;
-      simSlider.step = 1000;
-      simSlider.value = Math.min(defaultVal, max);
+      // Referensi hari: sisaHariDeadline (jika ada) atau estimasiHari (dari avgPerDay aktual).
+      const refDays = projection.hasDeadline && projection.sisaHariDeadline > 0
+        ? projection.sisaHariDeadline
+        : (projection.estimasiHari || 180);
 
-      updateSimOutput();
+      // Default input: daysOverride (dari behind) → sisaHariDeadline; selain itu estimasiHari/refDays.
+      const defaultDays = (typeof daysOverride === 'number' && daysOverride > 0)
+        ? daysOverride
+        : (projection.estimasiHari || refDays);
+
+      // Slider: min 1, max = max(refDays, 365) * 1.5, step mingguan.
+      simSlider.min = 1;
+      simSlider.max = Math.round(Math.max(refDays, 365) * 1.5);
+      simSlider.step = 7;
+      // Placeholder input = kondisi saat ini.
+      simDaysInput.placeholder = String(Math.max(1, Math.round(refDays)));
+
+      renderSim(Math.max(1, Math.round(defaultDays)));
       document.getElementById('detail-modal').classList.remove('hidden');
     }
 
@@ -758,7 +830,9 @@
       document.getElementById('detail-modal').classList.add('hidden');
     }
 
-    simSlider.addEventListener('input', updateSimOutput);
+    // Sinkronisasi dua arah input number ↔ slider.
+    simSlider.addEventListener('input', () => renderSim(simSlider.value, 'slider'));
+    simDaysInput.addEventListener('input', () => renderSim(simDaysInput.value, 'input'));
     document.getElementById('detail-modal-close').addEventListener('click', closeDetailModal);
     document.getElementById('detail-close').addEventListener('click', closeDetailModal);
 
@@ -772,8 +846,8 @@
       else if (editBtn) openGoalModal(goals.find((g) => g.id === editBtn.dataset.goalId));
       else if (delBtn) openConfirmDelete(delBtn.dataset.goalId);
       else if (detailBtn) {
-        const required = detailBtn.dataset.required ? Number(detailBtn.dataset.required) : null;
-        openDetailModal(detailBtn.dataset.goalId, required);
+        const simDays = detailBtn.dataset.simDays ? Number(detailBtn.dataset.simDays) : null;
+        openDetailModal(detailBtn.dataset.goalId, simDays);
       }
     });
 

@@ -114,3 +114,16 @@ export function simulateProjection(remaining, perDay) {
 export function formatProjectionDate(date) {
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+
+// Simulasi berbasis HARI: user pilih ingin selesai dalam berapa hari → hitung rupiah/hari.
+export function simulateByDays(remainingAmount, days) {
+  if (days <= 0) return { perDay: remainingAmount, valid: false };
+  const perDay = Math.ceil(remainingAmount / days);
+  return { perDay, valid: true };
+}
+
+// Apakah sebuah kontribusi tergolong "besar" (≥ 5 hari nabung dengan kecepatan normal)?
+export function isSignificantContribution(amount, avgPerDayBefore) {
+  if (!avgPerDayBefore || avgPerDayBefore <= 0) return false;
+  return amount >= avgPerDayBefore * 5;
+}
