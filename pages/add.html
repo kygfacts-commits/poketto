@@ -65,6 +65,11 @@
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+          <!-- Smart categorization: saran kategori dari riwayat transaksi -->
+          <div id="ie-cat-suggestion" class="hidden bg-lavender-light/30 border border-lavender-dark/20 rounded-xl p-2.5 flex items-center justify-between text-sm mb-3">
+            <span class="text-gray-700 min-w-0 truncate">💡 Mungkin kategori: <span id="ie-cat-suggestion-name" class="font-semibold text-lavender-dark"></span></span>
+            <button type="button" id="ie-cat-suggestion-apply" class="flex-shrink-0 ml-3 bg-[#8B5CF6] text-white rounded-full px-3 py-1 text-xs font-semibold hover:bg-lavender-dark transition-colors">Pakai</button>
+          </div>
           <div id="ie-category-grid" class="grid grid-cols-4 gap-3"></div>
         </div>
 
@@ -275,6 +280,7 @@
     import { createBill } from '../assets/js/bills.js';
     import { queueToast, showToast } from '../assets/js/toast.js';
     import { formatThousands, parseThousands, attachThousandsInput, validateAmount, shakeElement } from '../assets/js/utils.js';
+    import { getSuggestedCategory } from '../assets/js/smart-categorize.js';
 
     const pageTitle = document.getElementById('page-title');
     const tabButtons = document.querySelectorAll('.tab-btn');
@@ -416,6 +422,7 @@
 
     function setTab(tab) {
       currentTab = tab;
+      hideCatSuggestion(); // ganti tab → saran lama tidak relevan
 
       tabButtons.forEach((btn) => {
         btn.className = `${TAB_BASE_CLASSES} ${btn.dataset.tab === tab ? TAB_ACTIVE_CLASSES[tab] : TAB_INACTIVE_CLASSES}`;
@@ -472,6 +479,7 @@
         btn.addEventListener('click', () => {
           if (selectedCategoryId !== btn.dataset.id) selectedSubcategoryId = null;
           selectedCategoryId = btn.dataset.id;
+          hideCatSuggestion(); // pilih kategori manual → sembunyikan banner saran
           renderCategoryGrid(type);
         });
       });
@@ -575,6 +583,58 @@
         addTag(tagsInput.value);
         tagsInput.value = '';
       }
+    });
+
+    // ---------- Smart categorization (saran kategori dari deskripsi) ----------
+    const catSuggestionBanner = document.getElementById('ie-cat-suggestion');
+    const catSuggestionName = document.getElementById('ie-cat-suggestion-name');
+    const catSuggestionApply = document.getElementById('ie-cat-suggestion-apply');
+    let suggestedCategoryId = null;
+    let suggestTimer = null;
+
+    function hideCatSuggestion() {
+      suggestedCategoryId = null;
+      catSuggestionBanner.classList.add('hidden');
+    }
+
+    function showCatSuggestion(categoryId) {
+      const cat = (categoriesByType[currentTab] || []).find((c) => c.id === categoryId);
+      if (!cat) { hideCatSuggestion(); return; }
+      suggestedCategoryId = categoryId;
+      catSuggestionName.textContent = CATEGORY_SHORT_NAMES[cat.name] || cat.name;
+      catSuggestionBanner.classList.remove('hidden');
+    }
+
+    async function runSuggestion() {
+      const desc = ieDescriptionInput.value.trim();
+      if (!currentUser || desc.length < 3) { hideCatSuggestion(); return; }
+      try {
+        const result = await getSuggestedCategory(desc, currentUser.id, currentTab);
+        // Jangan tampilkan kalau tidak ada saran, atau saran = kategori yang sudah dipilih.
+        if (!result || result.categoryId === selectedCategoryId) { hideCatSuggestion(); return; }
+        showCatSuggestion(result.categoryId);
+      } catch (err) {
+        console.log('[add] Gagal memuat saran kategori:', err.message);
+        hideCatSuggestion();
+      }
+    }
+
+    // Debounce 600ms: sembunyikan banner lama lalu evaluasi ulang setelah user berhenti mengetik.
+    ieDescriptionInput.addEventListener('input', () => {
+      hideCatSuggestion();
+      if (suggestTimer) clearTimeout(suggestTimer);
+      suggestTimer = setTimeout(runSuggestion, 600);
+    });
+
+    catSuggestionApply.addEventListener('click', () => {
+      if (!suggestedCategoryId) return;
+      if (selectedCategoryId !== suggestedCategoryId) selectedSubcategoryId = null;
+      selectedCategoryId = suggestedCategoryId;
+      hideCatSuggestion();
+      renderCategoryGrid(currentTab);
+      // Scroll ke kategori yang baru dipilih bila perlu.
+      const selectedBtn = ieCategoryGrid.querySelector(`.category-option[data-id="${selectedCategoryId}"]`);
+      if (selectedBtn) selectedBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
     // ---------- Category picker modal ----------
