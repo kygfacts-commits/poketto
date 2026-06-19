@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poketto - Heatmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../assets/js/theme.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#8B5CF6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Poketto">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
+            peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
+            sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="min-h-screen bg-[#F8F7FF] font-sans">
+
+  <div id="sidebar-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <!-- Main content -->
+  <div class="md:ml-64 min-h-screen pb-24 md:pb-0">
+    <main class="px-4 py-5 md:px-10 md:py-8 max-w-5xl mx-auto">
+      <div class="flex items-start justify-between gap-3 mb-5">
+        <div>
+          <h1 class="text-2xl font-bold text-[#1E1B4B]">Heatmap Pengeluaran</h1>
+          <p class="text-sm text-gray-400 mt-0.5">Pola pengeluaran kamu sepanjang tahun</p>
+        </div>
+        <select id="year-select"
+          class="rounded-xl border border-[#DDD6FE] bg-white px-3 py-2 text-sm font-semibold text-[#1E1B4B] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]"></select>
+      </div>
+
+      <!-- Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Hari Paling Boros</p>
+          <p id="stat-top-amount" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-peach">Rp0</p>
+          <p id="stat-top-date" class="text-xs text-gray-400 mt-0.5">–</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Rata-rata Harian</p>
+          <p id="stat-avg" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-lavender-dark">Rp0</p>
+          <p class="text-xs text-gray-400 mt-0.5">per hari (÷365)</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
+          <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Tahun Ini</p>
+          <p id="stat-total" class="text-xl md:text-2xl font-extrabold tracking-tight truncate text-[#1E1B4B]">Rp0</p>
+          <p id="stat-count" class="text-xs text-gray-400 mt-0.5">0 transaksi</p>
+        </div>
+      </div>
+
+      <!-- Heatmap card -->
+      <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4 mb-6">
+        <div class="overflow-x-auto scrollbar-hide pb-1">
+          <div class="inline-block min-w-min">
+            <!-- Month labels -->
+            <div id="month-labels"
+              style="display:grid;grid-auto-flow:column;grid-auto-columns:12px;gap:2px;margin-left:24px;margin-bottom:4px;height:14px;"></div>
+            <div style="display:flex;gap:4px;">
+              <!-- Day-of-week labels -->
+              <div id="day-labels"
+                style="display:grid;grid-template-rows:repeat(7,12px);gap:2px;width:20px;font-size:9px;color:#9CA3AF;line-height:12px;text-align:right;"></div>
+              <!-- Cells grid -->
+              <div id="heatmap-grid"
+                style="display:grid;grid-template-rows:repeat(7,12px);grid-auto-flow:column;grid-auto-columns:12px;gap:2px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected day info (mobile-friendly, replaces floating tooltip) -->
+        <div id="cell-info" class="mt-4 flex items-center gap-3 bg-[#F8F7FF] rounded-xl px-4 py-3 border border-[#EDE9FE]">
+          <div class="w-9 h-9 rounded-lg bg-lavender-light flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-lavender-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div class="min-w-0">
+            <p id="cell-info-date" class="text-sm font-semibold text-[#1E1B4B] truncate">Ketuk salah satu kotak</p>
+            <p id="cell-info-amount" class="text-xs text-gray-400 truncate">untuk melihat pengeluaran hari itu</p>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex items-center justify-end gap-2 mt-4">
+          <span class="text-xs text-gray-400">Sedikit</span>
+          <span class="w-3 h-3 rounded-sm bg-gray-100"></span>
+          <span class="w-3 h-3 rounded-sm bg-lavender-light/30"></span>
+          <span class="w-3 h-3 rounded-sm bg-lavender-light/60"></span>
+          <span class="w-3 h-3 rounded-sm bg-lavender-dark/70"></span>
+          <span class="w-3 h-3 rounded-sm bg-lavender-dark"></span>
+          <span class="text-xs text-gray-400">Banyak</span>
+        </div>
+      </div>
+
+      <div id="empty-state" class="hidden bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-8 text-center text-gray-400 text-sm">
+        Belum ada pengeluaran di tahun ini
+      </div>
+    </main>
+  </div>
+
+  <div id="mobile-nav-container" class="opacity-0 transition-opacity duration-300"></div>
+
+  <script type="module">
+    import '../assets/js/auth-guard.js';
+    import { formatCurrency, formatDateWithDay } from '../assets/js/utils.js';
+    import { fetchAllTransactions, fetchProfileCurrency } from '../assets/js/home.js';
+
+    const MONTH_SHORT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    // Severity → kelas warna intensitas (urutan: kosong → paling boros)
+    const SEVERITY_CLASS = [
+      'bg-gray-100',
+      'bg-lavender-light/30',
+      'bg-lavender-light/60',
+      'bg-lavender-dark/70',
+      'bg-lavender-dark',
+    ];
+
+    let currentUser, currency = 'IDR', allTransactions = [];
+    let selectedYear = new Date().getFullYear();
+
+    function ymd(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // Bangun map total pengeluaran per tanggal untuk tahun terpilih (exclude transfer)
+    function buildDailyTotals(year) {
+      const totals = new Map();
+      for (const tx of allTransactions) {
+        if (tx.type !== 'expense' || tx.transfer_type) continue;
+        if (!tx.date || Number(tx.date.slice(0, 4)) !== year) continue;
+        const key = tx.date.slice(0, 10);
+        totals.set(key, (totals.get(key) || 0) + Number(tx.amount));
+        const c = countByDate.get(key) || 0;
+        countByDate.set(key, c + 1);
+      }
+      return totals;
+    }
+    let countByDate = new Map();
+
+    // Hitung threshold kuartil dari distribusi nilai aktual (hari dengan pengeluaran > 0)
+    function computeThresholds(values) {
+      if (values.length === 0) return null;
+      const sorted = [...values].sort((a, b) => a - b);
+      const quantile = (p) => {
+        const idx = (sorted.length - 1) * p;
+        const lo = Math.floor(idx), hi = Math.ceil(idx);
+        if (lo === hi) return sorted[lo];
+        return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+      };
+      return { q25: quantile(0.25), q50: quantile(0.5), q75: quantile(0.75) };
+    }
+
+    function severityFor(amount, th) {
+      if (!amount || amount <= 0 || !th) return 0;
+      if (amount <= th.q25) return 1;
+      if (amount <= th.q50) return 2;
+      if (amount <= th.q75) return 3;
+      return 4;
+    }
+
+    function readableDate(dateStr) {
+      try { return formatDateWithDay(dateStr); }
+      catch { return dateStr; }
+    }
+
+    function setCellInfo(dateStr, amount) {
+      document.getElementById('cell-info-date').textContent = readableDate(dateStr);
+      document.getElementById('cell-info-amount').textContent =
+        amount > 0 ? formatCurrency(amount, currency) : 'Tidak ada pengeluaran';
+    }
+
+    function render() {
+      countByDate = new Map();
+      const totals = buildDailyTotals(selectedYear);
+      const th = computeThresholds([...totals.values()].filter((v) => v > 0));
+
+      // ---- Summary ----
+      const grandTotal = [...totals.values()].reduce((s, v) => s + v, 0);
+      const txCount = [...countByDate.values()].reduce((s, v) => s + v, 0);
+      let topDate = null, topAmount = 0;
+      for (const [d, v] of totals) { if (v > topAmount) { topAmount = v; topDate = d; } }
+
+      document.getElementById('stat-total').textContent = formatCurrency(grandTotal, currency);
+      document.getElementById('stat-count').textContent = `${txCount} transaksi`;
+      document.getElementById('stat-avg').textContent = formatCurrency(Math.round(grandTotal / 365), currency);
+      document.getElementById('stat-top-amount').textContent = formatCurrency(topAmount, currency);
+      document.getElementById('stat-top-date').textContent = topDate ? readableDate(topDate) : '–';
+
+      document.getElementById('empty-state').classList.toggle('hidden', grandTotal > 0);
+
+      // ---- Grid geometry ----
+      const start = new Date(selectedYear, 0, 1);
+      const end = new Date(selectedYear, 11, 31);
+      const firstDOW = start.getDay(); // 0 = Minggu (baris atas, pola GitHub)
+      const totalDays = Math.round((end - start) / 86400000) + 1;
+      const totalCols = Math.floor((firstDOW + totalDays - 1) / 7) + 1;
+
+      // pos (col*7 + row) → tanggal
+      const dateByPos = new Map();
+      for (let i = 0; i < totalDays; i++) {
+        const d = new Date(selectedYear, 0, 1 + i);
+        dateByPos.set(firstDOW + i, ymd(d));
+      }
+
+      // ---- Cells (kolom-major: cocok dengan grid-auto-flow:column) ----
+      const gridEl = document.getElementById('heatmap-grid');
+      let html = '';
+      for (let col = 0; col < totalCols; col++) {
+        for (let row = 0; row < 7; row++) {
+          const pos = col * 7 + row;
+          const dateStr = dateByPos.get(pos);
+          if (!dateStr) {
+            html += '<div style="width:12px;height:12px;visibility:hidden;"></div>';
+            continue;
+          }
+          const amount = totals.get(dateStr) || 0;
+          const sev = severityFor(amount, th);
+          const tip = `${readableDate(dateStr)}: ${amount > 0 ? formatCurrency(amount, currency) : 'Rp0'}`;
+          html += `<div class="rounded-sm cursor-pointer ${SEVERITY_CLASS[sev]}" style="width:12px;height:12px;"
+            data-date="${dateStr}" data-amount="${amount}" title="${tip}"></div>`;
+        }
+      }
+      gridEl.innerHTML = html;
+
+      // ---- Month labels ----
+      const monthLabelsEl = document.getElementById('month-labels');
+      let mHtml = '';
+      let lastCol = -2;
+      for (let m = 0; m < 12; m++) {
+        const dayIndex = Math.round((new Date(selectedYear, m, 1) - start) / 86400000);
+        const col = Math.floor((firstDOW + dayIndex) / 7);
+        if (col <= lastCol) continue; // hindari label bertumpuk
+        lastCol = col;
+        mHtml += `<span style="grid-column:${col + 1};font-size:10px;color:#9CA3AF;white-space:nowrap;">${MONTH_SHORT[m]}</span>`;
+      }
+      monthLabelsEl.innerHTML = mHtml;
+
+      // ---- Day-of-week labels (Sen / Rab / Jum, pola GitHub) ----
+      const dayLabelsEl = document.getElementById('day-labels');
+      dayLabelsEl.innerHTML = [
+        ['Sen', 2], ['Rab', 4], ['Jum', 6],
+      ].map(([label, gridRow]) => `<span style="grid-row:${gridRow};">${label}</span>`).join('');
+
+      // reset info card ke keadaan default
+      document.getElementById('cell-info-date').textContent = 'Ketuk salah satu kotak';
+      document.getElementById('cell-info-amount').textContent = 'untuk melihat pengeluaran hari itu';
+    }
+
+    // Tap/klik cell → tampilkan info di card (mobile-friendly)
+    document.getElementById('heatmap-grid').addEventListener('click', (e) => {
+      const cell = e.target.closest('[data-date]');
+      if (!cell) return;
+      setCellInfo(cell.dataset.date, Number(cell.dataset.amount));
+    });
+
+    document.getElementById('year-select').addEventListener('change', (e) => {
+      selectedYear = Number(e.target.value);
+      render();
+    });
+
+    function buildYearOptions() {
+      const sel = document.getElementById('year-select');
+      const now = new Date().getFullYear();
+      sel.innerHTML = '';
+      for (let y = now; y >= now - 2; y--) {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        sel.appendChild(opt);
+      }
+      sel.value = String(selectedYear);
+    }
+
+    window.addEventListener('schatz:auth-ready', async (e) => {
+      currentUser = e.detail.user;
+      buildYearOptions();
+      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
+      try { allTransactions = await fetchAllTransactions(currentUser.id); }
+      catch (err) { console.log('[heatmap] Gagal memuat transaksi:', err.message); }
+      render();
+    });
+  </script>
+  <script type="module" src="../assets/js/nav-loader.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
