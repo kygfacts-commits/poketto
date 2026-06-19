@@ -37,46 +37,69 @@ export function buildContributions(goal, transactions = []) {
   return [];
 }
 
-// goal = { target_amount, current_amount, created_at }
+// Lengkapi hasil proyeksi dengan info deadline (target_date) bila goal punya.
+// Membandingkan kecepatan aktual (avgPerDay) dengan yang dibutuhkan agar tepat waktu.
+function attachDeadline(base, goal) {
+  if (!goal.target_date) return { ...base, hasDeadline: false };
+
+  const today = startOfToday();
+  const deadline = parseDate(goal.target_date);
+  const sisaHariDeadline = Math.ceil((deadline - today) / MS_PER_DAY);
+  const sisaTarget = (Number(goal.target_amount) || 0) - (Number(goal.current_amount) || 0);
+  // Berapa yang HARUS ditabung per hari untuk capai deadline.
+  const requiredPerDay = sisaHariDeadline > 0 ? Math.ceil(sisaTarget / sisaHariDeadline) : sisaTarget;
+  const avgPerDay = base.avgPerDay || 0;
+
+  let deadlineStatus;
+  if (base.status === 'completed') deadlineStatus = 'completed';
+  else if (base.status === 'no_data') deadlineStatus = 'no_data';
+  else if (avgPerDay >= requiredPerDay) deadlineStatus = 'on_track';
+  else deadlineStatus = 'behind';
+
+  return { ...base, hasDeadline: true, sisaHariDeadline, requiredPerDay, deadlineStatus };
+}
+
+// goal = { target_amount, current_amount, created_at, target_date? }
 // contributions = array riwayat "Tambah Dana" (terurut by date)
 export function calculateProjection(goal, contributions) {
   const target = Number(goal.target_amount) || 0;
   const current = Number(goal.current_amount) || 0;
+  let base;
 
   // 1. Tidak ada data kontribusi.
   if (!contributions || contributions.length === 0) {
-    return { status: 'no_data', message: 'Mulai nabung untuk goal ini' };
+    base = { status: 'no_data', message: 'Mulai nabung untuk goal ini' };
+  } else {
+    // 2. Rata-rata kontribusi per hari sejak kontribusi pertama.
+    const sorted = [...contributions].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    const firstDate = parseDate(sorted[0].date);
+    const today = startOfToday();
+    const totalDays = Math.max(1, Math.floor((today - firstDate) / MS_PER_DAY));
+    const avgPerDay = current / totalDays;
+    const sisaTarget = target - current;
+
+    if (avgPerDay <= 0) {
+      // 3. Stagnan.
+      base = { status: 'stalled', message: 'Belum ada progress dalam periode ini' };
+    } else if (sisaTarget <= 0) {
+      // 4. Sudah tercapai.
+      base = { status: 'completed' };
+    } else {
+      // 5. Estimasi.
+      const estimasiHari = Math.ceil(sisaTarget / avgPerDay);
+      const estimasiTanggal = new Date(today.getTime() + estimasiHari * MS_PER_DAY);
+
+      // 6. Kategori kecepatan.
+      let status, message;
+      if (estimasiHari <= 30) { status = 'fast'; message = 'Sebentar lagi! 🚀'; }
+      else if (estimasiHari <= 180) { status = 'normal'; message = 'Sesuai jalur 👍'; }
+      else { status = 'slow'; message = 'Perlu percepat nabung 🐢'; }
+
+      base = { status, estimasiTanggal, estimasiHari, avgPerDay, message };
+    }
   }
 
-  // 2. Rata-rata kontribusi per hari sejak kontribusi pertama.
-  const sorted = [...contributions].sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  const firstDate = parseDate(sorted[0].date);
-  const today = startOfToday();
-  const totalDays = Math.max(1, Math.floor((today - firstDate) / MS_PER_DAY));
-  const avgPerDay = current / totalDays;
-
-  // 3. Stagnan.
-  if (avgPerDay <= 0) {
-    return { status: 'stalled', message: 'Belum ada progress dalam periode ini' };
-  }
-
-  // 4. Sudah tercapai.
-  const sisaTarget = target - current;
-  if (sisaTarget <= 0) {
-    return { status: 'completed' };
-  }
-
-  // 5. Estimasi.
-  const estimasiHari = Math.ceil(sisaTarget / avgPerDay);
-  const estimasiTanggal = new Date(today.getTime() + estimasiHari * MS_PER_DAY);
-
-  // 6. Kategori kecepatan.
-  let status, message;
-  if (estimasiHari <= 30) { status = 'fast'; message = 'Sebentar lagi! 🚀'; }
-  else if (estimasiHari <= 180) { status = 'normal'; message = 'Sesuai jalur 👍'; }
-  else { status = 'slow'; message = 'Perlu percepat nabung 🐢'; }
-
-  return { status, estimasiTanggal, estimasiHari, avgPerDay, message };
+  return attachDeadline(base, goal);
 }
 
 // Simulasi "apa jika nabung Rp X/hari". Mengembalikan { days, date } atau null.

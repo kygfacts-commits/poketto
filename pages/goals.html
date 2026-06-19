@@ -25,7 +25,7 @@
             lavender: { light: '#EDE9FE', DEFAULT: '#A78BFA', dark: '#8B5CF6', darker: '#7C3AED' },
             peach: { light: '#FED7AA', DEFAULT: '#FB923C' },
             sky: { light: '#BAE6FD', DEFAULT: '#38BDF8' },
-            mint: { light: '#A7F3D0', DEFAULT: '#34D399' },
+            mint: { light: '#A7F3D0', DEFAULT: '#34D399', dark: '#059669' },
           }
         }
       }
@@ -227,6 +227,7 @@
 
       <!-- Simulasi -->
       <div class="bg-[#F8F7FF] rounded-xl p-4 border border-[#EDE9FE]">
+        <p id="detail-required" class="hidden text-sm text-gray-500 mb-2"></p>
         <div class="flex items-center justify-between mb-2">
           <label for="sim-slider" class="text-sm font-medium text-gray-700">Simulasi nabung per hari</label>
           <span id="sim-perday-label" class="text-sm font-bold text-lavender-dark">Rp0</span>
@@ -305,21 +306,22 @@
       return GOAL_PALETTES[hash % GOAL_PALETTES.length];
     }
 
-    function renderDateBadge(dateStr) {
-      if (!dateStr) return '';
-      const [y, m, d] = dateStr.split('-').map(Number);
-      const target = new Date(y, m - 1, d);
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const days = Math.round((target - today) / 86400000);
-      if (days > 0) return `<span class="text-xs text-gray-400">${days} hari lagi</span>`;
-      if (days === 0) return `<span class="text-xs text-orange-500 font-medium">Hari ini!</span>`;
-      return `<span class="text-xs text-red-500 font-medium">Terlambat ${Math.abs(days)} hari</span>`;
+    // Format string tanggal goal ('YYYY-MM-DD') ke "DD MMM YYYY".
+    function formatGoalDate(dateStr) {
+      const [y, m, d] = String(dateStr).slice(0, 10).split('-').map(Number);
+      return formatProjectionDate(new Date(y, (m || 1) - 1, d || 1));
     }
 
     // Section "Estimasi" di bawah progress bar (hanya goal aktif).
     function renderEstimationSection(goal) {
       const projection = calculateProjection(goal, buildContributions(goal, allTransactions));
 
+      // ===== Goal PUNYA deadline (target_date): insight gabungan =====
+      if (projection.hasDeadline) {
+        return renderDeadlineInsight(goal, projection);
+      }
+
+      // ===== Goal TANPA deadline: estimasi murni dari kecepatan nabung =====
       if (projection.status === 'completed') return '';
 
       if (projection.status === 'no_data') {
@@ -350,6 +352,40 @@
       </div>`;
     }
 
+    // Insight terpadu untuk goal dengan deadline: bandingkan kecepatan vs target waktu.
+    function renderDeadlineInsight(goal, projection) {
+      const deadlineDate = formatGoalDate(goal.target_date);
+      const avgFmt = formatCurrency(Math.round(projection.avgPerDay || 0), currency);
+      const requiredFmt = formatCurrency(Math.max(0, projection.requiredPerDay), currency);
+
+      let boxStyle, line2, line3 = '';
+      switch (projection.deadlineStatus) {
+        case 'completed':
+          boxStyle = 'bg-mint-light/30 border-mint-dark/20';
+          line2 = `<p class="text-xs text-mint font-medium mt-1">🎉 Target sudah tercapai!</p>`;
+          break;
+        case 'on_track':
+          boxStyle = 'bg-mint-light/30 border-mint-dark/20';
+          line2 = `<p class="text-xs text-mint font-medium mt-1 leading-relaxed">✅ Sesuai target! Dengan kecepatan saat ini (${avgFmt}/hari), tercapai ${formatProjectionDate(projection.estimasiTanggal)} — lebih cepat dari deadline</p>`;
+          break;
+        case 'no_data':
+          boxStyle = 'bg-gray-50 border-gray-100';
+          line2 = `<p class="text-xs text-gray-400 mt-1 leading-relaxed">Mulai nabung untuk melihat apakah kamu on track mencapai target ${deadlineDate}</p>`;
+          break;
+        default: // 'behind'
+          boxStyle = 'bg-peach-light/30 border-peach/20';
+          line2 = `<p class="text-xs text-peach font-medium mt-1 leading-relaxed">⚠️ Perlu percepat! Untuk capai deadline ${deadlineDate}, kamu perlu nabung ${requiredFmt}/hari (saat ini baru ${avgFmt}/hari)</p>`;
+          line3 = `<button type="button" data-goal-id="${goal.id}" data-required="${Math.max(0, projection.requiredPerDay)}" class="detail-goal-btn mt-2 inline-flex items-center gap-1 text-xs font-semibold text-peach hover:underline">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>Lihat Simulasi
+          </button>`;
+      }
+
+      return `<div class="mt-3 rounded-xl border px-3 py-2.5 ${boxStyle}">
+        <p class="text-sm font-medium text-gray-700">🎯 Target: ${deadlineDate}</p>
+        ${line2}${line3}
+      </div>`;
+    }
+
     function renderGoalCard(goal, palette, isCompleted) {
       const circ = 2 * Math.PI * 32;
       const pct = Number(goal.target_amount) > 0
@@ -357,7 +393,6 @@
         : 0;
       const offset = circ - (pct / 100) * circ;
 
-      const dateBadge = !isCompleted ? renderDateBadge(goal.target_date) : '';
       const completedBadge = isCompleted
         ? `<span class="inline-flex items-center gap-1 text-xs font-semibold text-[#059669] bg-[#A7F3D0] px-2 py-0.5 rounded-full mt-0.5">✓ Tercapai</span>`
         : '';
@@ -383,7 +418,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-gray-800 truncate">${goal.name}</p>
-            ${completedBadge}${dateBadge}
+            ${completedBadge}
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
             ${actionBtns}
@@ -679,7 +714,8 @@
       outEl.innerHTML = `Dengan <span class="font-semibold text-[#1E1B4B]">${formatCurrency(perDay, currency)}/hari</span>, goal tercapai dalam <span class="font-semibold text-lavender-dark">${sim.days} hari</span> (sekitar <span class="font-semibold text-lavender-dark">${formatProjectionDate(sim.date)}</span>).`;
     }
 
-    function openDetailModal(goalId) {
+    // requiredOverride: jika diberikan (dari status 'behind'), slider default = nominal yang dibutuhkan.
+    function openDetailModal(goalId, requiredOverride = null) {
       const goal = goals.find((g) => g.id === goalId);
       if (!goal) return;
 
@@ -694,14 +730,25 @@
       document.getElementById('detail-progress-bar').style.width = `${pct.toFixed(1)}%`;
       document.getElementById('detail-progress-label').textContent = `${Math.round(pct)}%`;
 
-      // Default slider = avgPerDay yang dihitung; fallback bila belum ada data.
       const projection = calculateProjection(goal, buildContributions(goal, allTransactions));
+
+      // Baris info nominal yang dibutuhkan agar tepat waktu (hanya jika ada deadline).
+      const reqEl = document.getElementById('detail-required');
+      if (projection.hasDeadline) {
+        reqEl.textContent = `Untuk capai target tepat waktu: ${formatCurrency(Math.max(0, projection.requiredPerDay), currency)}/hari`;
+        reqEl.classList.remove('hidden');
+      } else {
+        reqEl.classList.add('hidden');
+      }
+
+      // Default slider: requiredPerDay (jika dibuka dari "Lihat Simulasi") atau avgPerDay.
       const base = Math.max(1000, Math.round(projection.avgPerDay || (detailRemaining / 180) || 1000));
-      const max = Math.max(base * 4, detailRemaining, 2000);
+      const defaultVal = (typeof requiredOverride === 'number' && requiredOverride > 0) ? requiredOverride : base;
+      const max = Math.max(base * 4, detailRemaining, defaultVal, 2000);
       simSlider.min = 1000;
       simSlider.max = max;
       simSlider.step = 1000;
-      simSlider.value = Math.min(base, max);
+      simSlider.value = Math.min(defaultVal, max);
 
       updateSimOutput();
       document.getElementById('detail-modal').classList.remove('hidden');
@@ -724,7 +771,10 @@
       if (addBtn) openFundsModal(addBtn.dataset.goalId);
       else if (editBtn) openGoalModal(goals.find((g) => g.id === editBtn.dataset.goalId));
       else if (delBtn) openConfirmDelete(delBtn.dataset.goalId);
-      else if (detailBtn) openDetailModal(detailBtn.dataset.goalId);
+      else if (detailBtn) {
+        const required = detailBtn.dataset.required ? Number(detailBtn.dataset.required) : null;
+        openDetailModal(detailBtn.dataset.goalId, required);
+      }
     });
 
     document.getElementById('completed-list').addEventListener('click', (e) => {
