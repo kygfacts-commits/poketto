@@ -240,7 +240,15 @@
         <div id="sim-badge" class="hidden mt-3 rounded-lg px-3 py-2 text-xs font-medium leading-relaxed"></div>
       </div>
 
-      <p class="text-xs text-gray-400 italic mt-3">* Ini hanya simulasi, tidak mengubah target tanggal goal kamu</p>
+      <!-- Terapkan hasil simulasi sebagai target_date -->
+      <button type="button" id="sim-apply-btn" class="hidden w-full mt-3 inline-flex items-center justify-center gap-2 border-2 border-[#8B5CF6] text-[#8B5CF6] rounded-2xl py-2.5 font-semibold text-sm hover:bg-lavender-light/30 transition-colors">
+        <i data-lucide="calendar-check" class="w-4 h-4"></i>Terapkan sebagai Target Baru
+      </button>
+      <button type="button" id="sim-set-target-btn" class="hidden w-full mt-3 inline-flex items-center justify-center gap-2 border-2 border-[#8B5CF6] text-[#8B5CF6] rounded-2xl py-2.5 font-semibold text-sm hover:bg-lavender-light/30 transition-colors">
+        <i data-lucide="calendar-check" class="w-4 h-4"></i>Tetapkan Target Tanggal
+      </button>
+
+      <p id="sim-disclaimer" class="text-xs text-gray-400 italic mt-3">* Ini hanya simulasi, tidak mengubah target tanggal goal kamu</p>
 
       <button type="button" id="detail-close" class="w-full mt-4 rounded-xl bg-lavender hover:bg-lavender-dark text-white font-semibold py-2.5 text-sm transition-colors">
         Tutup
@@ -266,6 +274,31 @@
         <button type="button" id="confirm-delete"
           class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 text-sm transition-colors">
           Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apply target modal (konfirmasi ubah target_date dari simulasi) -->
+  <div id="apply-target-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
+      <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-lavender-light flex items-center justify-center">
+        <i data-lucide="calendar-check" class="w-6 h-6 text-lavender-dark"></i>
+      </div>
+      <h2 class="text-lg font-bold text-[#1E1B4B] mb-1">Ubah Target Deadline?</h2>
+      <p class="text-sm text-gray-500 mb-6">
+        Target goal "<span id="apply-goal-name" class="font-medium text-gray-700"></span>" akan diubah dari
+        <span id="apply-old-date" class="font-medium text-gray-700"></span> menjadi
+        <span id="apply-new-date" class="font-medium text-lavender-dark"></span>.
+      </p>
+      <div class="flex gap-3">
+        <button type="button" id="apply-cancel"
+          class="flex-1 rounded-xl border border-gray-200 text-gray-600 font-semibold py-2.5 text-sm hover:bg-gray-50 transition-colors">
+          Batal
+        </button>
+        <button type="button" id="apply-confirm"
+          class="flex-1 rounded-xl bg-[#8B5CF6] hover:bg-lavender-dark text-white font-semibold py-2.5 text-sm transition-colors">
+          Ya, Ubah
         </button>
       </div>
     </div>
@@ -305,6 +338,9 @@
     let selectedIcon = 'target';
     let detailRemaining = 0;   // sisa target goal yang sedang disimulasikan
     let detailAvgPerDay = 0;   // kecepatan nabung aktual goal (untuk badge perbandingan)
+    // State untuk "Terapkan sebagai Target Baru"
+    let detailGoalId = null, detailSisaHari = null, detailHasDeadline = false;
+    let detailTargetDateOld = null, detailCurrentDays = 1, pendingApplyDate = null;
 
     // --- Helpers ---
     function getPalette(goalId) {
@@ -734,9 +770,32 @@
     const simSlider = document.getElementById('sim-slider');
     const simDaysInput = document.getElementById('sim-days-input');
 
+    // Atur visibilitas tombol "Terapkan sebagai Target Baru" / "Tetapkan Target Tanggal".
+    function updateApplyButtons() {
+      const applyBtn = document.getElementById('sim-apply-btn');
+      const setBtn = document.getElementById('sim-set-target-btn');
+
+      // Goal tercapai: tidak relevan mengubah deadline.
+      if (detailRemaining <= 0) {
+        applyBtn.classList.add('hidden');
+        setBtn.classList.add('hidden');
+        return;
+      }
+
+      if (detailHasDeadline) {
+        setBtn.classList.add('hidden');
+        // Hanya muncul jika hari simulasi BERBEDA dari sisa hari deadline saat ini.
+        applyBtn.classList.toggle('hidden', detailCurrentDays === detailSisaHari);
+      } else {
+        applyBtn.classList.add('hidden');
+        setBtn.classList.remove('hidden');
+      }
+    }
+
     // Render output simulasi untuk N hari, lalu sinkronkan kedua kontrol.
     function renderSim(days, source) {
       days = Math.max(1, Math.floor(Number(days) || 1));
+      detailCurrentDays = days;
 
       // Sinkronisasi dua arah tanpa memicu loop event.
       if (source !== 'input' && Number(simDaysInput.value) !== days) simDaysInput.value = days;
@@ -749,6 +808,7 @@
       if (detailRemaining <= 0) {
         outEl.innerHTML = 'Goal ini sudah tercapai. 🎉';
         badgeEl.classList.add('hidden');
+        updateApplyButtons();
         return;
       }
 
@@ -775,6 +835,8 @@
         badgeEl.className = 'mt-3 rounded-lg px-3 py-2 text-xs font-medium leading-relaxed bg-sky-light/40 text-sky-600';
         badgeEl.textContent = 'ℹ️ Belum ada kecepatan rata-rata untuk dibandingkan';
       }
+
+      updateApplyButtons();
     }
 
     // daysOverride: jika diberikan (dari "Lihat Simulasi" status behind), default = sisaHariDeadline.
@@ -795,6 +857,17 @@
 
       const projection = calculateProjection(goal, buildContributions(goal, allTransactions));
       detailAvgPerDay = projection.avgPerDay || 0;
+
+      // State untuk fitur "Terapkan sebagai Target Baru".
+      detailGoalId = goal.id;
+      detailHasDeadline = !!goal.target_date;
+      detailTargetDateOld = goal.target_date || null;
+      detailSisaHari = projection.hasDeadline ? projection.sisaHariDeadline : null;
+
+      // Reset disclaimer ke kondisi default.
+      const discEl = document.getElementById('sim-disclaimer');
+      discEl.className = 'text-xs text-gray-400 italic mt-3';
+      discEl.textContent = '* Ini hanya simulasi, tidak mengubah target tanggal goal kamu';
 
       // Baris info nominal yang dibutuhkan agar tepat waktu (hanya jika ada deadline).
       const reqEl = document.getElementById('detail-required');
@@ -835,6 +908,66 @@
     simDaysInput.addEventListener('input', () => renderSim(simDaysInput.value, 'input'));
     document.getElementById('detail-modal-close').addEventListener('click', closeDetailModal);
     document.getElementById('detail-close').addEventListener('click', closeDetailModal);
+
+    // --- Terapkan hasil simulasi sebagai target_date ---
+    function toISODateLocal(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function openApplyTargetModal() {
+      const goal = goals.find((g) => g.id === detailGoalId);
+      if (!goal) return;
+
+      const newDate = new Date(); newDate.setHours(0, 0, 0, 0);
+      newDate.setDate(newDate.getDate() + detailCurrentDays);
+      pendingApplyDate = toISODateLocal(newDate);
+
+      document.getElementById('apply-goal-name').textContent = goal.name;
+      document.getElementById('apply-old-date').textContent = detailTargetDateOld ? formatGoalDate(detailTargetDateOld) : 'belum ada target';
+      document.getElementById('apply-new-date').textContent = formatProjectionDate(newDate);
+      document.getElementById('apply-target-modal').classList.remove('hidden');
+    }
+
+    function closeApplyTargetModal() {
+      document.getElementById('apply-target-modal').classList.add('hidden');
+      pendingApplyDate = null;
+    }
+
+    document.getElementById('sim-apply-btn').addEventListener('click', openApplyTargetModal);
+    document.getElementById('sim-set-target-btn').addEventListener('click', openApplyTargetModal);
+    document.getElementById('apply-cancel').addEventListener('click', closeApplyTargetModal);
+
+    document.getElementById('apply-confirm').addEventListener('click', async () => {
+      if (!pendingApplyDate || !detailGoalId) return;
+      const btn = document.getElementById('apply-confirm');
+      const goalId = detailGoalId;
+      const appliedDate = pendingApplyDate;
+      btn.disabled = true; btn.textContent = 'Menyimpan…';
+
+      try {
+        await updateGoal(goalId, { target_date: appliedDate });
+
+        // Tutup modal konfirmasi; modal Detail & Simulasi tetap terbuka.
+        document.getElementById('apply-target-modal').classList.add('hidden');
+        pendingApplyDate = null;
+
+        const newDateFmt = formatProjectionDate(new Date(`${appliedDate}T00:00:00`));
+        showToast(`Target deadline berhasil diubah ke ${newDateFmt}`);
+
+        // Pesan sukses sementara di area disclaimer, lalu refresh data + modal.
+        const discEl = document.getElementById('sim-disclaimer');
+        discEl.className = 'text-xs text-emerald-600 font-medium mt-3';
+        discEl.textContent = '✅ Target berhasil diubah!';
+
+        await loadGoals(); // re-render card goal di list utama
+        setTimeout(() => openDetailModal(goalId), 900); // re-render modal dengan data baru
+      } catch (err) {
+        // Jangan tutup modal konfirmasi — biarkan user retry/batal.
+        showToast('Gagal mengubah target deadline', 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Ya, Ubah';
+      }
+    });
 
     // --- Event delegation for goal cards ---
     document.getElementById('goals-list').addEventListener('click', (e) => {
