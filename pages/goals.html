@@ -198,6 +198,50 @@
     </div>
   </div>
 
+  <!-- Detail & Simulasi modal -->
+  <div id="detail-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6" style="max-height:90vh;overflow-y:auto">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-[#1E1B4B]">Detail &amp; Simulasi Goal</h2>
+        <button id="detail-modal-close" class="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Info goal -->
+      <p id="detail-name" class="text-base font-semibold text-lavender-dark mb-3"></p>
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-400">Target</span>
+          <span id="detail-target" class="font-semibold text-[#1E1B4B]">Rp0</span>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-400">Terkumpul</span>
+          <span id="detail-current" class="font-semibold text-mint">Rp0</span>
+        </div>
+        <div class="w-full bg-[#EDE9FE] rounded-full h-2 mt-1">
+          <div id="detail-progress-bar" class="h-2 rounded-full bg-lavender-dark transition-all" style="width:0%"></div>
+        </div>
+        <p id="detail-progress-label" class="text-xs text-gray-400 text-right">0%</p>
+      </div>
+
+      <!-- Simulasi -->
+      <div class="bg-[#F8F7FF] rounded-xl p-4 border border-[#EDE9FE]">
+        <div class="flex items-center justify-between mb-2">
+          <label for="sim-slider" class="text-sm font-medium text-gray-700">Simulasi nabung per hari</label>
+          <span id="sim-perday-label" class="text-sm font-bold text-lavender-dark">Rp0</span>
+        </div>
+        <input type="range" id="sim-slider" min="1000" max="100000" step="1000" value="1000"
+          class="w-full accent-lavender-dark cursor-pointer">
+        <p id="sim-output" class="text-sm text-gray-600 mt-3 leading-relaxed"></p>
+      </div>
+
+      <button type="button" id="detail-close" class="w-full mt-5 rounded-xl bg-lavender hover:bg-lavender-dark text-white font-semibold py-2.5 text-sm transition-colors">
+        Tutup
+      </button>
+    </div>
+  </div>
+
   <!-- Confirm delete modal -->
   <div id="confirm-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl shadow-lg w-full max-w-sm p-6 text-center">
@@ -229,7 +273,8 @@
     import { createTransaction } from '../assets/js/add.js';
     import { showToast } from '../assets/js/toast.js';
     import { fetchGoals, createGoal, updateGoal, deleteGoal } from '../assets/js/goals.js';
-    import { fetchProfileCurrency } from '../assets/js/home.js';
+    import { fetchProfileCurrency, fetchAllTransactions } from '../assets/js/home.js';
+    import { buildContributions, calculateProjection, simulateProjection, formatProjectionDate } from '../assets/js/goal-projection.js';
 
     // --- Constants ---
 
@@ -249,9 +294,10 @@
     ];
 
     // --- State ---
-    let currentUser, currency = 'IDR', accounts = [], goals = [];
+    let currentUser, currency = 'IDR', accounts = [], goals = [], allTransactions = [];
     let editingGoalId = null, fundsTargetGoalId = null, pendingDeleteGoalId = null;
     let selectedIcon = 'target';
+    let detailRemaining = 0; // sisa target goal yang sedang disimulasikan
 
     // --- Helpers ---
     function getPalette(goalId) {
@@ -268,6 +314,40 @@
       if (days > 0) return `<span class="text-xs text-gray-400">${days} hari lagi</span>`;
       if (days === 0) return `<span class="text-xs text-orange-500 font-medium">Hari ini!</span>`;
       return `<span class="text-xs text-red-500 font-medium">Terlambat ${Math.abs(days)} hari</span>`;
+    }
+
+    // Section "Estimasi" di bawah progress bar (hanya goal aktif).
+    function renderEstimationSection(goal) {
+      const projection = calculateProjection(goal, buildContributions(goal, allTransactions));
+
+      if (projection.status === 'completed') return '';
+
+      if (projection.status === 'no_data') {
+        return `<p class="text-xs text-gray-400 mt-3">Mulai nabung untuk melihat estimasi</p>`;
+      }
+
+      if (projection.status === 'stalled') {
+        return `<div class="mt-3 flex items-center justify-between gap-2 bg-peach-light/30 border border-peach/30 rounded-xl px-3 py-2">
+          <p class="text-xs text-peach font-medium">⚠️ Belum ada progress baru-baru ini</p>
+          <button type="button" data-goal-id="${goal.id}" class="add-funds-btn flex-shrink-0 inline-flex items-center gap-1 bg-peach hover:bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+            <i data-lucide="plus" class="w-3 h-3"></i>Tambah Dana
+          </button>
+        </div>`;
+      }
+
+      // fast / normal / slow
+      const msgColor = { fast: 'text-mint', normal: 'text-sky-600', slow: 'text-peach' }[projection.status];
+      const boxStyle = {
+        fast: 'bg-mint-light/30 border-mint/30',
+        normal: 'bg-sky-light/30 border-sky/30',
+        slow: 'bg-peach-light/30 border-peach/30',
+      }[projection.status];
+
+      return `<div class="mt-3 rounded-xl border px-3 py-2.5 ${boxStyle}">
+        <p class="text-sm font-medium text-gray-700">📅 Estimasi tercapai: ${formatProjectionDate(projection.estimasiTanggal)}</p>
+        <p class="text-xs ${msgColor} font-medium mt-0.5">${projection.message}</p>
+        <p class="text-xs text-gray-400 mt-0.5">Rata-rata: ${formatCurrency(Math.round(projection.avgPerDay), currency)}/hari</p>
+      </div>`;
     }
 
     function renderGoalCard(goal, palette, isCompleted) {
@@ -327,6 +407,10 @@
         <div class="w-full bg-[#EDE9FE] rounded-full h-2">
           <div class="h-2 rounded-full transition-all" style="width:${pct.toFixed(1)}%;background-color:${palette.ring}"></div>
         </div>
+        ${!isCompleted ? renderEstimationSection(goal) + `
+        <button type="button" data-goal-id="${goal.id}" class="detail-goal-btn w-full mt-3 inline-flex items-center justify-center gap-1 text-xs font-semibold text-lavender-dark hover:bg-lavender-light/40 rounded-lg py-2 transition-colors">
+          <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>Lihat Detail &amp; Simulasi
+        </button>` : ''}
       </div>`;
     }
 
@@ -580,14 +664,67 @@
       }
     });
 
+    // --- Modal: Detail & Simulasi ---
+    const simSlider = document.getElementById('sim-slider');
+
+    function updateSimOutput() {
+      const perDay = Number(simSlider.value);
+      document.getElementById('sim-perday-label').textContent = `${formatCurrency(perDay, currency)}`;
+      const outEl = document.getElementById('sim-output');
+      const sim = simulateProjection(detailRemaining, perDay);
+      if (!sim) {
+        outEl.textContent = 'Goal ini sudah tercapai. 🎉';
+        return;
+      }
+      outEl.innerHTML = `Dengan <span class="font-semibold text-[#1E1B4B]">${formatCurrency(perDay, currency)}/hari</span>, goal tercapai dalam <span class="font-semibold text-lavender-dark">${sim.days} hari</span> (sekitar <span class="font-semibold text-lavender-dark">${formatProjectionDate(sim.date)}</span>).`;
+    }
+
+    function openDetailModal(goalId) {
+      const goal = goals.find((g) => g.id === goalId);
+      if (!goal) return;
+
+      const target = Number(goal.target_amount);
+      const current = Number(goal.current_amount);
+      const pct = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+      detailRemaining = Math.max(0, target - current);
+
+      document.getElementById('detail-name').textContent = goal.name;
+      document.getElementById('detail-target').textContent = formatCurrency(target, currency);
+      document.getElementById('detail-current').textContent = formatCurrency(current, currency);
+      document.getElementById('detail-progress-bar').style.width = `${pct.toFixed(1)}%`;
+      document.getElementById('detail-progress-label').textContent = `${Math.round(pct)}%`;
+
+      // Default slider = avgPerDay yang dihitung; fallback bila belum ada data.
+      const projection = calculateProjection(goal, buildContributions(goal, allTransactions));
+      const base = Math.max(1000, Math.round(projection.avgPerDay || (detailRemaining / 180) || 1000));
+      const max = Math.max(base * 4, detailRemaining, 2000);
+      simSlider.min = 1000;
+      simSlider.max = max;
+      simSlider.step = 1000;
+      simSlider.value = Math.min(base, max);
+
+      updateSimOutput();
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    simSlider.addEventListener('input', updateSimOutput);
+    document.getElementById('detail-modal-close').addEventListener('click', closeDetailModal);
+    document.getElementById('detail-close').addEventListener('click', closeDetailModal);
+
     // --- Event delegation for goal cards ---
     document.getElementById('goals-list').addEventListener('click', (e) => {
       const addBtn = e.target.closest('.add-funds-btn');
       const editBtn = e.target.closest('.edit-goal-btn');
       const delBtn = e.target.closest('.delete-goal-btn');
+      const detailBtn = e.target.closest('.detail-goal-btn');
       if (addBtn) openFundsModal(addBtn.dataset.goalId);
       else if (editBtn) openGoalModal(goals.find((g) => g.id === editBtn.dataset.goalId));
       else if (delBtn) openConfirmDelete(delBtn.dataset.goalId);
+      else if (detailBtn) openDetailModal(detailBtn.dataset.goalId);
     });
 
     document.getElementById('completed-list').addEventListener('click', (e) => {
@@ -602,6 +739,7 @@
     // --- Data loading ---
     async function loadGoals() {
       goals = await fetchGoals(currentUser.id);
+      try { allTransactions = await fetchAllTransactions(currentUser.id); } catch { allTransactions = []; }
       renderGoals();
     }
 
