@@ -47,7 +47,7 @@
       <!-- Warning -->
       <div class="rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 p-4 text-sm mb-4 flex items-start gap-3">
         <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
-        <span>Restore akan menimpa data yang sudah ada. Pastikan file backup valid.</span>
+        <span>Restore menggabungkan data: baris dengan ID yang sama di file backup akan menimpa data yang ada, sedangkan data lain yang tidak ada di file backup tetap dipertahankan (tidak dihapus). Pastikan file backup valid.</span>
       </div>
 
       <!-- Export -->
@@ -145,6 +145,14 @@
         const text = await file.text();
         let parsed;
         try { parsed = JSON.parse(text); } catch { throw new Error('File JSON tidak valid.'); }
+
+        // Validasi skema minimal: tolak file yang bukan backup Poketto. Version TIDAK
+        // dicek ketat (biar backup versi lama yang sah tetap bisa di-restore) — cukup dicatat.
+        if (parsed.app !== 'poketto') {
+          throw new Error('File ini bukan file backup Poketto yang valid.');
+        }
+        console.log('[restore] Backup Poketto terdeteksi, version:', parsed.version ?? '(tidak ada)');
+
         const data = parsed.data || parsed;
 
         for (const t of RESTORE_ORDER) {
