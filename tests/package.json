@@ -1,0 +1,20 @@
+{
+  "name": "poketto-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Testing suite terisolasi untuk Poketto (Node.js + Vitest, bukan browser). Terpisah total dari app statis.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:batch1": "vitest run batch1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "vitest": "^2.1.0",
+    "ws": "^8.18.0"
+  }
+}
