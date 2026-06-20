@@ -36,17 +36,15 @@ export async function updateCategory(id, { name, icon, color }) {
 }
 
 export async function updateCategoryColor(id, color) {
-  const { data, error } = await supabase
-    .from('categories')
-    .update({ color })
-    .eq('id', id)
-    .select()
-    .single();
+  const { error } = await supabase.rpc('update_seed_category_color', {
+    category_id: id,
+    new_color: color
+  });
   if (error) {
-    console.error('[updateCategoryColor] Supabase error:', JSON.stringify(error));
+    console.error('[updateCategoryColor] RPC error:', JSON.stringify(error));
     throw error;
   }
-  return data;
+  return { id, color };
 }
 
 export async function setCategoryActive(id, isActive) {
