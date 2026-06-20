@@ -7,7 +7,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:batch1": "vitest run batch1"
+    "test:batch1": "vitest run batch1",
+    "test:batch2": "vitest run batch2"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
