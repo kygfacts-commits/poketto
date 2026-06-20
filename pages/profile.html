@@ -171,6 +171,7 @@
       `).join('');
       grid.querySelectorAll('.theme-dot').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (window.blockIfDemo?.('Mengubah tema')) return;
           if (window.applyPokettoTheme) window.applyPokettoTheme(btn.dataset.theme);
           renderThemeGrid();
         });
@@ -230,6 +231,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) return;
+      if (window.blockIfDemo?.('Menyimpan profil')) return;
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Menyimpan...';
@@ -262,6 +264,7 @@
 
     passwordForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Mengganti password')) return;
       const newPwd = newPasswordInput.value;
       const confirmPwd = confirmPasswordInput.value;
       passwordStatusEl.classList.add('hidden');
@@ -307,6 +310,7 @@
 
     dailyLimitSubmit.addEventListener('click', async () => {
       if (!currentUser) return;
+      if (window.blockIfDemo?.('Menyimpan limit harian')) return;
       const limit = parseThousands(dailyLimitInput.value) || 0;
       dailyLimitSubmit.disabled = true;
       dailyLimitSubmit.textContent = 'Menyimpan...';

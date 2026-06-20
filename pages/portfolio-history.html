@@ -205,6 +205,7 @@
     });
     document.getElementById('delete-confirm').addEventListener('click', async () => {
       if (!deletingId) return;
+      if (window.blockIfDemo?.('Menghapus transaksi portfolio')) return;
       try {
         await deletePortfolioTransaction(deletingId);
         showToast('Transaksi dihapus');

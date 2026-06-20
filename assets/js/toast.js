@@ -8,6 +8,7 @@ const STORAGE_KEY = 'poketto:toast';
 const TOAST_STYLES = {
   success: 'bg-mint-light text-emerald-700 border border-emerald-100',
   error: 'bg-red-50 text-red-600 border border-red-100',
+  info: 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE]',
 };
 
 function getToastContainer() {

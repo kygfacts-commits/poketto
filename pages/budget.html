@@ -385,6 +385,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) return;
+      if (window.blockIfDemo?.('Menyimpan budget')) return;
 
       formError.classList.add('hidden');
 
@@ -446,6 +447,7 @@
 
     document.getElementById('confirm-delete').addEventListener('click', async () => {
       if (!budgetPendingDelete) return;
+      if (window.blockIfDemo?.('Menghapus budget')) return;
       await deleteBudget(budgetPendingDelete.id);
       closeConfirmModal();
       await loadBudgets();

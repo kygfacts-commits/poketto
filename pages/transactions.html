@@ -586,6 +586,7 @@
 
     document.getElementById('edit-form').addEventListener('submit', async e => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Menyimpan transaksi')) return;
       const errEl = document.getElementById('edit-error');
       errEl.classList.add('hidden');
       const id = document.getElementById('edit-id').value;
@@ -639,6 +640,7 @@
     });
     document.getElementById('delete-confirm').addEventListener('click', async () => {
       if (!deletingId) return;
+      if (window.blockIfDemo?.('Menghapus transaksi')) return;
       try {
         const tx = allTransactions.find(t => t.id === deletingId);
         if (tx?.transfer_pair_id) {

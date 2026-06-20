@@ -7,6 +7,7 @@ import { fetchAccounts } from './accounts.js';
 import { fetchCategories, getCategoryColorClasses } from './categories.js';
 import { createTransaction } from './add.js';
 import { showToast } from './toast.js';
+import { blockIfDemo } from './demo-mode.js';
 import { formatThousands } from './utils.js';
 
 let currentUser = null;
@@ -169,6 +170,7 @@ function closeSheet() {
 }
 
 async function saveQuickAdd() {
+  if (blockIfDemo('Menyimpan transaksi')) return;
   const errEl = document.getElementById('qa-error');
   errEl.classList.add('hidden');
   const amount = Math.max(0, Math.round(evalExpr(qaExpr)));

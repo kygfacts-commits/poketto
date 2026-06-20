@@ -34,6 +34,7 @@ export async function register(email, password) {
 }
 
 export async function logout() {
+  sessionStorage.removeItem('poketto-demo-mode'); // keluar dari mode demo juga
   const { error } = await supabase.auth.signOut();
   if (error) return { error };
 

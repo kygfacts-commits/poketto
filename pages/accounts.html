@@ -389,6 +389,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) return;
+      if (window.blockIfDemo?.('Menyimpan akun')) return;
 
       formError.classList.add('hidden');
       submitBtn.disabled = true;
@@ -438,6 +439,7 @@
 
     document.getElementById('confirm-delete').addEventListener('click', async () => {
       if (!accountPendingDelete) return;
+      if (window.blockIfDemo?.('Menghapus akun')) return;
       await archiveAccount(accountPendingDelete.id);
       closeConfirmModal();
       await loadAccounts();

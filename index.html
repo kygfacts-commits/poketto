@@ -155,7 +155,7 @@
             <button onclick="window.location.href='pages/register.html'" class="px-6 py-3.5 rounded-2xl bg-[#A78BFA] hover:bg-[#8B5CF6] text-white font-semibold text-base transition-all shadow-lg shadow-violet-200 hover:shadow-violet-300 hover:-translate-y-0.5">
               Mulai Gratis Sekarang
             </button>
-            <button onclick="window.location.href='pages/login.html'" class="px-6 py-3.5 rounded-2xl border border-[#DDD6FE] bg-white hover:bg-[#EDE9FE] text-[#1E1B4B] font-semibold text-base transition-all">
+            <button id="demo-btn" onclick="handleDemoClick(event)" class="px-6 py-3.5 rounded-2xl border border-[#DDD6FE] bg-white hover:bg-[#EDE9FE] text-[#1E1B4B] font-semibold text-base transition-all disabled:opacity-60 disabled:cursor-wait">
               Lihat Demo →
             </button>
           </div>
@@ -280,73 +280,83 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <!-- Card 1 — Transaksi -->
-        <div class="feature-card p-6 rounded-2xl border border-[#EDE9FE] bg-[#F8F7FF]">
+        <!-- Card 1 — Pencatatan Transaksi Akurat -->
+        <div class="feature-card p-6 rounded-2xl border border-[#DDD6FE] bg-[#F5F3FF]">
           <div class="w-12 h-12 rounded-2xl bg-[#EDE9FE] flex items-center justify-center mb-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-            </svg>
+            <i data-lucide="credit-card" class="w-[22px] h-[22px] text-[#8B5CF6]"></i>
           </div>
-          <h3 class="font-bold text-[#1E1B4B] mb-2">Pencatatan Transaksi</h3>
-          <p class="text-sm text-[#6B7280] leading-relaxed">Income, expense, transfer antar akun — catat semua dalam hitungan detik dengan kategori otomatis.</p>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Pencatatan Transaksi Akurat</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Income, expense, transfer antar akun dengan sistem double-entry — laporan keuanganmu selalu akurat.</p>
         </div>
 
-        <!-- Card 2 — Budget -->
+        <!-- Card 2 — Budgeting dengan Rollover -->
         <div class="feature-card p-6 rounded-2xl border border-[#FED7AA] bg-[#FFF7ED]">
           <div class="w-12 h-12 rounded-2xl bg-[#FED7AA] flex items-center justify-center mb-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FB923C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
+            <i data-lucide="piggy-bank" class="w-[22px] h-[22px] text-[#FB923C]"></i>
           </div>
-          <h3 class="font-bold text-[#1E1B4B] mb-2">Budgeting Real-time</h3>
-          <p class="text-sm text-[#6B7280] leading-relaxed">Pantau pengeluaran vs anggaran per kategori secara real-time. Tahu kapan harus rem pengeluaran.</p>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Budgeting dengan Rollover</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Sisa budget bulan ini otomatis terbawa ke bulan depan. Budgeting jadi lebih fleksibel dan realistis.</p>
         </div>
 
-        <!-- Card 3 — Charts -->
+        <!-- Card 3 — Goals dengan Prediksi Cerdas -->
         <div class="feature-card p-6 rounded-2xl border border-[#BAE6FD] bg-[#F0F9FF]">
           <div class="w-12 h-12 rounded-2xl bg-[#BAE6FD] flex items-center justify-center mb-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>
+            <i data-lucide="target" class="w-[22px] h-[22px] text-[#38BDF8]"></i>
           </div>
-          <h3 class="font-bold text-[#1E1B4B] mb-2">Laporan & Charts</h3>
-          <p class="text-sm text-[#6B7280] leading-relaxed">Visualisasi keuangan bulanan dengan grafik interaktif. Pahami pola pengeluaranmu dengan mudah.</p>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Goals dengan Prediksi Cerdas</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Tahu persis kapan targetmu tercapai berdasarkan kecepatan menabungmu — lengkap dengan simulasi "apa jika".</p>
         </div>
 
-        <!-- Card 4 — Goals -->
-        <div class="feature-card p-6 rounded-2xl border border-[#DDD6FE] bg-[#F5F3FF]">
-          <div class="w-12 h-12 rounded-2xl bg-[#DDD6FE] flex items-center justify-center mb-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-            </svg>
-          </div>
-          <h3 class="font-bold text-[#1E1B4B] mb-2">Goals Tabungan</h3>
-          <p class="text-sm text-[#6B7280] leading-relaxed">Buat target dana dengan progress tracker visual. Dari dana darurat hingga liburan impian.</p>
-        </div>
-
-        <!-- Card 5 — Bills -->
+        <!-- Card 4 — Portfolio Investasi Lengkap -->
         <div class="feature-card p-6 rounded-2xl border border-[#A7F3D0] bg-[#F0FDF9]">
           <div class="w-12 h-12 rounded-2xl bg-[#A7F3D0] flex items-center justify-center mb-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
-            </svg>
+            <i data-lucide="trending-up" class="w-[22px] h-[22px] text-[#34D399]"></i>
           </div>
-          <h3 class="font-bold text-[#1E1B4B] mb-2">Tagihan Terjadwal</h3>
-          <p class="text-sm text-[#6B7280] leading-relaxed">Auto-reminder tagihan rutin — listrik, internet, langganan streaming — tidak ada yang terlewat lagi.</p>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Portfolio Investasi Lengkap</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Lacak saham, crypto, reksa dana, emas, dan obligasi. Realized &amp; unrealized P&amp;L terhitung otomatis.</p>
         </div>
 
-        <!-- Card 6 — Portfolio -->
-        <div class="feature-card p-6 rounded-2xl border border-[#FDE68A] bg-[#FEFCE8]">
-          <div class="w-12 h-12 rounded-2xl bg-[#FDE68A] flex items-center justify-center mb-4">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
-            </svg>
+        <!-- Card 5 — Insight Keuangan Personal -->
+        <div class="feature-card p-6 rounded-2xl border border-[#DDD6FE] bg-[#F5F3FF]">
+          <div class="w-12 h-12 rounded-2xl bg-[#EDE9FE] flex items-center justify-center mb-4">
+            <i data-lucide="lightbulb" class="w-[22px] h-[22px] text-[#8B5CF6]"></i>
           </div>
-          <h3 class="font-bold text-[#1E1B4B] mb-2">Portfolio Investasi</h3>
-          <p class="text-sm text-[#6B7280] leading-relaxed">Pantau saham, crypto, reksa dana, emas, dan obligasi dalam satu dashboard terintegrasi.</p>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Insight Keuangan Personal</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Skor kesehatan keuangan, prediksi pengeluaran, dan rekomendasi actionable — bukan cuma angka statis.</p>
+        </div>
+
+        <!-- Card 6 — Heatmap Pengeluaran -->
+        <div class="feature-card p-6 rounded-2xl border border-[#FED7AA] bg-[#FFF7ED]">
+          <div class="w-12 h-12 rounded-2xl bg-[#FED7AA] flex items-center justify-center mb-4">
+            <i data-lucide="calendar-days" class="w-[22px] h-[22px] text-[#FB923C]"></i>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Heatmap Pengeluaran</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Lihat pola pengeluaranmu sepanjang tahun dalam satu pandangan, seperti kalender kontribusi GitHub.</p>
+        </div>
+
+        <!-- Card 7 — Kategorisasi Pintar -->
+        <div class="feature-card p-6 rounded-2xl border border-[#BAE6FD] bg-[#F0F9FF]">
+          <div class="w-12 h-12 rounded-2xl bg-[#BAE6FD] flex items-center justify-center mb-4">
+            <i data-lucide="sparkles" class="w-[22px] h-[22px] text-[#38BDF8]"></i>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Kategorisasi Pintar</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Sistem belajar dari kebiasaanmu dan otomatis menyarankan kategori saat kamu mencatat transaksi.</p>
+        </div>
+
+        <!-- Card 8 — Akses di Mana Saja -->
+        <div class="feature-card p-6 rounded-2xl border border-[#A7F3D0] bg-[#F0FDF9]">
+          <div class="w-12 h-12 rounded-2xl bg-[#A7F3D0] flex items-center justify-center mb-4">
+            <i data-lucide="smartphone" class="w-[22px] h-[22px] text-[#34D399]"></i>
+          </div>
+          <h3 class="font-bold text-[#1E1B4B] mb-2">Akses di Mana Saja</h3>
+          <p class="text-sm text-[#6B7280] leading-relaxed">Install sebagai aplikasi di HP, masuk dengan Google sekali klik. Tanpa app store, tanpa ribet.</p>
         </div>
 
       </div>
+
+      <p class="text-sm text-gray-400 text-center italic mt-10 max-w-2xl mx-auto">
+        …dan masih banyak lagi: Quick Add, kalkulator built-in, export CSV/Excel/PDF, backup data, tema kustomisasi, dan lainnya.
+      </p>
     </div>
   </section>
 
@@ -360,9 +370,9 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
           <div class="text-center">
-            <div class="text-4xl sm:text-5xl font-extrabold text-[#7C3AED] mb-2">10+</div>
-            <div class="font-semibold text-[#1E1B4B] mb-1">Kategori Siap Pakai</div>
-            <div class="text-sm text-[#6B7280]">Makanan, transport, belanja, tagihan, dan lebih banyak lagi</div>
+            <div class="text-4xl sm:text-5xl font-extrabold text-[#7C3AED] mb-2">20+</div>
+            <div class="font-semibold text-[#1E1B4B] mb-1">Fitur Lengkap</div>
+            <div class="text-sm text-[#6B7280]">Transaksi, budget, goals, portfolio, insight, dan banyak lagi</div>
           </div>
           <div class="text-center">
             <div class="text-4xl sm:text-5xl font-extrabold text-[#7C3AED] mb-2">5</div>
@@ -417,7 +427,30 @@
     </div>
   </footer>
 
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script>
+    // Render ikon fitur (data-lucide).
+    if (window.lucide) lucide.createIcons();
+
+    // Tombol "Lihat Demo" → login otomatis ke akun demo lalu masuk ke dashboard.
+    async function handleDemoClick(event) {
+      const btn = document.getElementById('demo-btn');
+      btn.disabled = true;
+      btn.textContent = 'Memuat demo...';
+      try {
+        const { loginAsDemo } = await import('./assets/js/demo-mode.js');
+        const success = await loginAsDemo();
+        if (success) {
+          window.location.href = 'pages/home.html';
+          return;
+        }
+      } catch (err) {
+        console.error('[demo] gagal memuat demo:', err.message);
+      }
+      btn.disabled = false;
+      btn.textContent = 'Lihat Demo →';
+    }
+
     function toggleMenu() {
       const menu = document.getElementById('mobile-menu');
       const iconOpen = document.getElementById('icon-open');

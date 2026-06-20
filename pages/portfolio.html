@@ -572,6 +572,7 @@
 
     document.getElementById('holding-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Menyimpan holding')) return;
       const errEl = document.getElementById('holding-error');
       errEl.classList.add('hidden');
       const id = document.getElementById('holding-id').value;
@@ -657,6 +658,7 @@
 
     document.getElementById('price-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Mengubah harga')) return;
       const errEl = document.getElementById('price-error');
       errEl.classList.add('hidden');
       const id = document.getElementById('price-holding-id').value;
@@ -692,6 +694,7 @@
     });
     document.getElementById('delete-confirm').addEventListener('click', async () => {
       if (!deletingId) return;
+      if (window.blockIfDemo?.('Menghapus holding')) return;
       try {
         await deleteHolding(deletingId);
         showToast('Holding dihapus');
@@ -767,6 +770,7 @@
 
     document.getElementById('ptx-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Mencatat transaksi portfolio')) return;
       const errEl = document.getElementById('ptx-error');
       errEl.classList.add('hidden');
       const holding_id = document.getElementById('ptx-holding-id').value;

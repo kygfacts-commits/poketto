@@ -315,6 +315,7 @@
 
     document.getElementById('color-modal-save').addEventListener('click', async () => {
       if (!colorOnlyCatId) return;
+      if (window.blockIfDemo?.('Mengubah warna kategori')) return;
       const saveBtn = document.getElementById('color-modal-save');
       saveBtn.disabled = true;
       saveBtn.textContent = 'Menyimpan...';
@@ -455,6 +456,7 @@
     // ---------- Save custom category ----------
 
     document.getElementById('modal-save').addEventListener('click', async () => {
+      if (window.blockIfDemo?.('Menyimpan kategori')) return;
       const name = document.getElementById('modal-name').value.trim();
       const errEl = document.getElementById('modal-error');
       errEl.classList.add('hidden');
@@ -502,6 +504,7 @@
 
     document.getElementById('delete-confirm').addEventListener('click', async () => {
       if (!pendingDeleteId) return;
+      if (window.blockIfDemo?.('Menghapus kategori')) return;
       try {
         await deleteCategory(pendingDeleteId);
         categories = await fetchCategories(currentType, currentUser.id, true);
@@ -535,6 +538,7 @@
 
     // ---------- Sub-kategori ----------
     async function addSub(categoryId) {
+      if (window.blockIfDemo?.('Menambah sub-kategori')) return;
       const inp = document.querySelector(`[data-sub-input="${categoryId}"]`);
       const name = inp?.value.trim();
       if (!name) return;
@@ -549,6 +553,7 @@
     }
 
     async function removeSub(subId) {
+      if (window.blockIfDemo?.('Menghapus sub-kategori')) return;
       try {
         await deleteSubcategory(subId);
         for (const [cid, list] of subsByCat) {

@@ -724,6 +724,7 @@
 
     confirmDeleteBtn.addEventListener('click', async () => {
       if (!selectedTransactionId) return;
+      if (window.blockIfDemo?.('Menghapus transaksi')) return;
 
       try {
         const tx = allTransactions.find((t) => t.id === selectedTransactionId);

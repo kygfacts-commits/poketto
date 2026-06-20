@@ -702,6 +702,7 @@
     });
 
     document.getElementById('cat-picker-save').addEventListener('click', async () => {
+      if (window.blockIfDemo?.('Menyimpan kategori')) return;
       const name = document.getElementById('new-cat-name').value.trim();
       const errEl = document.getElementById('cat-picker-error');
       errEl.classList.add('hidden');
@@ -808,6 +809,7 @@
 
     formIncomeExpense.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Menyimpan transaksi')) return;
       ieError.classList.add('hidden');
 
       const accountId = ieAccountSelect.value;
@@ -900,6 +902,7 @@
 
     formTransfer.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Menyimpan transfer')) return;
       trError.classList.add('hidden');
 
       const fromAccountId = trFromAccountSelect.value;

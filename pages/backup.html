@@ -134,6 +134,7 @@
     // ---------- Import / Restore ----------
     document.getElementById('restore-btn').addEventListener('click', async () => {
       if (!currentUser) return;
+      if (window.blockIfDemo?.('Restore data')) return;
       const fileInput = document.getElementById('import-file');
       const file = fileInput.files && fileInput.files[0];
       if (!file) { setStatus(importStatus, 'Pilih file backup terlebih dahulu.', false); return; }

@@ -351,6 +351,7 @@
 
     // --- Auto-generate due bills ---
     async function checkAndGenerateDueBills() {
+      if (window.isDemoMode?.()) return; // mode demo: jangan auto-bayar (read-only)
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const todayStr = toISODate(today);
       const monthYear = `${MONTH_NAMES[today.getMonth()]} ${today.getFullYear()}`;
@@ -383,6 +384,7 @@
 
     // --- Pay bill now ---
     async function handlePayBill(billId) {
+      if (window.blockIfDemo?.('Membayar tagihan')) return;
       const bill = bills.find(b => b.id === billId);
       if (!bill) return;
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -410,6 +412,7 @@
 
     // --- Toggle active/inactive ---
     async function handleToggleBill(billId) {
+      if (window.blockIfDemo?.('Mengubah status tagihan')) return;
       const bill = bills.find(b => b.id === billId);
       if (!bill) return;
       try {
@@ -461,6 +464,7 @@
 
     document.getElementById('bill-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Menyimpan tagihan')) return;
       const name = document.getElementById('bill-name').value.trim();
       const categoryId = document.getElementById('bill-category').value;
       const accountId = document.getElementById('bill-account').value;
@@ -521,6 +525,7 @@
 
     document.getElementById('confirm-delete').addEventListener('click', async () => {
       if (!pendingDeleteBillId) return;
+      if (window.blockIfDemo?.('Menghapus tagihan')) return;
       const btn = document.getElementById('confirm-delete');
       btn.disabled = true;
       try {

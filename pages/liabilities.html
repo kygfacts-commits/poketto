@@ -347,6 +347,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) return;
+      if (window.blockIfDemo?.('Menyimpan liabilitas')) return;
       formError.classList.add('hidden');
 
       const name = nameInput.value.trim();
@@ -423,6 +424,7 @@
     confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) closeConfirmModal(); });
     document.getElementById('confirm-delete').addEventListener('click', async () => {
       if (!pendingDelete) return;
+      if (window.blockIfDemo?.('Menghapus liabilitas')) return;
       try {
         await deleteLiability(pendingDelete.id);
         showToast('Liabilitas dihapus');

@@ -12,6 +12,12 @@
 import { supabase } from './supabase-client.js';
 import { updateBillsBadge } from './notification-badge.js';
 import { initQuickAdd } from './quick-add.js';
+import { isDemoMode, clearDemoMode, blockIfDemo } from './demo-mode.js';
+
+// Ekspos guard demo ke global agar handler inline di setiap halaman bisa
+// memanggilnya tanpa import tambahan (window.blockIfDemo / window.isDemoMode).
+window.blockIfDemo = blockIfDemo;
+window.isDemoMode  = isDemoMode;
 
 // ── Path base (halaman ada di /pages/, komponen di /components/) ──────────────
 const IN_PAGES = window.location.pathname.includes('/pages/');
@@ -53,6 +59,7 @@ async function loadNav() {
     setActiveNav();
     initDrawerSwipe();
     initQuickAdd();
+    injectDemoBanner();
     await initLogout();
 
     // Badge notifikasi tagihan jatuh tempo (≤ 7 hari)
@@ -142,6 +149,31 @@ function initDrawerSwipe() {
   });
 }
 
+// ── Banner Mode Demo ─────────────────────────────────────────────────────────
+function injectDemoBanner() {
+  if (!isDemoMode() || document.getElementById('demo-banner')) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'demo-banner';
+  banner.className = 'fixed top-0 left-0 right-0 z-[120] bg-amber-400 text-amber-900 text-center py-2 px-4 text-sm font-semibold';
+  banner.innerHTML =
+    '🔍 Mode Demo — Data tidak akan tersimpan. ' +
+    '<a href="#" id="demo-register-link" class="underline underline-offset-2 hover:text-amber-950">Daftar Gratis Sekarang →</a>';
+  document.body.prepend(banner);
+
+  // Dorong konten ke bawah agar tidak tertimpa banner.
+  const h = banner.offsetHeight;
+  document.body.style.paddingTop = `${h}px`;
+
+  document.getElementById('demo-register-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    clearDemoMode();
+    supabase.auth.signOut().finally(() => {
+      window.location.href = (IN_PAGES ? '' : 'pages/') + 'register.html';
+    });
+  });
+}
+
 // ── Logout ─────────────────────────────────────────────────────────────────────
 async function initLogout() {
   const btn = document.getElementById('logout-btn');
@@ -149,6 +181,7 @@ async function initLogout() {
 
   btn.addEventListener('click', async () => {
     btn.disabled = true;
+    clearDemoMode(); // keluar dari mode demo juga
     await supabase.auth.signOut();
     window.location.href = IN_PAGES ? '../index.html' : 'index.html';
   });

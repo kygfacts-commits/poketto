@@ -603,6 +603,7 @@
 
     document.getElementById('goal-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (window.blockIfDemo?.('Menyimpan goal')) return;
       const name = document.getElementById('goal-name').value.trim();
       const target = parseThousands(document.getElementById('goal-target').value);
       const targetDate = document.getElementById('goal-date').value || null;
@@ -660,6 +661,7 @@
     document.getElementById('funds-cancel').addEventListener('click', closeFundsModal);
 
     document.getElementById('funds-submit').addEventListener('click', async () => {
+      if (window.blockIfDemo?.('Menambah dana goal')) return;
       const amount = parseThousands(document.getElementById('funds-amount').value);
       const accountId = document.getElementById('funds-account').value || null;
       const errorEl = document.getElementById('funds-error');
@@ -751,6 +753,7 @@
 
     document.getElementById('confirm-delete').addEventListener('click', async () => {
       if (!pendingDeleteGoalId) return;
+      if (window.blockIfDemo?.('Menghapus goal')) return;
       const btn = document.getElementById('confirm-delete');
       btn.disabled = true;
       try {
@@ -939,6 +942,7 @@
 
     document.getElementById('apply-confirm').addEventListener('click', async () => {
       if (!pendingApplyDate || !detailGoalId) return;
+      if (window.blockIfDemo?.('Menerapkan target')) return;
       const btn = document.getElementById('apply-confirm');
       const goalId = detailGoalId;
       const appliedDate = pendingApplyDate;
