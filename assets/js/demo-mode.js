@@ -16,7 +16,7 @@ const DEMO_FLAG = 'poketto-demo-mode';
 
 // ⚠️ GANTI password ini dengan password user demo yang kamu buat di Supabase.
 const DEMO_EMAIL = 'demo@poketto.app';
-const DEMO_PASSWORD = 'DEMO_PASSWORD_PLACEHOLDER';
+const DEMO_PASSWORD = 'd3m0POKETT0-';
 
 export async function loginAsDemo() {
   const { error } = await supabase.auth.signInWithPassword({
