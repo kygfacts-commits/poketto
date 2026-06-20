@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="../assets/js/theme.js"></script>
+  <script type="module" src="../assets/js/theme.js"></script>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#8B5CF6">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -148,6 +148,7 @@
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
     import { supabase } from '../assets/js/supabase-client.js';
+    import { saveUserTheme } from '../assets/js/theme.js';
     import { attachThousandsInput, parseThousands, formatThousands } from '../assets/js/utils.js';
 
     document.getElementById('logout-mobile-btn')?.addEventListener('click', logout);
@@ -161,19 +162,28 @@
       { name: 'amber', label: 'Amber', hex: '#F59E0B' },
     ];
 
+    // Tema aktif user (di-load dari profiles.theme_preference saat auth-ready).
+    let activeTheme = 'lavender';
+
     function renderThemeGrid() {
-      const active = (window.getPokettoTheme && window.getPokettoTheme()) || 'lavender';
       const grid = document.getElementById('theme-grid');
       grid.innerHTML = THEME_OPTIONS.map((t) => `
         <button type="button" data-theme="${t.name}" title="${t.label}"
-          class="theme-dot rounded-full transition-all ${t.name === active ? 'ring-2 ring-offset-2 ring-gray-700 scale-110' : 'hover:scale-105'}"
+          class="theme-dot rounded-full transition-all ${t.name === activeTheme ? 'ring-2 ring-offset-2 ring-gray-700 scale-110' : 'hover:scale-105'}"
           style="width:36px;height:36px;background-color:${t.hex}"></button>
       `).join('');
       grid.querySelectorAll('.theme-dot').forEach((btn) => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
           if (window.blockIfDemo?.('Mengubah tema')) return;
-          if (window.applyPokettoTheme) window.applyPokettoTheme(btn.dataset.theme);
+          if (!currentUser) return;
+          const theme = btn.dataset.theme;
+          activeTheme = theme;
           renderThemeGrid();
+          try {
+            await saveUserTheme(currentUser.id, theme); // simpan ke DB + apply live
+          } catch (err) {
+            console.warn('[profile] gagal menyimpan tema:', err.message);
+          }
         });
       });
     }
@@ -219,6 +229,9 @@
       languageSelect.value = data?.language_preference || 'en';
       const limit = Number(data?.daily_limit || 0);
       dailyLimitInput.value = limit > 0 ? formatThousands(String(limit)) : '';
+      // Highlight dot tema sesuai tema akun.
+      activeTheme = data?.theme_preference || 'lavender';
+      renderThemeGrid();
       renderAvatar(data, user);
     }
 
