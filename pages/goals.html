@@ -999,16 +999,29 @@
 
     // --- Data loading ---
     async function loadGoals() {
-      goals = await fetchGoals(currentUser.id);
-      try { allTransactions = await fetchAllTransactions(currentUser.id); } catch { allTransactions = []; }
+      const [g, txs] = await Promise.all([
+        fetchGoals(currentUser.id),
+        fetchAllTransactions(currentUser.id).catch(() => []),
+      ]);
+      goals = g;
+      allTransactions = txs;
       renderGoals();
     }
 
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
-      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
-      try { accounts = await fetchAccounts(currentUser.id); } catch {}
-      await loadGoals();
+      // Semua 4 query independen → satu Promise.all.
+      const [curr, accs, g, txs] = await Promise.all([
+        fetchProfileCurrency(currentUser.id).catch(() => currency),
+        fetchAccounts(currentUser.id).catch(() => accounts),
+        fetchGoals(currentUser.id),
+        fetchAllTransactions(currentUser.id).catch(() => []),
+      ]);
+      currency = curr;
+      accounts = accs;
+      goals = g;
+      allTransactions = txs;
+      renderGoals();
     });
   </script>
   <script type="module" src="../assets/js/nav-loader.js"></script>

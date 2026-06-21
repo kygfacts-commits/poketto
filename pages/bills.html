@@ -573,14 +573,22 @@
 
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
-      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
-      try { accounts = await fetchAccounts(currentUser.id); } catch {}
-      try {
-        expenseCategories = await fetchCategories('expense');
-        categoriesById = new Map(expenseCategories.map(c => [c.id, c]));
-      } catch {}
-      await loadBills();
-      await checkAndGenerateDueBills();
+      // 4 query independen → satu Promise.all.
+      const [curr, accs, cats, b] = await Promise.all([
+        fetchProfileCurrency(currentUser.id).catch(() => currency),
+        fetchAccounts(currentUser.id).catch(() => accounts),
+        fetchCategories('expense').catch(() => []),
+        fetchBills(currentUser.id),
+      ]);
+      currency = curr;
+      accounts = accs;
+      expenseCategories = cats;
+      categoriesById = new Map(expenseCategories.map(c => [c.id, c]));
+      bills = b;
+      renderBills();
+
+      // Auto-generate tagihan jatuh tempo BUTUH `bills` → jalan SETELAH render, tidak memblokir tampilan awal.
+      checkAndGenerateDueBills().catch(err => console.error('[bills] auto-generate gagal:', err.message));
     });
   </script>
   <script type="module" src="../assets/js/nav-loader.js"></script>

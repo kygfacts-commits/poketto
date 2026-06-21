@@ -469,18 +469,16 @@
 
     // ---------- Data loading ----------
 
-    async function loadBudgets() {
-      const { start, end } = getMonthRange(currentMonth);
-
-      budgets = await fetchBudgets(currentUser.id, start);
-
-      const expenses = await fetchExpensesForMonth(currentUser.id, start, end);
+    function buildCategoryUsage(expenses) {
       categoryUsage = new Map();
       for (const tx of expenses) {
         categoryUsage.set(tx.category_id, (categoryUsage.get(tx.category_id) || 0) + Number(tx.amount));
       }
+    }
 
-      // Rollover: hitung sisa budget bulan lalu untuk kategori dengan rollover_enabled.
+    // Rollover: hitung sisa budget bulan lalu untuk kategori dengan rollover_enabled.
+    // Dipisah sebagai langkah tersendiri karena BUTUH hasil `budgets` (rollover_enabled).
+    async function computeRollover(start) {
       rolloverByCategory = new Map();
       const rolloverBudgets = budgets.filter((b) => b.rollover_enabled);
       if (rolloverBudgets.length > 0) {
@@ -504,6 +502,19 @@
           console.log('[budget] Gagal menghitung rollover:', err.message);
         }
       }
+    }
+
+    async function loadBudgets() {
+      const { start, end } = getMonthRange(currentMonth);
+
+      const [b, expenses] = await Promise.all([
+        fetchBudgets(currentUser.id, start),
+        fetchExpensesForMonth(currentUser.id, start, end),
+      ]);
+      budgets = b;
+      buildCategoryUsage(expenses);
+
+      await computeRollover(start); // langkah dependent: butuh `budgets`
 
       renderSummary();
       renderBudgetList();
@@ -511,22 +522,26 @@
 
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
+      const { start, end } = getMonthRange(currentMonth);
 
-      try {
-        currency = await fetchProfileCurrency(currentUser.id);
-      } catch (err) {
-        console.log('[budget] Gagal memuat preferensi mata uang:', err.message);
-      }
+      // Semua independen → satu Promise.all. Rollover (butuh hasil budgets) menyusul setelahnya.
+      const [curr, cats, b, expenses] = await Promise.all([
+        fetchProfileCurrency(currentUser.id).catch((err) => { console.log('[budget] Gagal memuat preferensi mata uang:', err.message); return currency; }),
+        fetchCategories('expense').catch((err) => { console.log('[budget] Gagal memuat kategori:', err.message); return []; }),
+        fetchBudgets(currentUser.id, start).catch(() => []),
+        fetchExpensesForMonth(currentUser.id, start, end).catch(() => []),
+      ]);
 
-      try {
-        expenseCategories = await fetchCategories('expense');
-        categoriesById = new Map(expenseCategories.map((c) => [c.id, c]));
-      } catch (err) {
-        console.log('[budget] Gagal memuat kategori:', err.message);
-      }
+      currency = curr;
+      expenseCategories = cats;
+      categoriesById = new Map(expenseCategories.map((c) => [c.id, c]));
+      budgets = b;
+      buildCategoryUsage(expenses);
 
       renderMonthLabel();
-      await loadBudgets();
+      await computeRollover(start); // langkah dependent SETELAH Promise.all
+      renderSummary();
+      renderBudgetList();
     });
   </script>
   <script type="module" src="../assets/js/nav-loader.js"></script>

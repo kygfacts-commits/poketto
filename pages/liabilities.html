@@ -440,13 +440,17 @@
     // ---------- Init ----------
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
-      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
-      try {
-        liabilities = await fetchLiabilities(currentUser.id);
-      } catch (err) {
-        console.log('[liabilities] Gagal memuat data:', err.message);
-        showToast('Gagal memuat data: ' + err.message, 'error');
-      }
+      // 2 query independen → satu Promise.all.
+      const [curr, liabs] = await Promise.all([
+        fetchProfileCurrency(currentUser.id).catch(() => currency),
+        fetchLiabilities(currentUser.id).catch((err) => {
+          console.log('[liabilities] Gagal memuat data:', err.message);
+          showToast('Gagal memuat data: ' + err.message, 'error');
+          return liabilities;
+        }),
+      ]);
+      currency = curr;
+      liabilities = liabs;
       renderSummary();
       renderList();
     });

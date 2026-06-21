@@ -673,21 +673,27 @@
 
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
-      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
-      try {
-        const [inc, exp] = await Promise.all([fetchCategories('income', null, true), fetchCategories('expense', null, true)]);
-        categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
-      } catch {}
-      try {
-        [accounts, allTransactions] = await Promise.all([
-          fetchAccounts(currentUser.id),
-          fetchAllTransactions(currentUser.id),
-        ]);
-      } catch (err) {
-        console.log('[reports] Gagal memuat data:', err.message);
-      }
-      try { liabilitiesTotal = await fetchLiabilitiesTotal(currentUser.id); } catch {}
-      await loadBudgetsAndRenderSummary();
+      const { start } = getMonthRange(currentMonth);
+
+      // Semua query independen → satu Promise.all besar (termasuk fetchBudgets bulan ini).
+      const [curr, inc, exp, accs, txs, liabTotal, b] = await Promise.all([
+        fetchProfileCurrency(currentUser.id).catch(() => currency),
+        fetchCategories('income', null, true).catch(() => []),
+        fetchCategories('expense', null, true).catch(() => []),
+        fetchAccounts(currentUser.id).catch(() => accounts),
+        fetchAllTransactions(currentUser.id).catch(() => allTransactions),
+        fetchLiabilitiesTotal(currentUser.id).catch(() => liabilitiesTotal),
+        fetchBudgets(currentUser.id, start).catch(() => []),
+      ]);
+
+      currency = curr;
+      categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
+      accounts = accs;
+      allTransactions = txs;
+      liabilitiesTotal = liabTotal;
+      budgets = b;
+
+      renderSummaryTab();
       renderAccountTab();
     });
   </script>

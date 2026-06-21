@@ -262,12 +262,15 @@
     // --- Load ---
     async function loadData() {
       try {
-        [accounts, allTransactions, incomeCategories, expenseCategories] = await Promise.all([
+        let curr;
+        [curr, accounts, allTransactions, incomeCategories, expenseCategories] = await Promise.all([
+          fetchProfileCurrency(currentUser.id).catch(() => currency),
           fetchAccounts(currentUser.id),
           fetchAllTransactions(currentUser.id),
           fetchCategories('income', null, true),
           fetchCategories('expense', null, true),
         ]);
+        currency = curr;
         accountsById = new Map(accounts.map(a => [a.id, a]));
         allCategories = [...incomeCategories, ...expenseCategories];
         categoriesById = new Map(allCategories.map(c => [c.id, c]));
@@ -754,7 +757,6 @@
     // --- Auth ready ---
     window.addEventListener('schatz:auth-ready', async e => {
       currentUser = e.detail.user;
-      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
       await loadData();
     });
   </script>

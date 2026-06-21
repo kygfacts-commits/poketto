@@ -362,11 +362,14 @@
 
     async function loadData() {
       try {
-        [accounts, holdings, portfolioTxs] = await Promise.all([
+        let curr;
+        [curr, accounts, holdings, portfolioTxs] = await Promise.all([
+          fetchProfileCurrency(currentUser.id).catch(() => currency),
           fetchAccounts(currentUser.id),
           fetchHoldings(currentUser.id),
           fetchPortfolioTransactions(currentUser.id).catch(() => []),
         ]);
+        currency = curr;
         investmentAccounts = accounts.filter(a => a.type === 'investment');
         indexPortfolioTxs();
       } catch (err) {
@@ -835,7 +838,6 @@
     // --- Auth ready ---
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
-      try { currency = await fetchProfileCurrency(currentUser.id); } catch {}
       await loadData();
     });
   </script>
