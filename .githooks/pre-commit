@@ -1,0 +1,54 @@
+#!/bin/sh
+# =============================================================================
+# Poketto — pre-commit hook
+# -----------------------------------------------------------------------------
+# TUJUAN: assets/css/tailwind.css TIDAK PERNAH basi. Tailwind di-build lokal
+# (bukan CDN), jadi tiap kali ada perubahan class di HTML/JS, CSS harus di-
+# rebuild SEBELUM commit, lalu ikut masuk ke commit yang sama.
+#
+# Hook ini dipasang lewat:  git config core.hooksPath .githooks
+# (otomatis dijalankan oleh npm "prepare" saat `npm install`).
+#
+# CATATAN UNTUK SESI CLAUDE CODE / DEV LAIN:
+#   - Kalau `git commit` terasa "lebih lambat" -> ini wajar, hook lagi rebuild CSS.
+#   - Kalau ada file assets/css/tailwind.css "otomatis berubah" saat commit ->
+#     itu hasil rebuild yang sengaja di-`git add` oleh hook ini. Bukan bug.
+#   - Bypass darurat (TIDAK disarankan): git commit --no-verify
+# =============================================================================
+set -e
+
+ROOT=$(git rev-parse --show-toplevel)
+cd "$ROOT"
+
+# 1) Optimasi: hanya rebuild kalau ada file yang benar-benar mempengaruhi
+#    Tailwind classes ter-stage. Cocokkan dengan "content" di tailwind.config.js:
+#    index.html, pages/**.html, components/**.html, assets/js/**.js, + config/input.
+RELEVANT=$(git diff --cached --name-only --diff-filter=ACMR | grep -E \
+  '^(index\.html|pages/.*\.html|components/.*\.html|assets/js/.*\.js|tailwind\.config\.js|assets/css/tailwind-input\.css)$' \
+  || true)
+
+if [ -z "$RELEVANT" ]; then
+  echo "[pre-commit] Tidak ada perubahan relevan untuk Tailwind — skip rebuild CSS."
+  exit 0
+fi
+
+# 2) Pastikan toolchain terpasang (kasih pesan jelas kalau belum `npm install`).
+if [ ! -x node_modules/.bin/tailwindcss ]; then
+  echo "✗ [pre-commit] tailwindcss belum terpasang." >&2
+  echo "  Jalankan dulu:  npm install" >&2
+  echo "  (commit dibatalkan supaya CSS tidak ketinggalan rebuild.)" >&2
+  exit 1
+fi
+
+# 3) Rebuild. Kalau gagal -> batalkan commit dengan pesan jelas.
+echo "[pre-commit] Perubahan relevan terdeteksi — rebuild assets/css/tailwind.css ..."
+if ! npm run build:css --silent; then
+  echo "✗ [pre-commit] BUILD CSS GAGAL — commit DIBATALKAN." >&2
+  echo "  Perbaiki error di atas, lalu commit ulang." >&2
+  exit 1
+fi
+
+# 4) Masukkan hasil rebuild ke commit yang sama.
+git add assets/css/tailwind.css
+echo "[pre-commit] ✓ assets/css/tailwind.css fresh & ikut ter-commit."
+exit 0

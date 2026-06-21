@@ -5,7 +5,8 @@
   "description": "Aplikasi keuangan pribadi (PWA, static). Tailwind di-build lokal, bukan CDN.",
   "scripts": {
     "build:css": "tailwindcss -c tailwind.config.js -i assets/css/tailwind-input.css -o assets/css/tailwind.css --minify",
-    "watch:css": "tailwindcss -c tailwind.config.js -i assets/css/tailwind-input.css -o assets/css/tailwind.css --watch"
+    "watch:css": "tailwindcss -c tailwind.config.js -i assets/css/tailwind-input.css -o assets/css/tailwind.css --watch",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.0"
