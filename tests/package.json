@@ -10,7 +10,8 @@
     "test:batch1": "vitest run batch1",
     "test:batch2": "vitest run batch2",
     "test:batch3": "vitest run batch3",
-    "test:batch4": "vitest run batch4"
+    "test:batch4": "vitest run batch4",
+    "test:batch5": "vitest run batch5"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
