@@ -87,10 +87,9 @@
 
     let currentUser = null;
 
-    // Semua tabel data milik user.
+    // Tabel data milik user (dipakai untuk Export). Restore kini ditangani sepenuhnya
+    // oleh RPC atomic restore_backup() di server — urutan FK & upsert ada di sana.
     const EXPORT_TABLES = ['accounts', 'transactions', 'categories', 'subcategories', 'budgets', 'goals', 'scheduled_bills', 'portfolio_holdings', 'portfolio_transactions', 'liabilities'];
-    // Urutan restore: parent dulu agar foreign key aman.
-    const RESTORE_ORDER = ['categories', 'subcategories', 'accounts', 'goals', 'portfolio_holdings', 'portfolio_transactions', 'budgets', 'scheduled_bills', 'transactions', 'liabilities'];
 
     const exportStatus = document.getElementById('export-status');
     const importStatus = document.getElementById('import-status');
@@ -155,14 +154,26 @@
 
         const data = parsed.data || parsed;
 
-        for (const t of RESTORE_ORDER) {
-          const rows = (data[t] || []).map((r) => ({ ...r, user_id: currentUser.id }));
-          if (rows.length === 0) continue;
-          const { error } = await supabase.from(t).upsert(rows);
-          if (error) throw error;
-        }
-        setStatus(importStatus, 'Data berhasil direstore.', true);
-        showToast('Data berhasil direstore');
+        // Restore ATOMIC via RPC server-side (satu transaksi: gagal-semua / sukses-semua).
+        // user_id tiap baris dipaksa ke pemanggil DI DALAM RPC, jadi tak perlu map manual.
+        const { data: result, error } = await supabase.rpc('restore_backup', { payload: data });
+        if (error) throw error; // error.message sudah memuat tabel + constraint yang gagal
+
+        // result = { ok, user_id, restored: { nama_tabel: jumlah, ... } }
+        const restored = result?.restored || {};
+        const total = Object.values(restored).reduce((sum, n) => sum + Number(n || 0), 0);
+        const detail = Object.entries(restored)
+          .filter(([, n]) => Number(n) > 0)
+          .map(([t, n]) => `${t}: ${n}`)
+          .join(', ');
+        setStatus(
+          importStatus,
+          total > 0
+            ? `Restore berhasil — ${total} baris dipulihkan${detail ? ` (${detail})` : ''}.`
+            : 'Restore selesai — tidak ada data untuk dipulihkan.',
+          true
+        );
+        showToast(`Data berhasil direstore — ${total} baris`);
       } catch (err) {
         setStatus(importStatus, 'Gagal restore: ' + err.message, false);
         showToast('Gagal restore: ' + err.message, 'error');
