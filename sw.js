@@ -16,7 +16,7 @@
  *   │ sehingga user PWA tidak nyangkut di aset versi lama.                     │
  *   └─────────────────────────────────────────────────────────────────────────┘
  */
-const VERSION = 'v1.1.0';
+const VERSION = 'v1.2.0';
 const CACHE = `poketto-${VERSION}`;
 
 // Shell inti yang diprecache saat install. Semua best-effort (lihat allSettled di install):
@@ -25,6 +25,7 @@ const PRECACHE = [
   '/index.html',
   '/pages/home.html',
   '/pages/login.html',
+  '/assets/css/tailwind.css',
   '/assets/css/style.css',
   '/assets/js/theme.js',
   '/assets/js/pwa-register.js',
