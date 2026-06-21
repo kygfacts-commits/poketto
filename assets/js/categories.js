@@ -66,11 +66,25 @@ export async function deleteCategory(id) {
   if (error) throw error;
 }
 
+// Map full-string (bukan dirakit dari fragmen) agar class terdeteksi content-scanner
+// Tailwind saat build statis. Setiap warna di CATEGORY_COLORS punya entri eksplisit.
+const CATEGORY_COLOR_CLASSES = {
+  lavender: { bg: 'bg-lavender-light/50', icon: 'text-lavender-dark' },
+  orange:   { bg: 'bg-orange-100',  icon: 'text-orange-500' },
+  sky:      { bg: 'bg-sky-100',     icon: 'text-sky-500' },
+  emerald:  { bg: 'bg-emerald-100', icon: 'text-emerald-500' },
+  rose:     { bg: 'bg-rose-100',    icon: 'text-rose-500' },
+  amber:    { bg: 'bg-amber-100',   icon: 'text-amber-500' },
+  indigo:   { bg: 'bg-indigo-100',  icon: 'text-indigo-500' },
+  teal:     { bg: 'bg-teal-100',    icon: 'text-teal-500' },
+  cyan:     { bg: 'bg-cyan-100',    icon: 'text-cyan-500' },
+  purple:   { bg: 'bg-purple-100',  icon: 'text-purple-500' },
+  pink:     { bg: 'bg-pink-100',    icon: 'text-pink-500' },
+  slate:    { bg: 'bg-slate-100',   icon: 'text-slate-500' },
+};
+
 export function getCategoryColorClasses(color) {
-  if (color === 'lavender') {
-    return { bg: 'bg-lavender-light/50', icon: 'text-lavender-dark' };
-  }
-  return { bg: `bg-${color}-100`, icon: `text-${color}-500` };
+  return CATEGORY_COLOR_CLASSES[color] || CATEGORY_COLOR_CLASSES.lavender;
 }
 
 export const TRANSFER_COLOR_CLASSES = { bg: 'bg-sky-light/60', icon: 'text-sky-600' };
