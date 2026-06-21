@@ -16,6 +16,9 @@ import { supabase } from './supabase-client.js';
 // PWA bootstrap (registrasi service worker + favicon). theme.js dipilih sebagai host
 // karena ia satu-satunya modul yang dimuat di SEMUA halaman → cakupan universal, 1 edit.
 import './pwa-register.js';
+// UI status koneksi (offline full-state / banner). Host yang sama, alasan yang sama:
+// cakupan universal lewat satu import — tanpa menyentuh 18+ file HTML.
+import './offline-state.js';
 
 const THEMES = {
   lavender: '#8B5CF6',
