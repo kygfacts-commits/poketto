@@ -16,7 +16,7 @@
  *   │ sehingga user PWA tidak nyangkut di aset versi lama.                     │
  *   └─────────────────────────────────────────────────────────────────────────┘
  */
-const VERSION = 'v1.2.0';
+const VERSION = 'v1.2.1';
 const CACHE = `poketto-${VERSION}`;
 
 // Shell inti yang diprecache saat install. Semua best-effort (lihat allSettled di install):
