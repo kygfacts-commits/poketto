@@ -588,19 +588,23 @@
         shakeElement(document.getElementById('holding-name'));
         return;
       }
-      const qtyCheck = validateDecimal(qty, 0.001, 999999999);
-      if (!qtyCheck.valid) {
-        errEl.textContent = 'Jumlah/unit: ' + qtyCheck.message;
-        errEl.classList.remove('hidden');
-        shakeElement(qtyEl);
-        return;
-      }
-      const avgCheck = validateAmount(avg, 1, 999999999999);
-      if (!avgCheck.valid) {
-        errEl.textContent = 'Avg buy price: ' + avgCheck.message;
-        errEl.classList.remove('hidden');
-        shakeElement(avgEl);
-        return;
+      // qty & avg buy hanya divalidasi di mode TAMBAH (jadi seed opening-buy).
+      // Di mode EDIT field-nya dikunci & tidak dikirim, jadi validasi dilewati.
+      if (!id) {
+        const qtyCheck = validateDecimal(qty, 0.001, 999999999);
+        if (!qtyCheck.valid) {
+          errEl.textContent = 'Jumlah/unit: ' + qtyCheck.message;
+          errEl.classList.remove('hidden');
+          shakeElement(qtyEl);
+          return;
+        }
+        const avgCheck = validateAmount(avg, 1, 999999999999);
+        if (!avgCheck.valid) {
+          errEl.textContent = 'Avg buy price: ' + avgCheck.message;
+          errEl.classList.remove('hidden');
+          shakeElement(avgEl);
+          return;
+        }
       }
 
       const submitBtn = document.getElementById('holding-submit');
@@ -608,18 +612,20 @@
       submitBtn.textContent = 'Menyimpan…';
 
       try {
+        // Field non-ledger — boleh diedit kapan saja. quantity & avg_buy_price
+        // SENGAJA tidak di sini: posisi holding ditentukan oleh ledger transaksi.
         const payload = {
           account_id, asset_type, asset_name,
-          quantity: qty,
-          avg_buy_price: avg,
           current_price: cur || null,
           currency: cur_code,
         };
         if (id) {
+          // EDIT: tidak menulis quantity/avg_buy_price (anti-bypass ledger).
           await updateHolding(id, payload);
           showToast('Holding berhasil diupdate');
         } else {
-          const newHolding = await createHolding({ ...payload, user_id: currentUser.id });
+          // ADD: sertakan nilai awal quantity & avg_buy_price, lalu seed opening-buy.
+          const newHolding = await createHolding({ ...payload, quantity: qty, avg_buy_price: avg, user_id: currentUser.id });
           // Seed opening-buy ke ledger: quantity & avg_buy_price holding kini ditopang
           // transaksi, bukan nilai manual yang bisa di-override saat ada transaksi baru.
           // RPC sekaligus re-sync holding dari ledger.
