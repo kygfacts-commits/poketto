@@ -51,4 +51,17 @@ fi
 # 4) Masukkan hasil rebuild ke commit yang sama.
 git add assets/css/tailwind.css
 echo "[pre-commit] ✓ assets/css/tailwind.css fresh & ikut ter-commit."
+
+# 5) Reminder VERSION-bump (WARNING SAJA — commit tetap jalan).
+#    Sampai di titik ini berarti ada file statis (HTML/JS/CSS) ter-stage.
+#    Kalau sw.js TIDAK ikut ter-stage, ingatkan: kemungkinan VERSION di sw.js
+#    belum dinaikkan, sehingga user PWA bisa nyangkut di aset versi lama.
+#    Developer yang putuskan apakah perlu bump (bukan abort).
+SW_STAGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -xE 'sw\.js' || true)
+if [ -z "$SW_STAGED" ]; then
+  YELLOW='\033[33m'; RESET='\033[0m'
+  printf "%b[sw] ⚠️  REMINDER: kamu mengubah file statis tapi VERSION di sw.js belum dinaikkan.%b\n" "$YELLOW" "$RESET"
+  printf "%b[sw] Kalau ini deployment baru, jalankan: bump VERSION di sw.js sebelum commit.%b\n" "$YELLOW" "$RESET"
+fi
+
 exit 0
