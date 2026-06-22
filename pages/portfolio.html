@@ -683,13 +683,33 @@
       if (!deletingId) return;
       if (window.blockIfDemo?.('Menghapus holding')) return;
       try {
+        // Holding tak bisa dihapus selama masih ada transaksi yang mereferensikannya
+        // (FK portfolio_transactions.holding_id). Cek dulu agar pesan ramah, bukan
+        // error FK mentah dari DB.
+        const { count, error: countErr } = await supabase
+          .from('portfolio_transactions')
+          .select('id', { count: 'exact', head: true })
+          .eq('holding_id', deletingId);
+        if (countErr) throw countErr;
+        if (count > 0) {
+          showToast('Hapus semua transaksi terlebih dahulu sebelum menghapus holding ini.', 'error');
+          document.getElementById('delete-modal').classList.add('hidden');
+          deletingId = null;
+          return;
+        }
+
         await deleteHolding(deletingId);
         showToast('Holding dihapus');
         document.getElementById('delete-modal').classList.add('hidden');
         holdings = await fetchHoldings(currentUser.id);
         applyFilter();
       } catch (err) {
-        showToast(err.message, 'error');
+        // Defensive: kalau race / cek terlewat, DB tetap menolak dgn FK violation.
+        if (err.message && (err.message.includes('foreign key') || err.message.includes('violates'))) {
+          showToast('Hapus semua transaksi terlebih dahulu sebelum menghapus holding ini.', 'error');
+        } else {
+          showToast(err.message, 'error');
+        }
       }
       deletingId = null;
     });
