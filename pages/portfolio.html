@@ -304,7 +304,8 @@
     import { fetchProfileCurrency } from '../assets/js/home.js';
     import { fetchAccounts } from '../assets/js/accounts.js';
     import { fetchHoldings, createHolding, updateHolding, deleteHolding,
-             fetchPortfolioTransactions, createPortfolioTransaction, computeHoldingPnL } from '../assets/js/portfolio.js';
+             fetchPortfolioTransactions, computeHoldingPnL } from '../assets/js/portfolio.js';
+    import { supabase } from '../assets/js/supabase-client.js';
     import { showToast } from '../assets/js/toast.js';
 
     const ASSET_TYPE_LABELS = {
@@ -784,28 +785,38 @@
       submitBtn.disabled = true; submitBtn.textContent = 'Memuat...';
 
       try {
-        await createPortfolioTransaction({
-          user_id: currentUser.id, holding_id, type, quantity, price, fee, tax, date, notes,
+        // Insert via RPC atomic: validasi oversell + re-sync holding (quantity &
+        // avg_buy_price) dilakukan server-side dalam satu transaksi. user_id dipaksa
+        // = auth.uid() di dalam RPC, jadi tidak dikirim.
+        const { data: result, error } = await supabase.rpc('add_portfolio_transaction', {
+          payload: { holding_id, type, quantity, price, fee, tax, date, notes },
         });
+        if (error) throw error;
 
-        // Refresh transaksi & auto-update avg_buy_price + quantity holding dari transaksi beli/jual.
+        // Refresh ledger transaksi untuk tampilan.
         portfolioTxs = await fetchPortfolioTransactions(currentUser.id);
         indexPortfolioTxs();
+
+        // Holding sudah di-sync otoritatif oleh RPC — pakai nilai balikannya,
+        // tak perlu round-trip updateHolding lagi.
+        const synced = result?.holding;
         const h = holdings.find(x => x.id === holding_id);
-        if (h) {
-          const p = computeHoldingPnL(h, ptxByHolding.get(holding_id) || []);
-          const hasBuys = (ptxByHolding.get(holding_id) || []).some(t => t.type === 'buy');
-          if (hasBuys) {
-            await updateHolding(holding_id, { avg_buy_price: Math.round(p.avgBuy), quantity: p.qty });
-          }
+        if (h && synced) {
+          h.quantity = synced.quantity;
+          h.avg_buy_price = synced.avg_buy_price;
         }
-        holdings = await fetchHoldings(currentUser.id);
+
         showToast('Transaksi portfolio dicatat');
         closePtxModal();
         applyFilter();
       } catch (err) {
-        errEl.textContent = err.message;
-        errEl.classList.remove('hidden');
+        // Oversell ditolak server → tampilkan pesan ramah via toast.
+        if (err.message && err.message.includes('melebihi kepemilikan')) {
+          showToast(err.message, 'error');
+        } else {
+          errEl.textContent = err.message;
+          errEl.classList.remove('hidden');
+        }
       } finally {
         submitBtn.disabled = false; submitBtn.textContent = 'Simpan';
       }

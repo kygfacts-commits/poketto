@@ -80,7 +80,8 @@
     import '../assets/js/auth-guard.js';
     import { formatCurrency, formatDate } from '../assets/js/utils.js';
     import { fetchProfileCurrency } from '../assets/js/home.js';
-    import { fetchHoldings, fetchPortfolioTransactions, deletePortfolioTransaction } from '../assets/js/portfolio.js';
+    import { fetchHoldings, fetchPortfolioTransactions } from '../assets/js/portfolio.js';
+    import { supabase } from '../assets/js/supabase-client.js';
     import { showToast } from '../assets/js/toast.js';
 
     const TYPE_META = {
@@ -192,13 +193,21 @@
       if (!deletingId) return;
       if (window.blockIfDemo?.('Menghapus transaksi portfolio')) return;
       try {
-        await deletePortfolioTransaction(deletingId);
+        // Delete via RPC atomic: validasi invariant ledger + re-sync holding
+        // dilakukan server-side. DELETE langsung via PostgREST sudah di-REVOKE.
+        const { error } = await supabase.rpc('delete_portfolio_transaction', { transaction_id: deletingId });
+        if (error) throw error;
         showToast('Transaksi dihapus');
         document.getElementById('delete-modal').classList.add('hidden');
         ptxs = await fetchPortfolioTransactions(currentUser.id);
         render();
       } catch (err) {
-        showToast(err.message, 'error');
+        // Hapus 'buy' yang akan memicu oversell ditolak server → pesan ramah.
+        if (err.message && err.message.includes('Tidak bisa menghapus')) {
+          showToast(err.message, 'error');
+        } else {
+          showToast('Gagal menghapus: ' + err.message, 'error');
+        }
       }
       deletingId = null;
     });

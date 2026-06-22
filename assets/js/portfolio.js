@@ -38,15 +38,26 @@ export async function fetchPortfolioTransactions(userId) {
   return data;
 }
 
+// CATATAN: sejak REVOKE INSERT/UPDATE/DELETE pada portfolio_transactions,
+// INSERT langsung via PostgREST DITOLAK. Fungsi ini sekarang HANYA wrapper
+// tipis ke RPC atomic add_portfolio_transaction (validasi oversell + re-sync
+// holding.quantity/avg_buy_price di server, dalam satu transaksi).
+// payload: { holding_id, type, quantity, price, fee, tax, date, notes }.
+// JANGAN kirim user_id — dipaksa = auth.uid() di dalam RPC.
+// Return: { ok, transaction, holding: { quantity, avg_buy_price } }.
 export async function createPortfolioTransaction(payload) {
-  const { data, error } = await supabase.from('portfolio_transactions').insert(payload).select().single();
+  const { data, error } = await supabase.rpc('add_portfolio_transaction', { payload });
   if (error) throw error;
   return data;
 }
 
+// CATATAN: wrapper tipis ke RPC atomic delete_portfolio_transaction (validasi
+// invariant ledger + re-sync holding di server). DELETE langsung via PostgREST
+// sudah di-REVOKE. Return: { ok, deleted_id, holding: { quantity, avg_buy_price } }.
 export async function deletePortfolioTransaction(id) {
-  const { error } = await supabase.from('portfolio_transactions').delete().eq('id', id);
+  const { data, error } = await supabase.rpc('delete_portfolio_transaction', { transaction_id: id });
   if (error) throw error;
+  return data;
 }
 
 // Hitung PnL untuk satu holding berdasarkan daftar portfolio_transactions miliknya.
