@@ -44,6 +44,9 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div id="loading-state" class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center text-gray-400 text-sm">Memuat data…</div>
+
       <!-- Month nav -->
       <div class="flex items-center justify-between bg-white rounded-2xl border border-[#EDE9FE] shadow-sm px-5 py-3 mb-4">
         <button id="prev-month" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
@@ -254,6 +257,7 @@
           fetchCategories('expense', null, true),
         ]);
         currency = curr;
+        document.getElementById('loading-state').classList.add('hidden');
         accountsById = new Map(accounts.map(a => [a.id, a]));
         allCategories = [...incomeCategories, ...expenseCategories];
         categoriesById = new Map(allCategories.map(c => [c.id, c]));
@@ -261,6 +265,7 @@
         populateEditDropdowns();
         applyFilters();
       } catch (err) {
+        document.getElementById('loading-state').classList.add('hidden');
         console.error('[transactions]', err.message);
       }
     }

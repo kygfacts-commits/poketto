@@ -50,6 +50,34 @@ export function getAccountBalance(accountId, accounts, transactions) {
   }, initialBalance);
 }
 
+// Versi single-pass dari getAccountBalance: hitung saldo SEMUA akun sekaligus
+// dengan satu kali iterasi transaksi (O(accounts + transactions)) alih-alih
+// memanggil getAccountBalance per akun (O(accounts * transactions)).
+// Logika bisnis IDENTIK dengan getAccountBalance: saldo awal + income - expense,
+// transfer mengurangi akun asal & menambah akun tujuan.
+// Mengembalikan object { [accountId]: saldo }.
+export function getAllAccountBalances(accounts, transactions) {
+  const balances = {};
+  for (const account of accounts) {
+    balances[account.id] = Number(account?.initial_balance) || 0;
+  }
+
+  for (const tx of transactions) {
+    const amount = Number(tx.amount) || 0;
+
+    if (tx.type === 'income') {
+      if (tx.account_id in balances) balances[tx.account_id] += amount;
+    } else if (tx.type === 'expense') {
+      if (tx.account_id in balances) balances[tx.account_id] -= amount;
+    } else if (tx.type === 'transfer') {
+      if (tx.account_id in balances) balances[tx.account_id] -= amount;
+      if (tx.to_account_id in balances) balances[tx.to_account_id] += amount;
+    }
+  }
+
+  return balances;
+}
+
 // Gabungkan dua baris transfer (transfer_out + transfer_in) dengan transfer_pair_id sama
 // menjadi SATU item tampilan. Baris non-transfer dilewatkan apa adanya.
 // Item gabungan: { ...rowOut, __isTransfer:true, fromAccountId, toAccountId, amount }.
