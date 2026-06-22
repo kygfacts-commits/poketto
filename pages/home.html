@@ -78,11 +78,24 @@
               <i data-lucide="eye-off" id="toggle-balance-icon" class="w-5 h-5"></i>
             </button>
           </div>
-          <!-- Net worth = aset - liabilitas (Tugas 4B) -->
+          <!-- Toggle "Sertakan portfolio" (muncul hanya jika user punya holding) -->
+          <label id="networth-portfolio-row" class="hidden mt-3 flex items-center justify-between cursor-pointer select-none">
+            <span class="text-sm text-gray-400">Sertakan portfolio</span>
+            <span class="relative inline-block w-11 h-6 flex-shrink-0">
+              <input type="checkbox" id="networth-include-portfolio" class="peer sr-only">
+              <span class="absolute inset-0 rounded-full bg-gray-200 peer-checked:bg-[#8B5CF6] transition-colors"></span>
+              <span class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
+            </span>
+          </label>
+          <!-- Net worth = aset - liabilitas (+ portfolio kalau toggle ON) -->
           <div id="networth-rows" class="hidden mt-3 pt-3 border-t border-[#DDD6FE]/60 space-y-1.5">
-            <div class="flex items-center justify-between text-sm">
+            <div id="networth-liab-line" class="flex items-center justify-between text-sm">
               <span class="text-gray-400">Liabilitas</span>
               <span id="liabilities-amount" class="font-semibold text-peach">-Rp0</span>
+            </div>
+            <div id="networth-portfolio-line" class="hidden flex items-center justify-between text-sm">
+              <span class="text-gray-400">Portfolio</span>
+              <span id="portfolio-amount" class="font-semibold text-sky-600">+Rp0</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Net Worth</span>
@@ -217,6 +230,7 @@
     import { supabase } from '../assets/js/supabase-client.js';
     import { formatCurrency, formatDate, formatDateWithDay, getAllAccountBalances, getMonthRange, groupTransferPairs } from '../assets/js/utils.js';
     import { ACCOUNT_COLOR_CLASSES, fetchAccounts } from '../assets/js/accounts.js';
+    import { fetchHoldings } from '../assets/js/portfolio.js';
     import { fetchCategories, getCategoryColorClasses, TRANSFER_COLOR_CLASSES } from '../assets/js/categories.js';
     import { fetchAllTransactions, fetchProfileCurrency, deleteTransaction, deleteTransactionByPair, fetchDailyLimit, fetchLiabilitiesTotal } from '../assets/js/home.js';
     import { showToast, flushQueuedToast } from '../assets/js/toast.js';
@@ -266,6 +280,8 @@
     let currentMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let dailyLimit = 0;
     let liabilitiesTotal = 0;
+    let holdings = [];
+    let includePortfolio = false;
     let selectedTransactionId = null;
     let balanceVisible = false;
 
@@ -302,21 +318,58 @@
       totalBalanceAmount.dataset.formatted = formatted;
       totalBalanceAmount.textContent = balanceVisible ? formatted : '***';
 
-      // Net worth = total aset - total liabilitas
+      // Nilai portfolio = SUM(qty * (current_price || avg_buy_price)).
+      const portfolioTotal = holdings.reduce(
+        (sum, h) => sum + Number(h.quantity || 0) * Number(h.current_price || h.avg_buy_price || 0),
+        0
+      );
+
+      // Toggle "Sertakan portfolio" hanya relevan kalau user punya holding.
+      const toggleRow = document.getElementById('networth-portfolio-row');
+      const toggleEl = document.getElementById('networth-include-portfolio');
+      if (holdings.length > 0) {
+        toggleRow.classList.remove('hidden');
+        toggleEl.checked = includePortfolio;
+      } else {
+        toggleRow.classList.add('hidden');
+      }
+
+      // Net worth = total aset - liabilitas (+ portfolio kalau toggle ON).
       const rows = document.getElementById('networth-rows');
+      const liabLine = document.getElementById('networth-liab-line');
       const liabEl = document.getElementById('liabilities-amount');
+      const pfLine = document.getElementById('networth-portfolio-line');
+      const pfEl = document.getElementById('portfolio-amount');
       const nwEl = document.getElementById('networth-amount');
-      const netWorth = total - liabilitiesTotal;
+
+      const includedPortfolio = includePortfolio ? portfolioTotal : 0;
+      const netWorth = total - liabilitiesTotal + includedPortfolio;
       const liabFormatted = '-' + formatCurrency(liabilitiesTotal, currency);
+      const pfFormatted = '+' + formatCurrency(portfolioTotal, currency);
       const nwFormatted = formatCurrency(netWorth, currency);
       liabEl.dataset.formatted = liabFormatted;
+      pfEl.dataset.formatted = pfFormatted;
       nwEl.dataset.formatted = nwFormatted;
       nwEl.className = `text-lg font-extrabold tracking-tight ${netWorth >= 0 ? 'text-mint' : 'text-peach'}`;
 
-      if (liabilitiesTotal > 0) {
+      // Tampilkan blok net worth kalau ada liabilitas ATAU portfolio disertakan.
+      const showLiab = liabilitiesTotal > 0;
+      const showPf = includePortfolio && holdings.length > 0;
+      if (showLiab || showPf) {
         rows.classList.remove('hidden');
-        liabEl.textContent = balanceVisible ? liabFormatted : '***';
         nwEl.textContent = balanceVisible ? nwFormatted : '***';
+        if (showLiab) {
+          liabLine.classList.remove('hidden');
+          liabEl.textContent = balanceVisible ? liabFormatted : '***';
+        } else {
+          liabLine.classList.add('hidden');
+        }
+        if (showPf) {
+          pfLine.classList.remove('hidden');
+          pfEl.textContent = balanceVisible ? pfFormatted : '***';
+        } else {
+          pfLine.classList.add('hidden');
+        }
       } else {
         rows.classList.add('hidden');
       }
@@ -698,9 +751,27 @@
         totalBalanceAmount.textContent = balanceVisible ? totalBalanceAmount.dataset.formatted : '***';
       }
       const liabEl = document.getElementById('liabilities-amount');
+      const pfEl = document.getElementById('portfolio-amount');
       const nwEl = document.getElementById('networth-amount');
       if (liabEl.dataset.formatted) liabEl.textContent = balanceVisible ? liabEl.dataset.formatted : '***';
+      if (pfEl.dataset.formatted) pfEl.textContent = balanceVisible ? pfEl.dataset.formatted : '***';
       if (nwEl.dataset.formatted) nwEl.textContent = balanceVisible ? nwEl.dataset.formatted : '***';
+    });
+
+    // Toggle "Sertakan portfolio" → simpan ke profiles, lalu re-render net worth.
+    document.getElementById('networth-include-portfolio').addEventListener('change', async (e) => {
+      includePortfolio = e.target.checked;
+      renderTotalBalance();
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ networth_include_portfolio: includePortfolio })
+          .eq('id', currentUser.id);
+        if (error) throw error;
+      } catch (err) {
+        console.log('[home] Gagal menyimpan preferensi portfolio:', err.message);
+        showToast('Gagal menyimpan preferensi: ' + err.message, 'error');
+      }
     });
 
     confirmCancelBtn.addEventListener('click', () => {
@@ -731,8 +802,12 @@
     // ---------- Data loading ----------
 
     async function loadData() {
-      accounts = await fetchAccounts(currentUser.id);
-      allTransactions = await fetchAllTransactions(currentUser.id);
+      // Paralel — holdings ikut di sini karena dikonsumsi render() (net worth).
+      [accounts, allTransactions, holdings] = await Promise.all([
+        fetchAccounts(currentUser.id),
+        fetchAllTransactions(currentUser.id),
+        fetchHoldings(currentUser.id).catch(() => []),
+      ]);
       render();
     }
 
@@ -743,7 +818,7 @@
       try {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name')
+          .select('full_name, networth_include_portfolio')
           .eq('id', currentUser.id)
           .maybeSingle();
         const fullName = profile?.full_name?.trim();
@@ -752,6 +827,8 @@
         } else {
           document.getElementById('profile-banner').classList.remove('hidden');
         }
+        // Preferensi sertakan-portfolio (piggyback query profil di atas).
+        includePortfolio = profile?.networth_include_portfolio === true;
       } catch {}
 
       try {
