@@ -35,6 +35,9 @@
         </button>
       </div>
 
+      <!-- Loading -->
+      <div id="loading-state" class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center text-gray-400 text-sm">Memuat data…</div>
+
       <!-- Summary cards -->
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
         <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-4">
@@ -423,19 +426,25 @@
     // ---------- Init ----------
     window.addEventListener('schatz:auth-ready', async (e) => {
       currentUser = e.detail.user;
-      // 2 query independen → satu Promise.all.
-      const [curr, liabs] = await Promise.all([
-        fetchProfileCurrency(currentUser.id).catch(() => currency),
-        fetchLiabilities(currentUser.id).catch((err) => {
-          console.log('[liabilities] Gagal memuat data:', err.message);
-          showToast('Gagal memuat data: ' + err.message, 'error');
-          return liabilities;
-        }),
-      ]);
-      currency = curr;
-      liabilities = liabs;
-      renderSummary();
-      renderList();
+      try {
+        // 2 query independen → satu Promise.all.
+        const [curr, liabs] = await Promise.all([
+          fetchProfileCurrency(currentUser.id).catch(() => currency),
+          fetchLiabilities(currentUser.id).catch((err) => {
+            console.log('[liabilities] Gagal memuat data:', err.message);
+            showToast('Gagal memuat data: ' + err.message, 'error');
+            return liabilities;
+          }),
+        ]);
+        currency = curr;
+        liabilities = liabs;
+        document.getElementById('loading-state').classList.add('hidden');
+        renderSummary();
+        renderList();
+      } catch (err) {
+        document.getElementById('loading-state').classList.add('hidden');
+        console.error('[liabilities]', err.message);
+      }
     });
   </script>
   <script type="module" src="../assets/js/nav-loader.js"></script>

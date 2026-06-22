@@ -31,6 +31,9 @@
         </button>
       </div>
 
+      <!-- Loading -->
+      <div id="loading-state" class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center text-gray-400 text-sm">Memuat data…</div>
+
       <!-- Month navigator -->
       <div class="flex items-center justify-between mb-4">
         <button id="prev-month" type="button" class="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
@@ -507,24 +510,30 @@
       currentUser = e.detail.user;
       const { start, end } = getMonthRange(currentMonth);
 
-      // Semua independen → satu Promise.all. Rollover (butuh hasil budgets) menyusul setelahnya.
-      const [curr, cats, b, expenses] = await Promise.all([
-        fetchProfileCurrency(currentUser.id).catch((err) => { console.log('[budget] Gagal memuat preferensi mata uang:', err.message); return currency; }),
-        fetchCategories('expense').catch((err) => { console.log('[budget] Gagal memuat kategori:', err.message); return []; }),
-        fetchBudgets(currentUser.id, start).catch(() => []),
-        fetchExpensesForMonth(currentUser.id, start, end).catch(() => []),
-      ]);
+      try {
+        // Semua independen → satu Promise.all. Rollover (butuh hasil budgets) menyusul setelahnya.
+        const [curr, cats, b, expenses] = await Promise.all([
+          fetchProfileCurrency(currentUser.id).catch((err) => { console.log('[budget] Gagal memuat preferensi mata uang:', err.message); return currency; }),
+          fetchCategories('expense').catch((err) => { console.log('[budget] Gagal memuat kategori:', err.message); return []; }),
+          fetchBudgets(currentUser.id, start).catch(() => []),
+          fetchExpensesForMonth(currentUser.id, start, end).catch(() => []),
+        ]);
 
-      currency = curr;
-      expenseCategories = cats;
-      categoriesById = new Map(expenseCategories.map((c) => [c.id, c]));
-      budgets = b;
-      buildCategoryUsage(expenses);
+        currency = curr;
+        document.getElementById('loading-state').classList.add('hidden');
+        expenseCategories = cats;
+        categoriesById = new Map(expenseCategories.map((c) => [c.id, c]));
+        budgets = b;
+        buildCategoryUsage(expenses);
 
-      renderMonthLabel();
-      await computeRollover(start); // langkah dependent SETELAH Promise.all
-      renderSummary();
-      renderBudgetList();
+        renderMonthLabel();
+        await computeRollover(start); // langkah dependent SETELAH Promise.all
+        renderSummary();
+        renderBudgetList();
+      } catch (err) {
+        document.getElementById('loading-state').classList.add('hidden');
+        console.error('[budget]', err.message);
+      }
     });
   </script>
   <script type="module" src="../assets/js/nav-loader.js"></script>

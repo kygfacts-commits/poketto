@@ -58,6 +58,9 @@
         </button>
       </div>
 
+      <!-- Loading -->
+      <div id="loading-state" class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm p-10 text-center text-gray-400 text-sm">Memuat data…</div>
+
       <!-- ===== TAB RINGKASAN ===== -->
       <div id="tab-ringkasan">
 
@@ -199,7 +202,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, formatDateWithDay, getAccountBalance, getMonthRange } from '../assets/js/utils.js';
+    import { formatCurrency, formatDateWithDay, getAllAccountBalances, getMonthRange } from '../assets/js/utils.js';
     import { fetchCategories, getCategoryColorClasses } from '../assets/js/categories.js';
     import { fetchAllTransactions, fetchProfileCurrency, fetchLiabilitiesTotal } from '../assets/js/home.js';
     import { fetchAccounts, ACCOUNT_COLOR_CLASSES, getAccountTypeLabel } from '../assets/js/accounts.js';
@@ -356,8 +359,8 @@
     }
 
     // ---------- Render: Account Tab ----------
-    function renderAccountRow(acc) {
-      const balance = getAccountBalance(acc.id, accounts, allTransactions);
+    function renderAccountRow(acc, balances) {
+      const balance = balances[acc.id];
       const cc = ACCOUNT_COLOR_CLASSES[acc.color] || ACCOUNT_COLOR_CLASSES.lavender;
       return `<button type="button" class="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors text-left" data-account-id="${acc.id}">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${cc.bg}">
@@ -388,10 +391,12 @@
       }
       accountsEmpty.classList.add('hidden');
 
+      const balances = getAllAccountBalances(accounts, allTransactions);
+
       // Aset per currency
       const byC = {};
       for (const acc of accounts) {
-        const bal = getAccountBalance(acc.id, accounts, allTransactions);
+        const bal = balances[acc.id];
         const cur = acc.currency || currency;
         byC[cur] = (byC[cur] || 0) + bal;
       }
@@ -417,14 +422,14 @@
       const rows = [];
       for (const [type, accs] of groups) {
         if (accs.length === 0) continue;
-        const groupTotal = accs.reduce((sum, acc) => sum + getAccountBalance(acc.id, accounts, allTransactions), 0);
+        const groupTotal = accs.reduce((sum, acc) => sum + balances[acc.id], 0);
         rows.push(`<div>
           <div class="flex justify-between items-center mb-2">
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">${getAccountTypeLabel(type)}</p>
             <p class="text-sm font-semibold text-gray-700">${formatCurrency(groupTotal, currency)}</p>
           </div>
           <div class="bg-white rounded-2xl border border-[#EDE9FE] shadow-sm divide-y divide-gray-50">
-            ${accs.map((acc) => renderAccountRow(acc)).join('')}
+            ${accs.map((acc) => renderAccountRow(acc, balances)).join('')}
           </div>
         </div>`);
       }
@@ -632,11 +637,12 @@
 
       // Sheet 3: Saldo per akun
       const accHeaders = ['Akun', 'Tipe', 'Mata Uang', 'Saldo'];
+      const accBalances = getAllAccountBalances(accounts, allTransactions);
       const accRows = accounts.map((acc) => [
         acc.name,
         getAccountTypeLabel(acc.type),
         acc.currency || currency,
-        getAccountBalance(acc.id, accounts, allTransactions),
+        accBalances[acc.id],
       ]);
       const ws3 = XLSX.utils.aoa_to_sheet([accHeaders, ...accRows]);
       ws3['!cols'] = [{ wch: 20 }, { wch: 14 }, { wch: 12 }, { wch: 18 }];
@@ -658,26 +664,32 @@
       currentUser = e.detail.user;
       const { start } = getMonthRange(currentMonth);
 
-      // Semua query independen → satu Promise.all besar (termasuk fetchBudgets bulan ini).
-      const [curr, inc, exp, accs, txs, liabTotal, b] = await Promise.all([
-        fetchProfileCurrency(currentUser.id).catch(() => currency),
-        fetchCategories('income', null, true).catch(() => []),
-        fetchCategories('expense', null, true).catch(() => []),
-        fetchAccounts(currentUser.id).catch(() => accounts),
-        fetchAllTransactions(currentUser.id).catch(() => allTransactions),
-        fetchLiabilitiesTotal(currentUser.id).catch(() => liabilitiesTotal),
-        fetchBudgets(currentUser.id, start).catch(() => []),
-      ]);
+      try {
+        // Semua query independen → satu Promise.all besar (termasuk fetchBudgets bulan ini).
+        const [curr, inc, exp, accs, txs, liabTotal, b] = await Promise.all([
+          fetchProfileCurrency(currentUser.id).catch(() => currency),
+          fetchCategories('income', null, true).catch(() => []),
+          fetchCategories('expense', null, true).catch(() => []),
+          fetchAccounts(currentUser.id).catch(() => accounts),
+          fetchAllTransactions(currentUser.id).catch(() => allTransactions),
+          fetchLiabilitiesTotal(currentUser.id).catch(() => liabilitiesTotal),
+          fetchBudgets(currentUser.id, start).catch(() => []),
+        ]);
 
-      currency = curr;
-      categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
-      accounts = accs;
-      allTransactions = txs;
-      liabilitiesTotal = liabTotal;
-      budgets = b;
+        currency = curr;
+        categoriesById = new Map([...inc, ...exp].map((c) => [c.id, c]));
+        accounts = accs;
+        allTransactions = txs;
+        liabilitiesTotal = liabTotal;
+        budgets = b;
 
-      renderSummaryTab();
-      renderAccountTab();
+        document.getElementById('loading-state').classList.add('hidden');
+        renderSummaryTab();
+        renderAccountTab();
+      } catch (err) {
+        document.getElementById('loading-state').classList.add('hidden');
+        console.error('[reports]', err.message);
+      }
     });
   </script>
   <script type="module" src="../assets/js/nav-loader.js"></script>

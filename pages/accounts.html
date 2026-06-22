@@ -153,7 +153,7 @@
   <script type="module">
     import '../assets/js/auth-guard.js';
     import { logout } from '../assets/js/auth.js';
-    import { formatCurrency, getAccountBalance, formatThousands, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
+    import { formatCurrency, getAllAccountBalances, formatThousands, parseThousands, attachThousandsInput } from '../assets/js/utils.js';
     import {
       ACCOUNT_TYPES,
       ACCOUNT_COLORS,
@@ -208,9 +208,10 @@
         return;
       }
 
+      const balances = getAllAccountBalances(accounts, transactions);
       const totals = {};
       for (const acc of accounts) {
-        const balance = getAccountBalance(acc.id, accounts, transactions);
+        const balance = balances[acc.id];
         totals[acc.currency] = (totals[acc.currency] || 0) + balance;
       }
 
@@ -236,8 +237,9 @@
       emptyState.classList.add('hidden');
       accountsList.classList.remove('hidden');
 
+      const balances = getAllAccountBalances(accounts, transactions);
       accountsList.innerHTML = accounts.map((acc) => {
-        const balance = getAccountBalance(acc.id, accounts, transactions);
+        const balance = balances[acc.id];
         const colorClasses = ACCOUNT_COLOR_CLASSES[acc.color] || ACCOUNT_COLOR_CLASSES.lavender;
         const accent = typeAccentColor(acc.type);
 
