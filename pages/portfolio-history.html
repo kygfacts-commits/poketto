@@ -152,7 +152,8 @@
               </div>
               <p class="font-semibold text-gray-800 truncate">${h?.asset_name || 'Holding'}</p>
             </div>
-            <button data-id="${t.id}" class="del-ptx p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0">
+            <!-- Riwayat transaksi portfolio bersifat permanen (by design): tombol hapus disembunyikan. -->
+            <button data-id="${t.id}" class="del-ptx hidden p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>

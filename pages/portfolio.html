@@ -150,7 +150,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah / Unit <span class="text-red-400">*</span></label>
-            <input type="number" id="holding-qty" step="any" min="0" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+            <input type="number" id="holding-qty" step="any" min="0" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6] disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Mata Uang</label>
@@ -162,7 +162,8 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Avg Buy Price <span class="text-red-400">*</span></label>
-          <input type="text" inputmode="numeric" id="holding-avg-price" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6]">
+          <input type="text" inputmode="numeric" id="holding-avg-price" placeholder="0" class="w-full rounded-xl border border-[#DDD6FE] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-[#8B5CF6] disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
+          <p id="holding-lock-hint" class="hidden text-xs text-gray-400 mt-1">Ubah posisi dengan mencatat transaksi beli/jual</p>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Harga Sekarang <span class="text-gray-400 font-normal">(opsional)</span></label>
@@ -526,6 +527,10 @@
       document.getElementById('holding-id').value = '';
       document.getElementById('holding-modal-title').textContent = 'Tambah Holding';
       document.getElementById('holding-form').reset();
+      // Mode tambah: qty & avg buy bisa diisi (jadi seed opening-buy).
+      document.getElementById('holding-qty').disabled = false;
+      document.getElementById('holding-avg-price').disabled = false;
+      document.getElementById('holding-lock-hint').classList.add('hidden');
       document.getElementById('holding-error').classList.add('hidden');
       document.getElementById('holding-modal').classList.remove('hidden');
     }
@@ -545,6 +550,10 @@
       const curEl = document.getElementById('holding-cur-price');
       curEl.value = h.current_price ? Number(h.current_price).toLocaleString('id-ID') : '';
       if (h.current_price) curEl.dispatchEvent(new Event('input'));
+      // Mode edit: qty & avg buy dikunci — posisi ditentukan oleh ledger transaksi.
+      document.getElementById('holding-qty').disabled = true;
+      document.getElementById('holding-avg-price').disabled = true;
+      document.getElementById('holding-lock-hint').classList.remove('hidden');
       document.getElementById('holding-error').classList.add('hidden');
       document.getElementById('holding-modal').classList.remove('hidden');
     }
@@ -610,8 +619,28 @@
           await updateHolding(id, payload);
           showToast('Holding berhasil diupdate');
         } else {
-          await createHolding({ ...payload, user_id: currentUser.id });
-          showToast('Holding berhasil ditambahkan');
+          const newHolding = await createHolding({ ...payload, user_id: currentUser.id });
+          // Seed opening-buy ke ledger: quantity & avg_buy_price holding kini ditopang
+          // transaksi, bukan nilai manual yang bisa di-override saat ada transaksi baru.
+          // RPC sekaligus re-sync holding dari ledger.
+          const { error: seedErr } = await supabase.rpc('add_portfolio_transaction', {
+            payload: {
+              holding_id: newHolding.id,
+              type: 'buy',
+              quantity: qty,
+              price: avg,
+              fee: 0,
+              tax: 0,
+              date: new Date().toISOString().split('T')[0],
+              notes: 'Opening position',
+            },
+          });
+          if (seedErr) {
+            // Holding tetap dibuat (JANGAN rollback) — hanya posisi awal yang gagal dicatat.
+            showToast('Holding dibuat, tetapi posisi awal gagal dicatat: ' + seedErr.message, 'error');
+          } else {
+            showToast('Holding berhasil ditambahkan');
+          }
         }
         closeHoldingModal();
         holdings = await fetchHoldings(currentUser.id);
